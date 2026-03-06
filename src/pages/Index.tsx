@@ -20,6 +20,7 @@ const Index = () => {
   const {
     data, isSetup, setupBudget, addExpense, deleteExpense,
     updatePercentages, updateIncome, resetMonth,
+    addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
   } = useFinanceData();
 
@@ -75,6 +76,8 @@ const Index = () => {
             getSpentBySubcategory={getSpentBySubcategory}
             onBack={() => { setView("dashboard"); setSelectedCategoryId(null); }}
             onDeleteExpense={deleteExpense}
+            onAddSubcategory={addSubcategory}
+            onDeleteSubcategory={deleteSubcategory}
           />
         ) : (
           <div className="space-y-5 animate-in fade-in duration-300">

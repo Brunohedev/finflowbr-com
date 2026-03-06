@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Trash2, Plus, X } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -11,14 +13,26 @@ interface CategoryDetailProps {
   getSpentBySubcategory: (id: string) => number;
   onBack: () => void;
   onDeleteExpense: (id: string) => void;
+  onAddSubcategory: (categoryId: string, name: string) => void;
+  onDeleteSubcategory: (categoryId: string, subcategoryId: string) => void;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense }: CategoryDetailProps) => {
+const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
   const categoryExpenses = expenses.filter((e) => e.categoryId === category.id);
   const totalSpent = categoryExpenses.reduce((s, e) => s + e.amount, 0);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  const handleAdd = () => {
+    if (newName.trim()) {
+      onAddSubcategory(category.id, newName.trim());
+      setNewName("");
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="space-y-4 animate-in slide-in-from-right duration-300">
@@ -36,14 +50,47 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
 
       {/* Subcategories breakdown */}
       <div className="finance-card">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Subcategorias</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subcategorias</h3>
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setAdding(!adding)}>
+            {adding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {adding ? "Cancelar" : "Nova"}
+          </Button>
+        </div>
+
+        {adding && (
+          <div className="flex gap-2 mb-3">
+            <Input
+              placeholder="Nome da subcategoria"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              className="h-9 text-sm"
+              autoFocus
+            />
+            <Button size="sm" className="h-9 px-3" onClick={handleAdd} disabled={!newName.trim()}>
+              Adicionar
+            </Button>
+          </div>
+        )}
+
         <div className="space-y-3">
           {category.subcategories.map((sub) => {
             const spent = getSpentBySubcategory(sub.id);
             return (
-              <div key={sub.id} className="flex items-center justify-between">
+              <div key={sub.id} className="flex items-center justify-between group">
                 <span className="text-sm">{sub.name}</span>
-                <span className="text-sm font-semibold font-heading">{formatCurrency(spent)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold font-heading">{formatCurrency(spent)}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                    onClick={() => onDeleteSubcategory(category.id, sub.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             );
           })}
