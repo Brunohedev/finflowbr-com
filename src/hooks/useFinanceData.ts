@@ -72,6 +72,41 @@ export function useFinanceData() {
     setData((prev) => (prev ? { ...prev, income } : prev));
   }, []);
 
+  const addSubcategory = useCallback((categoryId: string, name: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        categories: prev.categories.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                subcategories: [
+                  ...cat.subcategories,
+                  { id: crypto.randomUUID(), name, categoryId },
+                ],
+              }
+            : cat
+        ),
+      };
+    });
+  }, []);
+
+  const deleteSubcategory = useCallback((categoryId: string, subcategoryId: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        categories: prev.categories.map((cat) =>
+          cat.id === categoryId
+            ? { ...cat, subcategories: cat.subcategories.filter((s) => s.id !== subcategoryId) }
+            : cat
+        ),
+        expenses: prev.expenses.filter((e) => e.subcategoryId !== subcategoryId),
+      };
+    });
+  }, []);
+
   const resetMonth = useCallback(() => {
     setData((prev) => (prev ? { ...prev, expenses: [], currentMonth: getCurrentMonth() } : prev));
   }, []);
