@@ -25,7 +25,8 @@ const CategoryCard = ({ category, budget, spent, onClick }: CategoryCardProps) =
   const emojis: Record<string, string> = {
     essenciais: "🏠",
     desejos: "💜",
-    reserva: "📈",
+    reserva: "🛡️",
+    investimentos: "📈",
   };
 
   return (
@@ -44,10 +45,9 @@ const CategoryCard = ({ category, budget, spent, onClick }: CategoryCardProps) =
           </span>
         )}
       </div>
-
       <div className="space-y-2">
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Gasto: {formatCurrency(spent)}</span>
+          <span>Usado: {formatCurrency(spent)}</span>
           <span>Limite: {formatCurrency(budget)}</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">

@@ -3,21 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { DollarSign, Percent, ArrowRight } from "lucide-react";
+import { Percentages } from "@/types/finance";
 
 interface SetupWizardProps {
-  onComplete: (income: number, percentages: { essenciais: number; desejos: number; reserva: number }) => void;
+  onComplete: (income: number, percentages: Percentages) => void;
 }
 
 const SetupWizard = ({ onComplete }: SetupWizardProps) => {
   const [step, setStep] = useState(0);
   const [income, setIncome] = useState("");
-  const [percentages, setPercentages] = useState({ essenciais: 50, desejos: 30, reserva: 20 });
+  const [percentages, setPercentages] = useState<Percentages>({
+    essenciais: 50, desejos: 30, reserva: 10, investimentos: 10,
+  });
 
-  const total = percentages.essenciais + percentages.desejos + percentages.reserva;
+  const total = percentages.essenciais + percentages.desejos + percentages.reserva + percentages.investimentos;
   const isValidTotal = total === 100;
   const incomeValue = parseFloat(income.replace(/[^\d.,]/g, "").replace(",", "."));
 
-  const handleSliderChange = (key: keyof typeof percentages, value: number) => {
+  const handleSliderChange = (key: keyof Percentages, value: number) => {
     setPercentages((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -37,7 +40,6 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
               Organize suas finanças com o método 50-30-20 personalizável.
             </p>
           </div>
-
           <div className="finance-card space-y-4">
             <label className="text-sm font-medium text-muted-foreground">Renda mensal</label>
             <div className="relative">
@@ -52,18 +54,20 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
               />
             </div>
           </div>
-
-          <Button
-            className="w-full h-12 text-base font-semibold"
-            disabled={!incomeValue || incomeValue <= 0}
-            onClick={() => setStep(1)}
-          >
+          <Button className="w-full h-12 text-base font-semibold" disabled={!incomeValue || incomeValue <= 0} onClick={() => setStep(1)}>
             Continuar <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
       </div>
     );
   }
+
+  const sliders = [
+    { key: "essenciais" as const, label: "Essenciais", emoji: "🏠" },
+    { key: "desejos" as const, label: "Desejos", emoji: "💜" },
+    { key: "reserva" as const, label: "Reserva", emoji: "🛡️" },
+    { key: "investimentos" as const, label: "Investimentos", emoji: "📈" },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -78,12 +82,8 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
           </p>
         </div>
 
-        <div className="space-y-5">
-          {[
-            { key: "essenciais" as const, label: "Essenciais", emoji: "🏠", color: "bg-primary" },
-            { key: "desejos" as const, label: "Desejos", emoji: "💜", color: "bg-accent" },
-            { key: "reserva" as const, label: "Reserva / Investimentos", emoji: "📈", color: "bg-success" },
-          ].map(({ key, label, emoji, color }) => (
+        <div className="space-y-4">
+          {sliders.map(({ key, label, emoji }) => (
             <div key={key} className="finance-card space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -103,7 +103,6 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
                 max={100}
                 min={0}
                 step={1}
-                className={`[&_[role=slider]]:${color}`}
               />
             </div>
           ))}

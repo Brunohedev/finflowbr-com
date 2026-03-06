@@ -3,17 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Category } from "@/types/finance";
 import { format } from "date-fns";
@@ -27,6 +20,9 @@ interface ExpenseDialogProps {
 }
 
 const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAdd }: ExpenseDialogProps) => {
+  // Only show expense categories (not reserva/investimentos)
+  const expenseCategories = categories.filter((c) => c.id !== "reserva" && c.id !== "investimentos");
+
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState(defaultCategoryId || "");
@@ -34,7 +30,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [note, setNote] = useState("");
 
-  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const selectedCategory = expenseCategories.find((c) => c.id === categoryId);
 
   const handleSubmit = () => {
     const amountValue = parseFloat(amount.replace(/[^\d.,]/g, "").replace(",", "."));
@@ -49,11 +45,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
       note: note.trim() || undefined,
     });
 
-    setName("");
-    setAmount("");
-    setCategoryId(defaultCategoryId || "");
-    setSubcategoryId("");
-    setNote("");
+    setName(""); setAmount(""); setCategoryId(defaultCategoryId || ""); setSubcategoryId(""); setNote("");
     onOpenChange(false);
   };
 
@@ -68,7 +60,6 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
             <Input placeholder="Ex: Supermercado" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Valor</label>
             <div className="relative">
@@ -76,14 +67,13 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
               <Input type="text" inputMode="decimal" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} className="pl-10" />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Categoria</label>
               <Select value={categoryId} onValueChange={(v) => { setCategoryId(v); setSubcategoryId(""); }}>
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>
-                  {categories.map((c) => (
+                  {expenseCategories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -101,17 +91,14 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
               </Select>
             </div>
           </div>
-
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Data</label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
-
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Nota (opcional)</label>
             <Textarea placeholder="Observação..." value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
           </div>
-
           <Button className="w-full font-semibold" onClick={handleSubmit}>
             Adicionar Despesa
           </Button>

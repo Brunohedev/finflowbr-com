@@ -2,26 +2,31 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Percentages } from "@/types/finance";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   income: number;
-  percentages: { essenciais: number; desejos: number; reserva: number };
-  onSave: (income: number, percentages: { essenciais: number; desejos: number; reserva: number }) => void;
+  percentages: Percentages;
+  onSave: (income: number, percentages: Percentages) => void;
   onReset: () => void;
 }
+
+const LABELS: Record<keyof Percentages, string> = {
+  essenciais: "Essenciais",
+  desejos: "Desejos",
+  reserva: "Reserva",
+  investimentos: "Investimentos",
+};
 
 const SettingsDialog = ({ open, onOpenChange, income, percentages, onSave, onReset }: SettingsDialogProps) => {
   const [newIncome, setNewIncome] = useState(income.toString());
   const [pcts, setPcts] = useState(percentages);
-  const total = pcts.essenciais + pcts.desejos + pcts.reserva;
+  const total = pcts.essenciais + pcts.desejos + pcts.reserva + pcts.investimentos;
 
   const handleSave = () => {
     const val = parseFloat(newIncome.replace(/[^\d.,]/g, "").replace(",", "."));
@@ -46,10 +51,10 @@ const SettingsDialog = ({ open, onOpenChange, income, percentages, onSave, onRes
             </div>
           </div>
 
-          {(["essenciais", "desejos", "reserva"] as const).map((key) => (
+          {(Object.keys(LABELS) as (keyof Percentages)[]).map((key) => (
             <div key={key} className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="font-medium capitalize">{key === "reserva" ? "Reserva / Investimentos" : key}</span>
+                <span className="font-medium">{LABELS[key]}</span>
                 <span className="font-heading font-bold">{pcts[key]}%</span>
               </div>
               <Slider value={[pcts[key]]} onValueChange={([v]) => setPcts((p) => ({ ...p, [key]: v }))} max={100} min={0} step={1} />
