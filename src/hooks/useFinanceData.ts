@@ -148,6 +148,8 @@ export function useFinanceData() {
     deleteExpense,
     updatePercentages,
     updateIncome,
+    addSubcategory,
+    deleteSubcategory,
     resetMonth,
     getSpentByCategory,
     getSpentBySubcategory,
