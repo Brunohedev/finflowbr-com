@@ -20,6 +20,7 @@ const Index = () => {
   const {
     data, isSetup, setupBudget, addExpense, deleteExpense,
     updatePercentages, updateIncome, resetMonth,
+    addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
   } = useFinanceData();
 
