@@ -11,12 +11,17 @@ interface AnalyticsViewProps {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-const COLORS = ["hsl(158, 64%, 40%)", "hsl(42, 90%, 55%)", "hsl(250, 60%, 60%)"];
+const COLORS = [
+  "hsl(158, 64%, 40%)",
+  "hsl(42, 90%, 55%)",
+  "hsl(250, 60%, 60%)",
+  "hsl(200, 70%, 50%)",
+];
 
 const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewProps) => {
   const totalSpent = useMemo(
-    () => data.expenses.reduce((s, e) => s + e.amount, 0),
-    [data.expenses]
+    () => data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0),
+    [data.categories, getSpentByCategory]
   );
 
   const chartData = useMemo(
@@ -24,7 +29,7 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewPro
       data.categories.map((cat, i) => ({
         name: cat.name,
         value: getSpentByCategory(cat.id),
-        color: COLORS[i],
+        color: COLORS[i % COLORS.length],
       })),
     [data.categories, getSpentByCategory]
   );
@@ -33,31 +38,24 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewPro
     <div className="space-y-4 animate-in fade-in duration-300">
       <h2 className="font-heading font-bold text-lg">Análise do Mês</h2>
 
-      {/* Summary */}
       <div className="finance-card text-center">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Gasto</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Utilizado</p>
         <p className="text-3xl font-bold font-heading mt-1">{formatCurrency(totalSpent)}</p>
         <p className="text-sm text-muted-foreground mt-1">
           de {formatCurrency(data.income)} ({((totalSpent / data.income) * 100).toFixed(0)}%)
         </p>
       </div>
 
-      {/* Pie Chart */}
       {totalSpent > 0 && (
         <div className="finance-card">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Distribuição de Gastos</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Distribuição</h3>
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={chartData.filter((d) => d.value > 0)}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  dataKey="value"
-                  strokeWidth={2}
-                  stroke="hsl(var(--card))"
+                  cx="50%" cy="50%" innerRadius={50} outerRadius={80}
+                  dataKey="value" strokeWidth={2} stroke="hsl(var(--card))"
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
@@ -67,7 +65,7 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewPro
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center gap-4 mt-2">
+          <div className="flex flex-wrap justify-center gap-3 mt-2">
             {chartData.map((d, i) => (
               <div key={i} className="flex items-center gap-1.5 text-xs">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
@@ -78,7 +76,6 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewPro
         </div>
       )}
 
-      {/* Category Breakdown */}
       <div className="finance-card">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Por Categoria</h3>
         <div className="space-y-4">
@@ -97,7 +94,7 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewPro
                 <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: COLORS[i] }}
+                    style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: COLORS[i % COLORS.length] }}
                   />
                 </div>
               </div>

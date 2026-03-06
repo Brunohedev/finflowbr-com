@@ -6,15 +6,18 @@ import CategoryDetail from "@/components/CategoryDetail";
 import ExpenseDialog from "@/components/ExpenseDialog";
 import AnalyticsView from "@/components/AnalyticsView";
 import SettingsDialog from "@/components/SettingsDialog";
+import ReservaView from "@/components/ReservaView";
+import InvestimentosView from "@/components/InvestimentosView";
 import { Button } from "@/components/ui/button";
 import { Plus, BarChart3, Settings, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Percentages } from "@/types/finance";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-type View = "dashboard" | "category" | "analytics";
+type View = "dashboard" | "category" | "analytics" | "reserva" | "investimentos";
 
 const Index = () => {
   const {
@@ -22,6 +25,9 @@ const Index = () => {
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
+    updateEmergencyFundTarget, addEmergencyContribution,
+    addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal,
+    addInvestment, deleteInvestment,
   } = useFinanceData();
 
   const [view, setView] = useState<View>("dashboard");
@@ -33,14 +39,35 @@ const Index = () => {
     return <SetupWizard onComplete={setupBudget} />;
   }
 
-  const totalSpent = data.expenses.reduce((s, e) => s + e.amount, 0);
+  const totalSpent = data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
   const selectedCategory = data.categories.find((c) => c.id === selectedCategoryId);
-
   const currentMonth = format(new Date(), "MMMM yyyy", { locale: ptBR });
+
+  const handleCategoryClick = (catId: string) => {
+    if (catId === "reserva") {
+      setView("reserva");
+    } else if (catId === "investimentos") {
+      setView("investimentos");
+    } else {
+      setSelectedCategoryId(catId);
+      setView("category");
+    }
+  };
+
+  const goBack = () => {
+    setView("dashboard");
+    setSelectedCategoryId(null);
+  };
+
+  const pcts: Percentages = {
+    essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
+    desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
+    reserva: data.categories.find((c) => c.id === "reserva")?.percentage ?? 10,
+    investimentos: data.categories.find((c) => c.id === "investimentos")?.percentage ?? 10,
+  };
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -68,29 +95,51 @@ const Index = () => {
       <main className="max-w-lg mx-auto px-4 py-5">
         {view === "analytics" ? (
           <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} />
+        ) : view === "reserva" ? (
+          <ReservaView
+            budget={getBudget("reserva")}
+            spent={getSpentByCategory("reserva")}
+            emergencyFund={data.emergencyFund}
+            financialGoals={data.financialGoals}
+            onBack={goBack}
+            onUpdateEmergencyTarget={updateEmergencyFundTarget}
+            onAddEmergencyContribution={addEmergencyContribution}
+            onAddGoal={addFinancialGoal}
+            onDeleteGoal={deleteFinancialGoal}
+            onAddGoalContribution={addGoalContribution}
+            onUpdateGoal={updateGoal}
+          />
+        ) : view === "investimentos" ? (
+          <InvestimentosView
+            budget={getBudget("investimentos")}
+            spent={getSpentByCategory("investimentos")}
+            investments={data.investments}
+            currentMonth={data.currentMonth}
+            onBack={goBack}
+            onAddInvestment={addInvestment}
+            onDeleteInvestment={deleteInvestment}
+          />
         ) : view === "category" && selectedCategory ? (
           <CategoryDetail
             category={selectedCategory}
             budget={getBudget(selectedCategory.id)}
             expenses={data.expenses}
             getSpentBySubcategory={getSpentBySubcategory}
-            onBack={() => { setView("dashboard"); setSelectedCategoryId(null); }}
+            onBack={goBack}
             onDeleteExpense={deleteExpense}
             onAddSubcategory={addSubcategory}
             onDeleteSubcategory={deleteSubcategory}
           />
         ) : (
           <div className="space-y-5 animate-in fade-in duration-300">
-            {/* Month & Income */}
             <div className="text-center space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-widest">{currentMonth}</p>
               <p className="text-3xl font-bold font-heading">{formatCurrency(data.income)}</p>
               <p className="text-sm text-muted-foreground">
-                Gasto: {formatCurrency(totalSpent)} · Restam: {formatCurrency(data.income - totalSpent)}
+                Utilizado: {formatCurrency(totalSpent)} · Restam: {formatCurrency(data.income - totalSpent)}
               </p>
             </div>
 
-            {/* Overall progress */}
             <div className="h-2 rounded-full bg-secondary overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
@@ -100,7 +149,6 @@ const Index = () => {
               />
             </div>
 
-            {/* Category Cards */}
             <div className="space-y-3">
               {data.categories.map((cat) => (
                 <CategoryCard
@@ -109,12 +157,11 @@ const Index = () => {
                   budget={getBudget(cat.id)}
                   spent={getSpentByCategory(cat.id)}
                   expenses={data.expenses.filter((e) => e.categoryId === cat.id)}
-                  onClick={() => { setSelectedCategoryId(cat.id); setView("category"); }}
+                  onClick={() => handleCategoryClick(cat.id)}
                 />
               ))}
             </div>
 
-            {/* Recent Expenses */}
             {data.expenses.length > 0 && (
               <div className="finance-card">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Últimas Despesas</h3>
@@ -141,16 +188,17 @@ const Index = () => {
         )}
       </main>
 
-      {/* FAB */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
-        <Button
-          size="lg"
-          className="rounded-full h-14 px-6 shadow-lg shadow-primary/25 font-semibold text-base"
-          onClick={() => setExpenseOpen(true)}
-        >
-          <Plus className="w-5 h-5 mr-2" /> Nova Despesa
-        </Button>
-      </div>
+      {view === "dashboard" && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+          <Button
+            size="lg"
+            className="rounded-full h-14 px-6 shadow-lg shadow-primary/25 font-semibold text-base"
+            onClick={() => setExpenseOpen(true)}
+          >
+            <Plus className="w-5 h-5 mr-2" /> Nova Despesa
+          </Button>
+        </div>
+      )}
 
       <ExpenseDialog
         open={expenseOpen}
@@ -164,12 +212,8 @@ const Index = () => {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         income={data.income}
-        percentages={{
-          essenciais: data.categories.find((c) => c.id === "essenciais")!.percentage,
-          desejos: data.categories.find((c) => c.id === "desejos")!.percentage,
-          reserva: data.categories.find((c) => c.id === "reserva")!.percentage,
-        }}
-        onSave={(income, pcts) => { updateIncome(income); updatePercentages(pcts); }}
+        percentages={pcts}
+        onSave={(income, p) => { updateIncome(income); updatePercentages(p); }}
         onReset={resetMonth}
       />
     </div>
