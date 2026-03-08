@@ -19,14 +19,13 @@ interface SettingsDialogProps {
 const LABELS: Record<keyof Percentages, string> = {
   essenciais: "Essenciais",
   desejos: "Desejos",
-  reserva: "Reserva",
-  investimentos: "Investimentos",
+  reserva_investimentos: "Reserva / Investimentos",
 };
 
 const SettingsDialog = ({ open, onOpenChange, income, percentages, onSave, onReset }: SettingsDialogProps) => {
   const [newIncome, setNewIncome] = useState(income.toString());
   const [pcts, setPcts] = useState(percentages);
-  const total = pcts.essenciais + pcts.desejos + pcts.reserva + pcts.investimentos;
+  const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
 
   const handleSave = () => {
     const val = parseFloat(newIncome.replace(/[^\d.,]/g, "").replace(",", "."));

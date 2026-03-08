@@ -25,8 +25,7 @@ const CategoryCard = ({ category, budget, spent, onClick }: CategoryCardProps) =
   const emojis: Record<string, string> = {
     essenciais: "🏠",
     desejos: "💜",
-    reserva: "🛡️",
-    investimentos: "📈",
+    reserva_investimentos: "🛡️",
   };
 
   return (

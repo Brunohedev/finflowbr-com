@@ -6,8 +6,8 @@ import CategoryDetail from "@/components/CategoryDetail";
 import ExpenseDialog from "@/components/ExpenseDialog";
 import AnalyticsView from "@/components/AnalyticsView";
 import SettingsDialog from "@/components/SettingsDialog";
-import ReservaView from "@/components/ReservaView";
-import InvestimentosView from "@/components/InvestimentosView";
+import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
+import PinnedItems from "@/components/PinnedItems";
 import { Button } from "@/components/ui/button";
 import { Plus, BarChart3, Settings, Wallet } from "lucide-react";
 import { format } from "date-fns";
@@ -17,7 +17,7 @@ import { Percentages } from "@/types/finance";
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-type View = "dashboard" | "category" | "analytics" | "reserva" | "investimentos";
+type View = "dashboard" | "category" | "analytics" | "reserva_investimentos";
 
 const Index = () => {
   const {
@@ -25,8 +25,9 @@ const Index = () => {
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
-    updateEmergencyFundTarget, addEmergencyContribution,
-    addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal,
+    addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve,
+    addReserveContribution, toggleReservePin,
+    addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
     addInvestment, deleteInvestment,
   } = useFinanceData();
 
@@ -44,10 +45,8 @@ const Index = () => {
   const currentMonth = format(new Date(), "MMMM yyyy", { locale: ptBR });
 
   const handleCategoryClick = (catId: string) => {
-    if (catId === "reserva") {
-      setView("reserva");
-    } else if (catId === "investimentos") {
-      setView("investimentos");
+    if (catId === "reserva_investimentos") {
+      setView("reserva_investimentos");
     } else {
       setSelectedCategoryId(catId);
       setView("category");
@@ -62,8 +61,7 @@ const Index = () => {
   const pcts: Percentages = {
     essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
     desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
-    reserva: data.categories.find((c) => c.id === "reserva")?.percentage ?? 10,
-    investimentos: data.categories.find((c) => c.id === "investimentos")?.percentage ?? 10,
+    reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20,
   };
 
   return (
@@ -95,27 +93,25 @@ const Index = () => {
       <main className="max-w-lg mx-auto px-4 py-5">
         {view === "analytics" ? (
           <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} />
-        ) : view === "reserva" ? (
-          <ReservaView
-            budget={getBudget("reserva")}
-            spent={getSpentByCategory("reserva")}
-            emergencyFund={data.emergencyFund}
+        ) : view === "reserva_investimentos" ? (
+          <ReservaInvestimentosView
+            budget={getBudget("reserva_investimentos")}
+            spent={getSpentByCategory("reserva_investimentos")}
+            emergencyReserves={data.emergencyReserves}
             financialGoals={data.financialGoals}
+            investments={data.investments}
+            currentMonth={data.currentMonth}
             onBack={goBack}
-            onUpdateEmergencyTarget={updateEmergencyFundTarget}
-            onAddEmergencyContribution={addEmergencyContribution}
+            onAddReserve={addEmergencyReserve}
+            onDeleteReserve={deleteEmergencyReserve}
+            onUpdateReserve={updateEmergencyReserve}
+            onAddReserveContribution={addReserveContribution}
+            onToggleReservePin={toggleReservePin}
             onAddGoal={addFinancialGoal}
             onDeleteGoal={deleteFinancialGoal}
             onAddGoalContribution={addGoalContribution}
             onUpdateGoal={updateGoal}
-          />
-        ) : view === "investimentos" ? (
-          <InvestimentosView
-            budget={getBudget("investimentos")}
-            spent={getSpentByCategory("investimentos")}
-            investments={data.investments}
-            currentMonth={data.currentMonth}
-            onBack={goBack}
+            onToggleGoalPin={toggleGoalPin}
             onAddInvestment={addInvestment}
             onDeleteInvestment={deleteInvestment}
           />
@@ -148,6 +144,14 @@ const Index = () => {
                 style={{ width: `${Math.min((totalSpent / data.income) * 100, 100)}%` }}
               />
             </div>
+
+            {/* Pinned items */}
+            <PinnedItems
+              reserves={data.emergencyReserves}
+              goals={data.financialGoals}
+              onUnpinReserve={toggleReservePin}
+              onUnpinGoal={toggleGoalPin}
+            />
 
             <div className="space-y-3">
               {data.categories.map((cat) => (

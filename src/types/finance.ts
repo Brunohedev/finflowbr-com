@@ -29,10 +29,13 @@ export interface Contribution {
   note?: string;
 }
 
-export interface EmergencyFund {
+export interface EmergencyReserve {
+  id: string;
+  name: string;
   targetAmount: number;
   currentAmount: number;
   contributions: Contribution[];
+  pinnedToDashboard?: boolean;
 }
 
 export interface FinancialGoal {
@@ -42,6 +45,7 @@ export interface FinancialGoal {
   currentAmount: number;
   deadline?: string;
   contributions: Contribution[];
+  pinnedToDashboard?: boolean;
 }
 
 export interface Investment {
@@ -56,7 +60,7 @@ export interface FinanceData {
   income: number;
   categories: Category[];
   expenses: Expense[];
-  emergencyFund: EmergencyFund;
+  emergencyReserves: EmergencyReserve[];
   financialGoals: FinancialGoal[];
   investments: Investment[];
   currentMonth: string; // YYYY-MM
@@ -65,8 +69,7 @@ export interface FinanceData {
 export type Percentages = {
   essenciais: number;
   desejos: number;
-  reserva: number;
-  investimentos: number;
+  reserva_investimentos: number;
 };
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -95,26 +98,24 @@ export const DEFAULT_CATEGORIES: Category[] = [
     ],
   },
   {
-    id: "reserva",
-    name: "Reserva",
-    percentage: 10,
+    id: "reserva_investimentos",
+    name: "Reserva / Investimentos",
+    percentage: 20,
     icon: "Shield",
-    subcategories: [],
-  },
-  {
-    id: "investimentos",
-    name: "Investimentos",
-    percentage: 10,
-    icon: "TrendingUp",
     subcategories: [],
   },
 ];
 
-export const DEFAULT_EMERGENCY_FUND: EmergencyFund = {
-  targetAmount: 0,
-  currentAmount: 0,
-  contributions: [],
-};
+export const DEFAULT_EMERGENCY_RESERVES: EmergencyReserve[] = [
+  {
+    id: "reserva-default",
+    name: "Reserva de Emergência",
+    targetAmount: 0,
+    currentAmount: 0,
+    contributions: [],
+    pinnedToDashboard: false,
+  },
+];
 
 export const DEFAULT_GOALS: FinancialGoal[] = [
   {
@@ -124,5 +125,6 @@ export const DEFAULT_GOALS: FinancialGoal[] = [
     currentAmount: 0,
     deadline: undefined,
     contributions: [],
+    pinnedToDashboard: false,
   },
 ];
