@@ -151,6 +151,7 @@ const Index = () => {
               goals={data.financialGoals}
               onUnpinReserve={toggleReservePin}
               onUnpinGoal={toggleGoalPin}
+              onNavigateToReserva={() => handleCategoryClick("reserva_investimentos")}
             />
 
             <div className="space-y-3">
