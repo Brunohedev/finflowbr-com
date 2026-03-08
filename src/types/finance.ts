@@ -113,7 +113,7 @@ export const DEFAULT_EMERGENCY_RESERVES: EmergencyReserve[] = [
     targetAmount: 0,
     currentAmount: 0,
     contributions: [],
-    pinnedToDashboard: false,
+    pinnedToDashboard: true,
   },
 ];
 
@@ -125,6 +125,6 @@ export const DEFAULT_GOALS: FinancialGoal[] = [
     currentAmount: 0,
     deadline: undefined,
     contributions: [],
-    pinnedToDashboard: false,
+    pinnedToDashboard: true,
   },
 ];
