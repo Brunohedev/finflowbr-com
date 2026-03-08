@@ -15,7 +15,6 @@ const COLORS = [
   "hsl(158, 64%, 40%)",
   "hsl(42, 90%, 55%)",
   "hsl(250, 60%, 60%)",
-  "hsl(200, 70%, 50%)",
 ];
 
 const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewProps) => {

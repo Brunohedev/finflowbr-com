@@ -21,7 +21,7 @@ interface ExpenseDialogProps {
 
 const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAdd }: ExpenseDialogProps) => {
   // Only show expense categories (not reserva/investimentos)
-  const expenseCategories = categories.filter((c) => c.id !== "reserva" && c.id !== "investimentos");
+  const expenseCategories = categories.filter((c) => c.id !== "reserva_investimentos");
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");

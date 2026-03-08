@@ -13,10 +13,10 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
   const [step, setStep] = useState(0);
   const [income, setIncome] = useState("");
   const [percentages, setPercentages] = useState<Percentages>({
-    essenciais: 50, desejos: 30, reserva: 10, investimentos: 10,
+    essenciais: 50, desejos: 30, reserva_investimentos: 20,
   });
 
-  const total = percentages.essenciais + percentages.desejos + percentages.reserva + percentages.investimentos;
+  const total = percentages.essenciais + percentages.desejos + percentages.reserva_investimentos;
   const isValidTotal = total === 100;
   const incomeValue = parseFloat(income.replace(/[^\d.,]/g, "").replace(",", "."));
 
@@ -65,8 +65,7 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
   const sliders = [
     { key: "essenciais" as const, label: "Essenciais", emoji: "🏠" },
     { key: "desejos" as const, label: "Desejos", emoji: "💜" },
-    { key: "reserva" as const, label: "Reserva", emoji: "🛡️" },
-    { key: "investimentos" as const, label: "Investimentos", emoji: "📈" },
+    { key: "reserva_investimentos" as const, label: "Reserva / Investimentos", emoji: "🛡️" },
   ];
 
   return (
