@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Category, Expense, EmergencyReserve, Investment } from "@/types/finance";
+import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Shield, TrendingUp, Trophy, Target } from "lucide-react";
+import { Plus, Shield, TrendingUp, Trophy, Target, PiggyBank } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -12,10 +12,12 @@ interface CategoryCardProps {
   onClick: () => void;
   onAddExpense?: (categoryId: string) => void;
   onAddInvestment?: (name: string, amount: number, note?: string) => void;
+  onAddReserveContribution?: (reserveId: string, amount: number, note?: string) => void;
   onUpdateReserveTarget?: (newTarget: number) => void;
   reserveTotal?: number;
   reserveTarget?: number;
   investmentTotal?: number;
+  firstReserveId?: string;
 }
 
 const formatCurrency = (value: number) =>
@@ -23,11 +25,18 @@ const formatCurrency = (value: number) =>
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
-const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment, onUpdateReserveTarget, reserveTotal = 0, reserveTarget = 0, investmentTotal = 0 }: CategoryCardProps) => {
-  const [showAddValue, setShowAddValue] = useState(false);
+type AddMode = null | "reserve" | "investment";
+
+const CategoryCard = ({
+  category, budget, spent, onClick, onAddExpense, onAddInvestment,
+  onAddReserveContribution, onUpdateReserveTarget,
+  reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId
+}: CategoryCardProps) => {
+  const [addMode, setAddMode] = useState<AddMode>(null);
   const [addAmount, setAddAmount] = useState("");
   const [addNote, setAddNote] = useState("");
   const [customTarget, setCustomTarget] = useState("");
+
   const remaining = budget - spent;
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
@@ -49,6 +58,22 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
   const reservePct = reserveTarget > 0 ? Math.min((reserveTotal / reserveTarget) * 100, 100) : 0;
   const reserveGoalReached = reserveTarget > 0 && reserveTotal >= reserveTarget;
   const suggestedNewTarget = reserveTarget > 0 ? reserveTarget * 2 : reserveTotal * 2;
+
+  const handleAddReserve = () => {
+    const val = parseNum(addAmount);
+    if (val > 0 && onAddReserveContribution && firstReserveId) {
+      onAddReserveContribution(firstReserveId, val, addNote.trim() || undefined);
+      setAddAmount(""); setAddNote(""); setAddMode(null);
+    }
+  };
+
+  const handleAddInvestment = () => {
+    const val = parseNum(addAmount);
+    if (val > 0 && onAddInvestment) {
+      onAddInvestment("Investimento", val, addNote.trim() || undefined);
+      setAddAmount(""); setAddNote(""); setAddMode(null);
+    }
+  };
 
   return (
     <div className="finance-card w-full text-left group">
@@ -88,7 +113,7 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
 
         {isReserva && (
           <div className="space-y-3">
-            {/* Reserva bar */}
+            {/* Reserva section */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 {reserveGoalReached ? <Trophy className="w-3 h-3 text-[hsl(217,91%,60%)]" /> : <Shield className="w-3 h-3 text-[hsl(217,91%,60%)]" />}
@@ -104,53 +129,38 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
               </div>
             </div>
 
-            {/* Goal reached - suggest new target */}
+            {/* Goal reached suggestion */}
             {reserveGoalReached && onUpdateReserveTarget && (
               <div className="bg-[hsl(217,91%,60%)]/10 rounded-lg p-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
                 <p className="text-[11px] text-[hsl(217,91%,60%)] font-medium">Continue sua jornada! Nova meta sugerida:</p>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1 h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
-                    onClick={() => onUpdateReserveTarget(suggestedNewTarget)}
-                  >
-                    <Target className="w-3 h-3 mr-1" /> {formatCurrency(suggestedNewTarget)}
-                  </Button>
-                </div>
+                <Button size="sm" className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
+                  onClick={() => onUpdateReserveTarget(suggestedNewTarget)}>
+                  <Target className="w-3 h-3 mr-1" /> {formatCurrency(suggestedNewTarget)}
+                </Button>
               </div>
             )}
 
-            {/* Set initial target if none */}
+            {/* Set initial target */}
             {!reserveTarget && onUpdateReserveTarget && (
               <div className="space-y-2 mt-1" onClick={(e) => e.stopPropagation()}>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
-                  <Input
-                    placeholder="Definir meta..."
-                    value={customTarget}
-                    onChange={(e) => setCustomTarget(e.target.value)}
-                    className="h-7 text-xs pl-9"
-                    inputMode="decimal"
-                  />
+                  <Input placeholder="Definir meta..." value={customTarget} onChange={(e) => setCustomTarget(e.target.value)}
+                    className="h-7 text-xs pl-9" inputMode="decimal" />
                 </div>
                 {parseNum(customTarget) > 0 && (
-                  <Button
-                    size="sm"
-                    className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
-                    onClick={() => {
-                      onUpdateReserveTarget(parseNum(customTarget));
-                      setCustomTarget("");
-                    }}
-                  >
+                  <Button size="sm" className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
+                    onClick={() => { onUpdateReserveTarget(parseNum(customTarget)); setCustomTarget(""); }}>
                     <Target className="w-3 h-3 mr-1" /> Definir meta
                   </Button>
                 )}
               </div>
             )}
 
+            {/* Investimentos section */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 text-accent" />
+                <TrendingUp className="w-3 h-3 text-accent-foreground" />
                 <span className="text-xs font-medium">Investimentos</span>
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
@@ -164,52 +174,89 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
           </div>
         )}
       </button>
+
+      {/* Regular category: add expense */}
       {showAddExpense && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full mt-3 h-8 text-xs gap-1"
-          onClick={(e) => { e.stopPropagation(); onAddExpense(category.id); }}
-        >
+        <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1"
+          onClick={(e) => { e.stopPropagation(); onAddExpense(category.id); }}>
           <Plus className="w-3 h-3" /> Nova despesa
         </Button>
       )}
-      {isReserva && onAddInvestment && (
-        showAddValue ? (
-          <div className="space-y-2 mt-3" onClick={(e) => e.stopPropagation()}>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
-              <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
-            </div>
-            <Input placeholder="Descrição (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)} className="h-8 text-xs" />
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="flex-1 h-8 text-xs"
-                disabled={parseNum(addAmount) <= 0}
-                onClick={() => {
-                  const val = parseNum(addAmount);
-                  if (val > 0) {
-                    onAddInvestment("Aporte geral", val, addNote.trim() || undefined);
-                    setAddAmount(""); setAddNote(""); setShowAddValue(false);
-                  }
-                }}
-              >
-                Adicionar
-              </Button>
-              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setShowAddValue(false)}>Cancelar</Button>
-            </div>
+
+      {/* Reserva / Investimentos: two action buttons */}
+      {isReserva && (onAddReserveContribution || onAddInvestment) && addMode === null && (
+        <div className="grid grid-cols-2 gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+          {onAddReserveContribution && firstReserveId && (
+            <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-col py-1"
+              onClick={() => setAddMode("reserve")}>
+              <PiggyBank className="w-4 h-4 text-[hsl(217,91%,60%)]" />
+              <span>Adicionar à Reserva</span>
+            </Button>
+          )}
+          {onAddInvestment && (
+            <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-col py-1"
+              onClick={() => setAddMode("investment")}>
+              <TrendingUp className="w-4 h-4 text-accent-foreground" />
+              <span>Adicionar aos Investimentos</span>
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Add to Reserva form */}
+      {isReserva && addMode === "reserve" && (
+        <div className="space-y-2 mt-3 p-3 rounded-lg bg-[hsl(217,91%,60%)]/5 border border-[hsl(217,91%,60%)]/20"
+          onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2 mb-2">
+            <PiggyBank className="w-4 h-4 text-[hsl(217,91%,60%)]" />
+            <span className="text-xs font-semibold">Adicionar à Reserva</span>
           </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mt-3 h-8 text-xs gap-1"
-            onClick={(e) => { e.stopPropagation(); setShowAddValue(true); }}
-          >
-            <Plus className="w-3 h-3" /> Adicionar valor
-          </Button>
-        )
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+            <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
+              className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
+          </div>
+          <Input placeholder="Nota (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)}
+            className="h-8 text-xs" />
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1 h-8 text-xs bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
+              disabled={parseNum(addAmount) <= 0} onClick={handleAddReserve}>
+              Confirmar
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 text-xs"
+              onClick={() => { setAddMode(null); setAddAmount(""); setAddNote(""); }}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Add to Investimentos form */}
+      {isReserva && addMode === "investment" && (
+        <div className="space-y-2 mt-3 p-3 rounded-lg bg-accent/5 border border-accent/20"
+          onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-accent-foreground" />
+            <span className="text-xs font-semibold">Adicionar aos Investimentos</span>
+          </div>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+            <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
+              className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
+          </div>
+          <Input placeholder="Nota (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)}
+            className="h-8 text-xs" />
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1 h-8 text-xs"
+              disabled={parseNum(addAmount) <= 0} onClick={handleAddInvestment}>
+              Confirmar
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 text-xs"
+              onClick={() => { setAddMode(null); setAddAmount(""); setAddNote(""); }}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -246,6 +246,7 @@ const Index = () => {
                   onClick={() => handleCategoryClick(cat.id)}
                   onAddExpense={handleAddExpenseFromCategory}
                   onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
+                  onAddReserveContribution={cat.id === "reserva_investimentos" ? addReserveContribution : undefined}
                   onUpdateReserveTarget={cat.id === "reserva_investimentos" ? (newTarget: number) => {
                     const firstReserve = data.emergencyReserves[0];
                     if (firstReserve) updateEmergencyReserve(firstReserve.id, { targetAmount: newTarget });
@@ -253,6 +254,7 @@ const Index = () => {
                   reserveTotal={cat.id === "reserva_investimentos" ? reserveTotal : undefined}
                   reserveTarget={cat.id === "reserva_investimentos" ? reserveTarget : undefined}
                   investmentTotal={cat.id === "reserva_investimentos" ? investmentTotal : undefined}
+                  firstReserveId={cat.id === "reserva_investimentos" ? data.emergencyReserves[0]?.id : undefined}
                 />
               ))}
             </div>
