@@ -111,7 +111,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <PiggyBank className="w-4 h-4 text-blue-500" />
+            <PiggyBank className="w-4 h-4 text-accent" />
             <p className="text-xs font-medium text-muted-foreground">RESERVAS</p>
           </div>
           <p className="text-lg font-bold font-heading">{formatCurrency(totalSaved)}</p>
@@ -119,7 +119,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
+            <TrendingUp className="w-4 h-4 text-primary" />
             <p className="text-xs font-medium text-muted-foreground">INVESTIMENTOS</p>
           </div>
           <p className="text-lg font-bold font-heading">{formatCurrency(totalInvestments)}</p>
@@ -127,7 +127,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-orange-500" />
+            <Target className="w-4 h-4 text-secondary-foreground" />
             <p className="text-xs font-medium text-muted-foreground">METAS ATIVAS</p>
           </div>
           <p className="text-lg font-bold font-heading">{activeGoals}</p>
@@ -135,7 +135,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <BarChart className="w-4 h-4 text-purple-500" />
+            <BarChart className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground">PROGRESSO</p>
           </div>
           <p className="text-lg font-bold font-heading">{formatCurrency(totalGoalProgress)}</p>
@@ -208,7 +208,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
               </div>
               <div>
                 <p className="text-muted-foreground">Lucro Total</p>
-                <p className="font-semibold text-green-600">{formatCurrency(finalBalance.totalProfit)}</p>
+                <p className="font-semibold text-primary">{formatCurrency(finalBalance.totalProfit)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Multiplicador</p>
