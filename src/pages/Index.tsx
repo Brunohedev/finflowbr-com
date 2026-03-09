@@ -12,6 +12,7 @@ import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
 import AdvancedDashboard from "@/components/AdvancedDashboard";
 import MonthlyCalendar from "@/components/MonthlyCalendar";
 import PinnedItems from "@/components/PinnedItems";
+import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import { Button } from "@/components/ui/button";
 import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, LineChart } from "lucide-react";
 import { format } from "date-fns";
@@ -232,6 +233,16 @@ const Index = () => {
               onUnpinReserve={toggleReservePin}
               onUnpinGoal={toggleGoalPin}
               onNavigateToReserva={() => handleCategoryClick("reserva_investimentos")}
+            />
+
+            {/* End of month prediction */}
+            <EndOfMonthPrediction
+              data={data}
+              monthlyIncome={monthlyIncome}
+              getSpentByCategory={getSpentByCategory}
+              onAddReserveContribution={addReserveContribution}
+              onAddInvestment={addInvestment}
+              firstReserveId={data.emergencyReserves[0]?.id}
             />
 
             {/* Categories */}
