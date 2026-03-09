@@ -56,7 +56,7 @@ export interface Investment {
   date: string;
 }
 
-export type IncomeFrequency = "daily" | "weekly" | "biweekly" | "monthly";
+export type IncomeFrequency = "daily" | "weekly" | "biweekly" | "monthly" | "once";
 
 export interface IncomeSource {
   id: string;
@@ -88,6 +88,7 @@ export const normalizeToMonthly = (amount: number, frequency: IncomeFrequency): 
     case "weekly": return amount * 4.33;
     case "biweekly": return amount * 2;
     case "monthly": return amount;
+    case "once": return amount;
   }
 };
 
@@ -97,6 +98,7 @@ export const normalizeToDaily = (amount: number, frequency: IncomeFrequency): nu
     case "weekly": return amount / 7;
     case "biweekly": return amount / 14;
     case "monthly": return amount / 30;
+    case "once": return amount / 30;
   }
 };
 

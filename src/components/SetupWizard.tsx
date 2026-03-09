@@ -11,7 +11,7 @@ interface SetupWizardProps {
 }
 
 const FREQ_LABELS: Record<IncomeFrequency, string> = {
-  daily: "Diário", weekly: "Semanal", biweekly: "Quinzenal", monthly: "Mensal",
+  daily: "Diário", weekly: "Semanal", biweekly: "Quinzenal", monthly: "Mensal", once: "Valor único",
 };
 
 const formatCurrency = (value: number) =>
@@ -75,7 +75,7 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
                 <div>
                   <p className="text-sm font-medium">{s.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatCurrency(s.amount)} {FREQ_LABELS[s.frequency].toLowerCase()} → {formatCurrency(normalizeToMonthly(s.amount, s.frequency))}/mês
+                    {formatCurrency(s.amount)} {s.frequency === "once" ? "(único)" : `${FREQ_LABELS[s.frequency].toLowerCase()} → ${formatCurrency(normalizeToMonthly(s.amount, s.frequency))}/mês`}
                   </p>
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => removeSource(s.id)}>
