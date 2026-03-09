@@ -307,6 +307,29 @@ export function useFinanceData(userId?: string) {
     setData((prev) => prev ? { ...prev, investments: prev.investments.filter((i) => i.id !== id) } : prev);
   }, []);
 
+  // Recurring Expenses
+  const addRecurringExpense = useCallback((name: string, amount: number, frequency: RecurringFrequency, categoryId: string, subcategoryId?: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const re: RecurringExpense = {
+        id: crypto.randomUUID(), name, amount, frequency, categoryId,
+        subcategoryId, nextDueDate: format(new Date(), "yyyy-MM-dd"), active: true,
+      };
+      return { ...prev, recurringExpenses: [...prev.recurringExpenses, re] };
+    });
+  }, []);
+
+  const deleteRecurringExpense = useCallback((id: string) => {
+    setData((prev) => prev ? { ...prev, recurringExpenses: prev.recurringExpenses.filter((r) => r.id !== id) } : prev);
+  }, []);
+
+  const toggleRecurringExpense = useCallback((id: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, recurringExpenses: prev.recurringExpenses.map((r) => r.id === id ? { ...r, active: !r.active } : r) };
+    });
+  }, []);
+
   const getSpentByCategory = useCallback(
     (categoryId: string) => {
       if (!data) return 0;
@@ -348,5 +371,6 @@ export function useFinanceData(userId?: string) {
     addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve, addReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
     addInvestment, deleteInvestment,
+    addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense,
   };
 }
