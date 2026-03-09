@@ -17,6 +17,7 @@ const FREQ_LABELS: Record<IncomeFrequency, string> = {
   weekly: "Semanal",
   biweekly: "Quinzenal",
   monthly: "Mensal",
+  once: "Valor único",
 };
 
 const fmt = (v: number) =>
@@ -44,7 +45,7 @@ const IncomeManager = ({ sources, onAdd, onDelete, compact }: IncomeManagerProps
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium truncate">{s.name}</p>
             <p className="text-xs text-muted-foreground">
-              {fmt(s.amount)} {FREQ_LABELS[s.frequency].toLowerCase()} → {fmt(normalizeToMonthly(s.amount, s.frequency))}/mês
+              {fmt(s.amount)} {s.frequency === "once" ? "(único)" : `${FREQ_LABELS[s.frequency].toLowerCase()} → ${fmt(normalizeToMonthly(s.amount, s.frequency))}/mês`}
             </p>
           </div>
           <Button
