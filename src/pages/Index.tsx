@@ -56,6 +56,13 @@ const Index = () => {
   const selectedCategory = data.categories.find((c) => c.id === selectedCategoryId);
   const currentMonth = format(new Date(), "MMMM yyyy", { locale: ptBR });
 
+  // Compute reserve & investment totals for the card
+  const reserveTotal = data.emergencyReserves.reduce((s, r) => s + r.currentAmount, 0);
+  const reserveTarget = data.emergencyReserves.reduce((s, r) => s + r.targetAmount, 0);
+  const investmentTotal = data.investments
+    .filter((i) => i.date.startsWith(data.currentMonth))
+    .reduce((s, i) => s + i.amount, 0);
+
   const handleCategoryClick = (catId: string) => {
     if (catId === "reserva_investimentos") {
       setView("reserva_investimentos");
