@@ -82,6 +82,44 @@ const ReservaInvestimentosView = ({
         </div>
       </div>
 
+      {/* ─── ADICIONAR VALOR RÁPIDO ─── */}
+      <div className="finance-card space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4 text-primary" />
+            <h3 className="font-heading font-semibold text-sm">Adicionar Valor</h3>
+          </div>
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowQuickAdd(!showQuickAdd)}>
+            {showQuickAdd ? "Cancelar" : <><Plus className="w-3.5 h-3.5" /> Novo</>}
+          </Button>
+        </div>
+        {showQuickAdd ? (
+          <div className="space-y-2 p-3 rounded-lg bg-secondary/50">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+              <Input placeholder="0,00" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)} className="h-9 text-sm pl-9" inputMode="decimal" autoFocus />
+            </div>
+            <Input placeholder="Descrição (opcional)" value={quickNote} onChange={(e) => setQuickNote(e.target.value)} className="h-9 text-sm" />
+            <Button
+              size="sm"
+              className="w-full h-9"
+              disabled={parseNum(quickAmount) <= 0}
+              onClick={() => {
+                const val = parseNum(quickAmount);
+                if (val > 0) {
+                  onAddInvestment("Aporte geral", val, quickNote.trim() || undefined);
+                  setQuickAmount(""); setQuickNote(""); setShowQuickAdd(false);
+                }
+              }}
+            >
+              Adicionar
+            </Button>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-2">Adicione qualquer valor sem limite</p>
+        )}
+      </div>
+
       {/* ─── RESERVA DE EMERGÊNCIA ─── */}
       <div className="finance-card space-y-3">
         <div className="flex items-center justify-between">
