@@ -219,6 +219,7 @@ const Index = () => {
                   expenses={data.expenses.filter((e) => e.categoryId === cat.id)}
                   onClick={() => handleCategoryClick(cat.id)}
                   onAddExpense={handleAddExpenseFromCategory}
+                  onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
                 />
               ))}
             </div>
