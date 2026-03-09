@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { Category, Expense } from "@/types/finance";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -7,12 +9,13 @@ interface CategoryCardProps {
   spent: number;
   expenses: Expense[];
   onClick: () => void;
+  onAddExpense?: (categoryId: string) => void;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-const CategoryCard = ({ category, budget, spent, onClick }: CategoryCardProps) => {
+const CategoryCard = ({ category, budget, spent, onClick, onAddExpense }: CategoryCardProps) => {
   const remaining = budget - spent;
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
@@ -28,38 +31,52 @@ const CategoryCard = ({ category, budget, spent, onClick }: CategoryCardProps) =
     reserva_investimentos: "🛡️",
   };
 
+  const showAddExpense = category.id !== "reserva_investimentos" && onAddExpense;
+
   return (
-    <button onClick={onClick} className="finance-card w-full text-left group cursor-pointer">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl">{emojis[category.id] || "📊"}</span>
-          <div>
-            <h3 className="font-semibold font-heading text-sm">{category.name}</h3>
-            <p className="text-xs text-muted-foreground">{category.percentage}% da renda</p>
+    <div className="finance-card w-full text-left group">
+      <button onClick={onClick} className="w-full text-left cursor-pointer">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">{emojis[category.id] || "📊"}</span>
+            <div>
+              <h3 className="font-semibold font-heading text-sm">{category.name}</h3>
+              <p className="text-xs text-muted-foreground">{category.percentage}% da renda</p>
+            </div>
           </div>
+          {percentage >= 80 && (
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color}/15 ${status.textColor}`}>
+              {status.label}
+            </span>
+          )}
         </div>
-        {percentage >= 80 && (
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color}/15 ${status.textColor}`}>
-            {status.label}
-          </span>
-        )}
-      </div>
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Usado: {formatCurrency(spent)}</span>
-          <span>Limite: {formatCurrency(budget)}</span>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Usado: {formatCurrency(spent)}</span>
+            <span>Limite: {formatCurrency(budget)}</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${status.color}`}
+              style={{ width: `${Math.min(percentage, 100)}%` }}
+            />
+          </div>
+          <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
+            {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
+          </p>
         </div>
-        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${status.color}`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
-          />
-        </div>
-        <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
-          {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
-        </p>
-      </div>
-    </button>
+      </button>
+      {showAddExpense && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full mt-3 h-8 text-xs gap-1"
+          onClick={(e) => { e.stopPropagation(); onAddExpense(category.id); }}
+        >
+          <Plus className="w-3 h-3" /> Nova despesa
+        </Button>
+      )}
+    </div>
   );
 };
 
