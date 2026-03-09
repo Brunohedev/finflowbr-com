@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useFinanceData } from "@/hooks/useFinanceData";
+import { useAuth } from "@/hooks/useAuth";
+import LoginScreen from "@/components/LoginScreen";
 import SetupWizard from "@/components/SetupWizard";
 import CategoryCard from "@/components/CategoryCard";
 import CategoryDetail from "@/components/CategoryDetail";
@@ -7,9 +9,10 @@ import ExpenseDialog from "@/components/ExpenseDialog";
 import AnalyticsView from "@/components/AnalyticsView";
 import SettingsDialog from "@/components/SettingsDialog";
 import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
+import MonthlyCalendar from "@/components/MonthlyCalendar";
 import PinnedItems from "@/components/PinnedItems";
 import { Button } from "@/components/ui/button";
-import { Plus, BarChart3, Settings, Wallet } from "lucide-react";
+import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
@@ -17,14 +20,17 @@ import { Percentages } from "@/types/finance";
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-type View = "dashboard" | "category" | "analytics" | "reserva_investimentos";
+type View = "dashboard" | "category" | "analytics" | "reserva_investimentos" | "calendar";
 
 const Index = () => {
+  const { user, isAuthenticated, login, register, logout } = useAuth();
   const {
-    data, isSetup, setupBudget, addExpense, deleteExpense,
+    data, isSetup, monthlyIncome, remainingToday, remainingMonth,
+    setupBudget, addExpense, deleteExpense,
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
+    addIncomeSource, deleteIncomeSource,
     addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve,
     addReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
@@ -34,7 +40,13 @@ const Index = () => {
   const [view, setView] = useState<View>("dashboard");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [expenseDefaultCategory, setExpenseDefaultCategory] = useState<string | undefined>();
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={login} onRegister={register} />;
+  }
 
   if (!isSetup || !data) {
     return <SetupWizard onComplete={setupBudget} />;
@@ -51,6 +63,11 @@ const Index = () => {
       setSelectedCategoryId(catId);
       setView("category");
     }
+  };
+
+  const handleAddExpenseFromCategory = (categoryId: string) => {
+    setExpenseDefaultCategory(categoryId);
+    setExpenseOpen(true);
   };
 
   const goBack = () => {
@@ -72,19 +89,31 @@ const Index = () => {
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Wallet className="w-4 h-4 text-primary" />
             </div>
-            <span className="font-heading font-bold text-lg">FinFlow</span>
+            <div>
+              <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
+              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.name}</p>}
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button
+              variant={view === "calendar" ? "secondary" : "ghost"}
+              size="icon" className="rounded-xl"
+              onClick={() => setView(view === "calendar" ? "dashboard" : "calendar")}
+            >
+              <CalendarDays className="w-4 h-4" />
+            </Button>
+            <Button
               variant={view === "analytics" ? "secondary" : "ghost"}
-              size="icon"
-              className="rounded-xl"
+              size="icon" className="rounded-xl"
               onClick={() => setView(view === "analytics" ? "dashboard" : "analytics")}
             >
               <BarChart3 className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -93,6 +122,8 @@ const Index = () => {
       <main className="max-w-lg mx-auto px-4 py-5">
         {view === "analytics" ? (
           <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} />
+        ) : view === "calendar" ? (
+          <MonthlyCalendar data={data} onBack={goBack} />
         ) : view === "reserva_investimentos" ? (
           <ReservaInvestimentosView
             budget={getBudget("reserva_investimentos")}
@@ -128,21 +159,44 @@ const Index = () => {
           />
         ) : (
           <div className="space-y-5 animate-in fade-in duration-300">
+            {/* Income & remaining summary */}
             <div className="text-center space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-widest">{currentMonth}</p>
-              <p className="text-3xl font-bold font-heading">{formatCurrency(data.income)}</p>
+              <p className="text-3xl font-bold font-heading">{formatCurrency(monthlyIncome)}</p>
               <p className="text-sm text-muted-foreground">
-                Utilizado: {formatCurrency(totalSpent)} · Restam: {formatCurrency(data.income - totalSpent)}
+                Utilizado: {formatCurrency(totalSpent)} · Restam: {formatCurrency(monthlyIncome - totalSpent)}
               </p>
             </div>
 
             <div className="h-2 rounded-full bg-secondary overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
-                  totalSpent / data.income >= 1 ? "bg-destructive" : totalSpent / data.income >= 0.8 ? "bg-warning" : "bg-primary"
+                  totalSpent / monthlyIncome >= 1 ? "bg-destructive" : totalSpent / monthlyIncome >= 0.8 ? "bg-warning" : "bg-primary"
                 }`}
-                style={{ width: `${Math.min((totalSpent / data.income) * 100, 100)}%` }}
+                style={{ width: `${Math.min((totalSpent / (monthlyIncome || 1)) * 100, 100)}%` }}
               />
+            </div>
+
+            {/* Remaining today / month cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="finance-card !p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  {remainingToday >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Restam Hoje</p>
+                </div>
+                <p className={`text-lg font-bold font-heading ${remainingToday >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {formatCurrency(remainingToday)}
+                </p>
+              </div>
+              <div className="finance-card !p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  {remainingMonth >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Restam no Mês</p>
+                </div>
+                <p className={`text-lg font-bold font-heading ${remainingMonth >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {formatCurrency(remainingMonth)}
+                </p>
+              </div>
             </div>
 
             {/* Pinned items */}
@@ -154,6 +208,7 @@ const Index = () => {
               onNavigateToReserva={() => handleCategoryClick("reserva_investimentos")}
             />
 
+            {/* Categories */}
             <div className="space-y-3">
               {data.categories.map((cat) => (
                 <CategoryCard
@@ -163,10 +218,12 @@ const Index = () => {
                   spent={getSpentByCategory(cat.id)}
                   expenses={data.expenses.filter((e) => e.categoryId === cat.id)}
                   onClick={() => handleCategoryClick(cat.id)}
+                  onAddExpense={handleAddExpenseFromCategory}
                 />
               ))}
             </div>
 
+            {/* Recent expenses */}
             {data.expenses.length > 0 && (
               <div className="finance-card">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Últimas Despesas</h3>
@@ -198,7 +255,7 @@ const Index = () => {
           <Button
             size="lg"
             className="rounded-full h-14 px-6 shadow-lg shadow-primary/25 font-semibold text-base"
-            onClick={() => setExpenseOpen(true)}
+            onClick={() => { setExpenseDefaultCategory(undefined); setExpenseOpen(true); }}
           >
             <Plus className="w-5 h-5 mr-2" /> Nova Despesa
           </Button>
@@ -209,16 +266,19 @@ const Index = () => {
         open={expenseOpen}
         onOpenChange={setExpenseOpen}
         categories={data.categories}
-        defaultCategoryId={selectedCategoryId || undefined}
+        defaultCategoryId={expenseDefaultCategory}
         onAdd={addExpense}
       />
 
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
-        income={data.income}
+        income={monthlyIncome}
+        incomeSources={data.incomeSources}
         percentages={pcts}
-        onSave={(income, p) => { updateIncome(income); updatePercentages(p); }}
+        onSave={(p) => { updatePercentages(p); }}
+        onAddIncome={addIncomeSource}
+        onDeleteIncome={deleteIncomeSource}
         onReset={resetMonth}
       />
     </div>

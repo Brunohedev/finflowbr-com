@@ -56,8 +56,18 @@ export interface Investment {
   date: string;
 }
 
+export type IncomeFrequency = "daily" | "weekly" | "biweekly" | "monthly";
+
+export interface IncomeSource {
+  id: string;
+  name: string;
+  amount: number;
+  frequency: IncomeFrequency;
+}
+
 export interface FinanceData {
-  income: number;
+  income: number; // kept for backwards compat, now derived from incomeSources
+  incomeSources: IncomeSource[];
   categories: Category[];
   expenses: Expense[];
   emergencyReserves: EmergencyReserve[];
@@ -71,6 +81,30 @@ export type Percentages = {
   desejos: number;
   reserva_investimentos: number;
 };
+
+export const normalizeToMonthly = (amount: number, frequency: IncomeFrequency): number => {
+  switch (frequency) {
+    case "daily": return amount * 30;
+    case "weekly": return amount * 4.33;
+    case "biweekly": return amount * 2;
+    case "monthly": return amount;
+  }
+};
+
+export const normalizeToDaily = (amount: number, frequency: IncomeFrequency): number => {
+  switch (frequency) {
+    case "daily": return amount;
+    case "weekly": return amount / 7;
+    case "biweekly": return amount / 14;
+    case "monthly": return amount / 30;
+  }
+};
+
+export const getTotalMonthlyIncome = (sources: IncomeSource[]): number =>
+  sources.reduce((sum, s) => sum + normalizeToMonthly(s.amount, s.frequency), 0);
+
+export const getTotalDailyIncome = (sources: IncomeSource[]): number =>
+  sources.reduce((sum, s) => sum + normalizeToDaily(s.amount, s.frequency), 0);
 
 export const DEFAULT_CATEGORIES: Category[] = [
   {
@@ -128,3 +162,12 @@ export const DEFAULT_GOALS: FinancialGoal[] = [
     pinnedToDashboard: true,
   },
 ];
+
+// Auth types (localStorage based)
+export interface UserAccount {
+  id: string;
+  email: string;
+  password: string; // In a real app, this would be hashed
+  name: string;
+  createdAt: string;
+}

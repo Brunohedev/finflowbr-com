@@ -2,17 +2,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Percentages } from "@/types/finance";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Percentages, IncomeSource, IncomeFrequency, getTotalMonthlyIncome } from "@/types/finance";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import IncomeManager from "@/components/IncomeManager";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   income: number;
+  incomeSources: IncomeSource[];
   percentages: Percentages;
-  onSave: (income: number, percentages: Percentages) => void;
+  onSave: (percentages: Percentages) => void;
+  onAddIncome: (name: string, amount: number, frequency: IncomeFrequency) => void;
+  onDeleteIncome: (id: string) => void;
   onReset: () => void;
 }
 
@@ -22,32 +24,33 @@ const LABELS: Record<keyof Percentages, string> = {
   reserva_investimentos: "Reserva / Investimentos",
 };
 
-const SettingsDialog = ({ open, onOpenChange, income, percentages, onSave, onReset }: SettingsDialogProps) => {
-  const [newIncome, setNewIncome] = useState(income.toString());
+const fmt = (v: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+const SettingsDialog = ({ open, onOpenChange, incomeSources, percentages, onSave, onAddIncome, onDeleteIncome, onReset }: SettingsDialogProps) => {
   const [pcts, setPcts] = useState(percentages);
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
+  const monthlyIncome = getTotalMonthlyIncome(incomeSources);
 
   const handleSave = () => {
-    const val = parseFloat(newIncome.replace(/[^\d.,]/g, "").replace(",", "."));
-    if (val > 0 && total === 100) {
-      onSave(val, pcts);
+    if (total === 100) {
+      onSave(pcts);
       onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading">Configurações</DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Renda Mensal</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
-              <Input value={newIncome} onChange={(e) => setNewIncome(e.target.value)} className="pl-10" />
-            </div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+              Fontes de Renda · <span className="text-foreground font-semibold">{fmt(monthlyIncome)}/mês</span>
+            </label>
+            <IncomeManager sources={incomeSources} onAdd={onAddIncome} onDelete={onDeleteIncome} compact />
           </div>
 
           {(Object.keys(LABELS) as (keyof Percentages)[]).map((key) => (
@@ -65,12 +68,8 @@ const SettingsDialog = ({ open, onOpenChange, income, percentages, onSave, onRes
           </p>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={onReset}>
-              Resetar Mês
-            </Button>
-            <Button className="flex-1 font-semibold" disabled={total !== 100} onClick={handleSave}>
-              Salvar
-            </Button>
+            <Button variant="outline" className="flex-1" onClick={onReset}>Resetar Mês</Button>
+            <Button className="flex-1 font-semibold" disabled={total !== 100} onClick={handleSave}>Salvar</Button>
           </div>
         </div>
       </DialogContent>
