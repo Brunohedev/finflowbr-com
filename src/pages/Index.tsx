@@ -235,6 +235,16 @@ const Index = () => {
               onNavigateToReserva={() => handleCategoryClick("reserva_investimentos")}
             />
 
+            {/* End of month prediction */}
+            <EndOfMonthPrediction
+              data={data}
+              monthlyIncome={monthlyIncome}
+              getSpentByCategory={getSpentByCategory}
+              onAddReserveContribution={addReserveContribution}
+              onAddInvestment={addInvestment}
+              firstReserveId={data.emergencyReserves[0]?.id}
+            />
+
             {/* Categories */}
             <div className="space-y-3">
             {data.categories.map((cat) => (
