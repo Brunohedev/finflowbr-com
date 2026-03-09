@@ -3,7 +3,7 @@ import { EmergencyReserve, FinancialGoal, Investment } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff, TrendingUp, Trophy, ArrowUpCircle } from "lucide-react";
 
 interface Props {
   budget: number;
@@ -113,6 +113,8 @@ const ReservaInvestimentosView = ({
 
         {emergencyReserves.map((reserve) => {
           const pct = reserve.targetAmount > 0 ? Math.min((reserve.currentAmount / reserve.targetAmount) * 100, 100) : 0;
+          const goalReached = reserve.targetAmount > 0 && reserve.currentAmount >= reserve.targetAmount;
+          const suggestedNewTarget = reserve.targetAmount > 0 ? reserve.targetAmount * 2 : reserve.currentAmount * 2;
           return (
             <div key={reserve.id} className="space-y-2 p-3 rounded-lg bg-secondary/30">
               <div className="flex items-start justify-between">
@@ -144,13 +146,43 @@ const ReservaInvestimentosView = ({
                 </div>
               </div>
 
+              {/* Blue progress bar - always visible */}
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${reserve.targetAmount > 0 ? pct : (reserve.currentAmount > 0 ? 100 : 0)}%`,
+                    backgroundColor: 'hsl(217, 91%, 60%)',
+                  }}
+                />
+              </div>
               {reserve.targetAmount > 0 && (
-                <>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
+                <p className="text-xs text-right font-medium" style={{ color: 'hsl(217, 91%, 60%)' }}>
+                  {pct.toFixed(0)}% completo
+                </p>
+              )}
+
+              {/* Goal reached - suggest continuing with new target */}
+              {goalReached && (
+                <div className="p-2.5 rounded-lg border space-y-2" style={{ backgroundColor: 'hsla(217, 91%, 60%, 0.1)', borderColor: 'hsla(217, 91%, 60%, 0.2)' }}>
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4" style={{ color: 'hsl(217, 91%, 60%)' }} />
+                    <p className="text-xs font-semibold" style={{ color: 'hsl(217, 91%, 60%)' }}>
+                      🎉 Meta atingida! Continue guardando!
+                    </p>
                   </div>
-                  <p className="text-xs text-right font-medium text-primary">{pct.toFixed(0)}% completo</p>
-                </>
+                  <p className="text-[11px] text-muted-foreground">
+                    Que tal uma nova meta de <strong>{fmt(suggestedNewTarget)}</strong>?
+                  </p>
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs w-full gap-1 text-white"
+                    style={{ backgroundColor: 'hsl(217, 91%, 60%)' }}
+                    onClick={() => onUpdateReserve(reserve.id, { targetAmount: suggestedNewTarget })}
+                  >
+                    <ArrowUpCircle className="w-3 h-3" /> Aceitar nova meta
+                  </Button>
+                </div>
               )}
 
               {reserveContribId === reserve.id ? (
