@@ -72,19 +72,9 @@ const ReservaInvestimentosView = ({
         <div>
           <h2 className="font-heading font-bold text-lg">Reserva / Investimentos</h2>
           <p className="text-xs text-muted-foreground">
-            Alocado: {fmt(budget)} · Usado: {fmt(spent)}
+         Usado este mês: {fmt(spent)}
           </p>
         </div>
-      </div>
-
-      {/* Budget progress */}
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${
-            spent / budget >= 1 ? "bg-destructive" : spent / budget >= 0.8 ? "bg-warning" : "bg-primary"
-          }`}
-          style={{ width: `${Math.min((spent / budget) * 100, 100)}%` }}
-        />
       </div>
 
       {/* ─── RESERVA DE EMERGÊNCIA ─── */}
