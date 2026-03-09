@@ -94,11 +94,9 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
                 <span>{formatCurrency(reserveTotal)}</span>
                 <span>{reserveTarget > 0 ? `Meta: ${formatCurrency(reserveTarget)}` : "Sem meta"}</span>
               </div>
-              {reserveTarget > 0 && (
-                <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${reservePct}%` }} />
-                </div>
-              )}
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${reserveTarget > 0 ? reservePct : (reserveTotal > 0 ? 100 : 0)}%` }} />
+              </div>
             </div>
 
             {/* Investimentos bar */}
