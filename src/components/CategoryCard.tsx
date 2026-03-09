@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
 interface CategoryCardProps {
@@ -10,12 +11,18 @@ interface CategoryCardProps {
   expenses: Expense[];
   onClick: () => void;
   onAddExpense?: (categoryId: string) => void;
+  onAddInvestment?: (name: string, amount: number, note?: string) => void;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-const CategoryCard = ({ category, budget, spent, onClick, onAddExpense }: CategoryCardProps) => {
+const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
+
+const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment }: CategoryCardProps) => {
+  const [showAddValue, setShowAddValue] = useState(false);
+  const [addAmount, setAddAmount] = useState("");
+  const [addNote, setAddNote] = useState("");
   const remaining = budget - spent;
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
@@ -32,6 +39,7 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense }: Catego
   };
 
   const showAddExpense = category.id !== "reserva_investimentos" && onAddExpense;
+  const isReserva = category.id === "reserva_investimentos";
 
   return (
     <div className="finance-card w-full text-left group">
@@ -53,17 +61,21 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense }: Catego
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Usado: {formatCurrency(spent)}</span>
-            <span>Limite: {formatCurrency(budget)}</span>
+            {!isReserva && <span>Limite: {formatCurrency(budget)}</span>}
           </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${status.color}`}
-              style={{ width: `${Math.min(percentage, 100)}%` }}
-            />
-          </div>
-          <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
-            {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
-          </p>
+          {!isReserva && (
+            <>
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${status.color}`}
+                  style={{ width: `${Math.min(percentage, 100)}%` }}
+                />
+              </div>
+              <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
+                {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
+              </p>
+            </>
+          )}
         </div>
       </button>
       {showAddExpense && (
@@ -76,8 +88,44 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense }: Catego
           <Plus className="w-3 h-3" /> Nova despesa
         </Button>
       )}
+      {isReserva && onAddInvestment && (
+        showAddValue ? (
+          <div className="space-y-2 mt-3" onClick={(e) => e.stopPropagation()}>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+              <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
+            </div>
+            <Input placeholder="Descrição (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)} className="h-8 text-xs" />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="flex-1 h-8 text-xs"
+                disabled={parseNum(addAmount) <= 0}
+                onClick={() => {
+                  const val = parseNum(addAmount);
+                  if (val > 0) {
+                    onAddInvestment("Aporte geral", val, addNote.trim() || undefined);
+                    setAddAmount(""); setAddNote(""); setShowAddValue(false);
+                  }
+                }}
+              >
+                Adicionar
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setShowAddValue(false)}>Cancelar</Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-3 h-8 text-xs gap-1"
+            onClick={(e) => { e.stopPropagation(); setShowAddValue(true); }}
+          >
+            <Plus className="w-3 h-3" /> Adicionar valor
+          </Button>
+        )
+      )}
     </div>
-  );
 };
 
 export default CategoryCard;
