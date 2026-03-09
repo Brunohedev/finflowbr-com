@@ -33,11 +33,24 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
   const isValidTotal = total === 100;
   const totalMonthly = getTotalMonthlyIncome(sources);
 
+  const pendingValid = newName.trim() && parseNum(newAmount) > 0;
+
   const addSource = () => {
     const val = parseNum(newAmount);
     if (!newName.trim() || val <= 0) return;
     setSources([...sources, { id: crypto.randomUUID(), name: newName.trim(), amount: val, frequency: newFreq }]);
     setNewName(""); setNewAmount(""); setNewFreq("monthly");
+  };
+
+  const canContinue = sources.length > 0 || pendingValid;
+
+  const handleContinue = () => {
+    let finalSources = [...sources];
+    if (pendingValid) {
+      finalSources.push({ id: crypto.randomUUID(), name: newName.trim(), amount: parseNum(newAmount), frequency: newFreq });
+    }
+    setSources(finalSources);
+    setStep(1);
   };
 
   const removeSource = (id: string) => setSources(sources.filter((s) => s.id !== id));
