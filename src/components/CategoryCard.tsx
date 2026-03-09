@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Category, Expense } from "@/types/finance";
+import { Category, Expense, EmergencyReserve, Investment } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Plus, Shield, TrendingUp } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -12,6 +12,9 @@ interface CategoryCardProps {
   onClick: () => void;
   onAddExpense?: (categoryId: string) => void;
   onAddInvestment?: (name: string, amount: number, note?: string) => void;
+  reserveTotal?: number;
+  reserveTarget?: number;
+  investmentTotal?: number;
 }
 
 const formatCurrency = (value: number) =>
@@ -19,7 +22,7 @@ const formatCurrency = (value: number) =>
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
-const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment }: CategoryCardProps) => {
+const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment, reserveTotal = 0, reserveTarget = 0, investmentTotal = 0 }: CategoryCardProps) => {
   const [showAddValue, setShowAddValue] = useState(false);
   const [addAmount, setAddAmount] = useState("");
   const [addNote, setAddNote] = useState("");
@@ -41,6 +44,8 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
   const showAddExpense = category.id !== "reserva_investimentos" && onAddExpense;
   const isReserva = category.id === "reserva_investimentos";
 
+  const reservePct = reserveTarget > 0 ? Math.min((reserveTotal / reserveTarget) * 100, 100) : 0;
+
   return (
     <div className="finance-card w-full text-left group">
       <button onClick={onClick} className="w-full text-left cursor-pointer">
@@ -52,31 +57,66 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
               <p className="text-xs text-muted-foreground">{category.percentage}% da renda</p>
             </div>
           </div>
-          {percentage >= 80 && (
+          {!isReserva && percentage >= 80 && (
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color}/15 ${status.textColor}`}>
               {status.label}
             </span>
           )}
         </div>
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Usado: {formatCurrency(spent)}</span>
-            {!isReserva && <span>Limite: {formatCurrency(budget)}</span>}
+
+        {!isReserva && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Usado: {formatCurrency(spent)}</span>
+              <span>Limite: {formatCurrency(budget)}</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${status.color}`}
+                style={{ width: `${Math.min(percentage, 100)}%` }}
+              />
+            </div>
+            <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
+              {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
+            </p>
           </div>
-          {!isReserva && (
-            <>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${status.color}`}
-                  style={{ width: `${Math.min(percentage, 100)}%` }}
-                />
+        )}
+
+        {isReserva && (
+          <div className="space-y-3">
+            {/* Reserva bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Shield className="w-3 h-3 text-primary" />
+                <span className="text-xs font-medium">Reserva</span>
               </div>
-              <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
-                {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
-              </p>
-            </>
-          )}
-        </div>
+              <div className="flex justify-between text-[11px] text-muted-foreground">
+                <span>{formatCurrency(reserveTotal)}</span>
+                <span>{reserveTarget > 0 ? `Meta: ${formatCurrency(reserveTarget)}` : "Sem meta"}</span>
+              </div>
+              {reserveTarget > 0 && (
+                <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                  <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${reservePct}%` }} />
+                </div>
+              )}
+            </div>
+
+            {/* Investimentos bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3 text-accent" />
+                <span className="text-xs font-medium">Investimentos</span>
+              </div>
+              <div className="flex justify-between text-[11px] text-muted-foreground">
+                <span>{formatCurrency(investmentTotal)}</span>
+                <span>este mês</span>
+              </div>
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${investmentTotal > 0 ? 100 : 0}%` }} />
+              </div>
+            </div>
+          </div>
+        )}
       </button>
       {showAddExpense && (
         <Button
