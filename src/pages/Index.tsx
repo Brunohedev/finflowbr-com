@@ -35,7 +35,7 @@ const Index = () => {
     addReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
     addInvestment, deleteInvestment,
-  } = useFinanceData();
+  } = useFinanceData(user?.id);
 
   const [view, setView] = useState<View>("dashboard");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
