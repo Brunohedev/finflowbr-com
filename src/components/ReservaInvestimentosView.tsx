@@ -3,7 +3,7 @@ import { EmergencyReserve, FinancialGoal, Investment } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff, TrendingUp, Trophy, ArrowUpCircle } from "lucide-react";
 
 interface Props {
   budget: number;
