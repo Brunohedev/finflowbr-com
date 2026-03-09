@@ -10,8 +10,8 @@ import { format } from "date-fns";
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
 
-const getInitialData = (): FinanceData | null => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+const getInitialData = (userId?: string): FinanceData | null => {
+  const stored = localStorage.getItem(getStorageKey(userId));
   if (!stored) return null;
   try {
     const data = JSON.parse(stored) as any;
@@ -68,16 +68,20 @@ const getInitialData = (): FinanceData | null => {
   }
 };
 
-export function useFinanceData() {
-  const [data, setData] = useState<FinanceData | null>(getInitialData);
+export function useFinanceData(userId?: string) {
+  const [data, setData] = useState<FinanceData | null>(() => getInitialData(userId));
+
+  // Reset data when userId changes (account switch)
+  useEffect(() => {
+    setData(getInitialData(userId));
+  }, [userId]);
 
   useEffect(() => {
     if (data) {
-      // Keep income in sync with incomeSources
       const synced = { ...data, income: getTotalMonthlyIncome(data.incomeSources) };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
+      localStorage.setItem(getStorageKey(userId), JSON.stringify(synced));
     }
-  }, [data]);
+  }, [data, userId]);
 
   const monthlyIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
   const dailyIncome = useMemo(() => data ? getTotalDailyIncome(data.incomeSources) : 0, [data]);
