@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Category, Expense, EmergencyReserve, Investment } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Shield, TrendingUp } from "lucide-react";
+import { Plus, Shield, TrendingUp, Trophy, Target } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -12,6 +12,7 @@ interface CategoryCardProps {
   onClick: () => void;
   onAddExpense?: (categoryId: string) => void;
   onAddInvestment?: (name: string, amount: number, note?: string) => void;
+  onUpdateReserveTarget?: (newTarget: number) => void;
   reserveTotal?: number;
   reserveTarget?: number;
   investmentTotal?: number;
@@ -22,10 +23,11 @@ const formatCurrency = (value: number) =>
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
-const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment, reserveTotal = 0, reserveTarget = 0, investmentTotal = 0 }: CategoryCardProps) => {
+const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInvestment, onUpdateReserveTarget, reserveTotal = 0, reserveTarget = 0, investmentTotal = 0 }: CategoryCardProps) => {
   const [showAddValue, setShowAddValue] = useState(false);
   const [addAmount, setAddAmount] = useState("");
   const [addNote, setAddNote] = useState("");
+  const [customTarget, setCustomTarget] = useState("");
   const remaining = budget - spent;
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
@@ -45,6 +47,8 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
   const isReserva = category.id === "reserva_investimentos";
 
   const reservePct = reserveTarget > 0 ? Math.min((reserveTotal / reserveTarget) * 100, 100) : 0;
+  const reserveGoalReached = reserveTarget > 0 && reserveTotal >= reserveTarget;
+  const suggestedNewTarget = reserveTarget > 0 ? reserveTarget * 2 : reserveTotal * 2;
 
   return (
     <div className="finance-card w-full text-left group">
@@ -87,15 +91,16 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
             {/* Reserva bar */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <Shield className="w-3 h-3 text-primary" />
+                {reserveGoalReached ? <Trophy className="w-3 h-3 text-[hsl(217,91%,60%)]" /> : <Shield className="w-3 h-3 text-[hsl(217,91%,60%)]" />}
                 <span className="text-xs font-medium">Reserva</span>
+                {reserveGoalReached && <span className="text-[9px] font-bold text-[hsl(217,91%,60%)] bg-[hsl(217,91%,60%)]/10 px-1.5 py-0.5 rounded-full">Meta atingida! 🎉</span>}
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>{formatCurrency(reserveTotal)}</span>
                 <span>{reserveTarget > 0 ? `Meta: ${formatCurrency(reserveTarget)}` : "Sem meta"}</span>
               </div>
               <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${reserveTarget > 0 ? reservePct : (reserveTotal > 0 ? 100 : 0)}%` }} />
+                <div className="h-full rounded-full bg-[hsl(217,91%,60%)] transition-all duration-500" style={{ width: `${reserveTarget > 0 ? reservePct : (reserveTotal > 0 ? 100 : 0)}%` }} />
               </div>
             </div>
 
