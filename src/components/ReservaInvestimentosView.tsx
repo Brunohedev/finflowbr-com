@@ -60,6 +60,11 @@ const ReservaInvestimentosView = ({
   const [invAmount, setInvAmount] = useState("");
   const [invNote, setInvNote] = useState("");
 
+  // Quick add state
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAmount, setQuickAmount] = useState("");
+  const [quickNote, setQuickNote] = useState("");
+
   const monthInvestments = investments.filter((i) => i.date.startsWith(currentMonth));
 
   return (
