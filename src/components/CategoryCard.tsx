@@ -104,7 +104,50 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
               </div>
             </div>
 
-            {/* Investimentos bar */}
+            {/* Goal reached - suggest new target */}
+            {reserveGoalReached && onUpdateReserveTarget && (
+              <div className="bg-[hsl(217,91%,60%)]/10 rounded-lg p-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
+                <p className="text-[11px] text-[hsl(217,91%,60%)] font-medium">Continue sua jornada! Nova meta sugerida:</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
+                    onClick={() => onUpdateReserveTarget(suggestedNewTarget)}
+                  >
+                    <Target className="w-3 h-3 mr-1" /> {formatCurrency(suggestedNewTarget)}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Set initial target if none */}
+            {!reserveTarget && onUpdateReserveTarget && (
+              <div className="space-y-2 mt-1" onClick={(e) => e.stopPropagation()}>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+                  <Input
+                    placeholder="Definir meta..."
+                    value={customTarget}
+                    onChange={(e) => setCustomTarget(e.target.value)}
+                    className="h-7 text-xs pl-9"
+                    inputMode="decimal"
+                  />
+                </div>
+                {parseNum(customTarget) > 0 && (
+                  <Button
+                    size="sm"
+                    className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
+                    onClick={() => {
+                      onUpdateReserveTarget(parseNum(customTarget));
+                      setCustomTarget("");
+                    }}
+                  >
+                    <Target className="w-3 h-3 mr-1" /> Definir meta
+                  </Button>
+                )}
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="w-3 h-3 text-accent" />
