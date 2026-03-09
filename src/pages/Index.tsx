@@ -227,6 +227,9 @@ const Index = () => {
                   onClick={() => handleCategoryClick(cat.id)}
                   onAddExpense={handleAddExpenseFromCategory}
                   onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
+                  reserveTotal={cat.id === "reserva_investimentos" ? reserveTotal : undefined}
+                  reserveTarget={cat.id === "reserva_investimentos" ? reserveTarget : undefined}
+                  investmentTotal={cat.id === "reserva_investimentos" ? investmentTotal : undefined}
                 />
               ))}
             </div>
