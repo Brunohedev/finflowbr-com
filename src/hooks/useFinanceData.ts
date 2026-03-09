@@ -7,7 +7,7 @@ import {
 } from "@/types/finance";
 import { format } from "date-fns";
 
-const STORAGE_KEY = "finflow-data";
+const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
 
 const getInitialData = (): FinanceData | null => {
