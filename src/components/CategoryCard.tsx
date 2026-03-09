@@ -126,6 +126,7 @@ const CategoryCard = ({ category, budget, spent, onClick, onAddExpense, onAddInv
         )
       )}
     </div>
-);
+  );
+};
 
 export default CategoryCard;
