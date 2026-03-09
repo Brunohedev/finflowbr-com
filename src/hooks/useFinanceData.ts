@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   FinanceData, Expense, Percentages, Contribution,
   FinancialGoal, Investment, EmergencyReserve, IncomeSource, IncomeFrequency,
+  RecurringExpense, RecurringFrequency,
   DEFAULT_CATEGORIES, DEFAULT_EMERGENCY_RESERVES, DEFAULT_GOALS,
   getTotalMonthlyIncome, getTotalDailyIncome,
 } from "@/types/finance";
@@ -47,6 +48,7 @@ const getInitialData = (userId?: string): FinanceData | null => {
 
     if (!data.financialGoals) data.financialGoals = [...DEFAULT_GOALS];
     if (!data.investments) data.investments = [];
+    if (!data.recurringExpenses) data.recurringExpenses = [];
 
     // Migrate single income to incomeSources
     if (!data.incomeSources) {
@@ -115,6 +117,7 @@ export function useFinanceData(userId?: string) {
       incomeSources,
       categories,
       expenses: [],
+      recurringExpenses: [],
       emergencyReserves: DEFAULT_EMERGENCY_RESERVES.map((r) => ({ ...r, contributions: [] })),
       financialGoals: DEFAULT_GOALS.map((g) => ({ ...g, contributions: [] })),
       investments: [],
