@@ -138,7 +138,7 @@ const Index = () => {
         {view === "analytics" ? (
           <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} />
         ) : view === "advanced" ? (
-          <AdvancedDashboard data={data} getSpentByCategory={getSpentByCategory} onBack={goBack} />
+          <AdvancedDashboard data={data} onBack={goBack} />
         ) : view === "calendar" ? (
           <MonthlyCalendar data={data} onBack={goBack} />
         ) : view === "reserva_investimentos" ? (

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { LineChart, XAxis, YAxis, AreaChart, Area } from "recharts";
 import { ArrowLeft, TrendingUp, DollarSign, Target, PiggyBank, BarChart } from "lucide-react";
 import { FinanceData } from "@/types/finance";
 
@@ -13,7 +13,6 @@ const formatCurrency = (value: number) =>
 
 interface AdvancedDashboardProps {
   data: FinanceData;
-  getSpentByCategory: (categoryId: string) => number;
   onBack: () => void;
 }
 
@@ -25,7 +24,7 @@ interface SimulationData {
   totalProfit: number;
 }
 
-const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboardProps) => {
+const AdvancedDashboard = ({ data, onBack }: AdvancedDashboardProps) => {
   const [monthlyContribution, setMonthlyContribution] = useState(500);
   const [currentBalance, setCurrentBalance] = useState(0);
   const [annualReturn, setAnnualReturn] = useState(10);
@@ -83,7 +82,7 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
     },
     totalProfit: {
       label: "Lucro Acumulado",
-      color: "hsl(217, 91%, 60%)",
+      color: "hsl(var(--accent))",
     },
   };
 
@@ -271,8 +270,8 @@ const AdvancedDashboard = ({ data, getSpentByCategory, onBack }: AdvancedDashboa
                   type="monotone"
                   dataKey="totalProfit"
                   stackId="1"
-                  stroke="hsl(217, 91%, 60%)"
-                  fill="hsl(217, 91%, 60%)"
+                  stroke="hsl(var(--accent))"
+                  fill="hsl(var(--accent))"
                   fillOpacity={0.6}
                   name="Lucro Acumulado"
                 />
