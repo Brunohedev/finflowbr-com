@@ -12,6 +12,7 @@ import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
 import AdvancedDashboard from "@/components/AdvancedDashboard";
 import MonthlyCalendar from "@/components/MonthlyCalendar";
 import PinnedItems from "@/components/PinnedItems";
+import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import { Button } from "@/components/ui/button";
 import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, LineChart } from "lucide-react";
 import { format } from "date-fns";
