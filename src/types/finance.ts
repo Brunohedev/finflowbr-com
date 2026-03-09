@@ -56,6 +56,19 @@ export interface Investment {
   date: string;
 }
 
+export type RecurringFrequency = "weekly" | "monthly" | "yearly";
+
+export interface RecurringExpense {
+  id: string;
+  name: string;
+  amount: number;
+  frequency: RecurringFrequency;
+  categoryId: string;
+  subcategoryId?: string;
+  nextDueDate: string;
+  active: boolean;
+}
+
 export type IncomeFrequency = "daily" | "weekly" | "biweekly" | "monthly" | "once";
 
 export interface IncomeSource {
@@ -66,14 +79,15 @@ export interface IncomeSource {
 }
 
 export interface FinanceData {
-  income: number; // kept for backwards compat, now derived from incomeSources
+  income: number;
   incomeSources: IncomeSource[];
   categories: Category[];
   expenses: Expense[];
+  recurringExpenses: RecurringExpense[];
   emergencyReserves: EmergencyReserve[];
   financialGoals: FinancialGoal[];
   investments: Investment[];
-  currentMonth: string; // YYYY-MM
+  currentMonth: string;
 }
 
 export type Percentages = {
