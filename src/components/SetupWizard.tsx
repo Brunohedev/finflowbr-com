@@ -105,15 +105,17 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
               </Button>
             </div>
 
-            {sources.length > 0 && (
+            {(sources.length > 0 || pendingValid) && (
               <div className="text-center pt-2 border-t border-border">
                 <p className="text-xs text-muted-foreground">Renda mensal total</p>
-                <p className="text-2xl font-bold font-heading">{formatCurrency(totalMonthly)}</p>
+                <p className="text-2xl font-bold font-heading">{formatCurrency(
+                  totalMonthly + (pendingValid ? normalizeToMonthly(parseNum(newAmount), newFreq) : 0)
+                )}</p>
               </div>
             )}
           </div>
 
-          <Button className="w-full h-12 text-base font-semibold" disabled={sources.length === 0} onClick={() => setStep(1)}>
+          <Button className="w-full h-12 text-base font-semibold" disabled={!canContinue} onClick={handleContinue}>
             Continuar <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
