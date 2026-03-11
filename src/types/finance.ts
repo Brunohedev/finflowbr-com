@@ -12,6 +12,10 @@ export interface Expense {
   subcategoryId: string;
   date: string;
   note?: string;
+  status: "paid" | "pending";
+  installmentGroupId?: string;
+  installmentNumber?: number;
+  totalInstallments?: number;
 }
 
 export interface Category {

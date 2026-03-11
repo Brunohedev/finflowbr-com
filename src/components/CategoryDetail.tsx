@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Trash2, Plus, X, Check, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -13,6 +14,7 @@ interface CategoryDetailProps {
   getSpentBySubcategory: (id: string) => number;
   onBack: () => void;
   onDeleteExpense: (id: string) => void;
+  onToggleExpenseStatus: (id: string) => void;
   onAddSubcategory: (categoryId: string, name: string) => void;
   onDeleteSubcategory: (categoryId: string, subcategoryId: string) => void;
 }
@@ -20,9 +22,10 @@ interface CategoryDetailProps {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
+const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onToggleExpenseStatus, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
   const categoryExpenses = expenses.filter((e) => e.categoryId === category.id);
   const totalSpent = categoryExpenses.reduce((s, e) => s + e.amount, 0);
+  const pendingTotal = categoryExpenses.filter(e => e.status === "pending").reduce((s, e) => s + e.amount, 0);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -44,6 +47,9 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
           <h2 className="font-heading font-bold text-lg">{category.name}</h2>
           <p className="text-xs text-muted-foreground">
             {formatCurrency(totalSpent)} de {formatCurrency(budget)}
+            {pendingTotal > 0 && (
+              <span className="text-warning ml-1">· {formatCurrency(pendingTotal)} pendente</span>
+            )}
           </p>
         </div>
       </div>
@@ -111,7 +117,14 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
                 return (
                   <div key={expense.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{expense.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{expense.name}</p>
+                        {expense.totalInstallments && expense.totalInstallments > 1 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                            {expense.installmentNumber}/{expense.totalInstallments}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {sub?.name} · {format(parseISO(expense.date), "dd MMM", { locale: ptBR })}
                       </p>
@@ -119,6 +132,17 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <span className="text-sm font-semibold font-heading">{formatCurrency(expense.amount)}</span>
+                      <button
+                        onClick={() => onToggleExpenseStatus(expense.id)}
+                        className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+                          expense.status === "paid"
+                            ? "bg-primary/15 border-primary/30 text-primary"
+                            : "bg-warning/15 border-warning/30 text-warning"
+                        }`}
+                        title={expense.status === "paid" ? "Pago" : "Pendente"}
+                      >
+                        {expense.status === "paid" ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                      </button>
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onDeleteExpense(expense.id)}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>

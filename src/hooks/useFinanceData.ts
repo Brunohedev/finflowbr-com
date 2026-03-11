@@ -6,7 +6,7 @@ import {
   DEFAULT_CATEGORIES, DEFAULT_EMERGENCY_RESERVES, DEFAULT_GOALS,
   getTotalMonthlyIncome, getTotalDailyIncome,
 } from "@/types/finance";
-import { format } from "date-fns";
+import { format, addMonths, parseISO } from "date-fns";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
@@ -61,8 +61,13 @@ const getInitialData = (userId?: string): FinanceData | null => {
     data.emergencyReserves.forEach((r: any) => { if (r.pinnedToDashboard === undefined) r.pinnedToDashboard = false; });
     data.financialGoals.forEach((g: any) => { if (g.pinnedToDashboard === undefined) g.pinnedToDashboard = false; });
 
+    // Migrate expenses without status
+    if (data.expenses) {
+      data.expenses = data.expenses.map((e: any) => ({ ...e, status: e.status || "paid" }));
+    }
+
     if (data.currentMonth !== getCurrentMonth()) {
-      return { ...data, expenses: [], currentMonth: getCurrentMonth() } as FinanceData;
+      return { ...data, expenses: data.expenses || [], currentMonth: getCurrentMonth() } as FinanceData;
     }
     return data as FinanceData;
   } catch {
@@ -151,10 +156,51 @@ export function useFinanceData(userId?: string) {
     });
   }, []);
 
-  const addExpense = useCallback((expense: Omit<Expense, "id">) => {
+  const addExpense = useCallback((expense: Omit<Expense, "id"> & { installments?: number }) => {
     setData((prev) => {
       if (!prev) return prev;
-      return { ...prev, expenses: [...prev.expenses, { ...expense, id: crypto.randomUUID() }] };
+
+      const installmentCount = expense.installments && expense.installments > 1 ? expense.installments : 1;
+
+      if (installmentCount > 1) {
+        const groupId = crypto.randomUUID();
+        const installmentAmount = Math.round((expense.amount / installmentCount) * 100) / 100;
+        const startDate = parseISO(expense.date);
+        const newExpenses: Expense[] = [];
+
+        for (let i = 0; i < installmentCount; i++) {
+          const installmentDate = addMonths(startDate, i);
+          newExpenses.push({
+            id: crypto.randomUUID(),
+            name: expense.name,
+            amount: installmentAmount,
+            categoryId: expense.categoryId,
+            subcategoryId: expense.subcategoryId,
+            date: format(installmentDate, "yyyy-MM-dd"),
+            note: expense.note,
+            status: i === 0 ? expense.status : "pending",
+            installmentGroupId: groupId,
+            installmentNumber: i + 1,
+            totalInstallments: installmentCount,
+          });
+        }
+
+        return { ...prev, expenses: [...prev.expenses, ...newExpenses] };
+      }
+
+      return {
+        ...prev,
+        expenses: [...prev.expenses, {
+          id: crypto.randomUUID(),
+          name: expense.name,
+          amount: expense.amount,
+          categoryId: expense.categoryId,
+          subcategoryId: expense.subcategoryId,
+          date: expense.date,
+          note: expense.note,
+          status: expense.status || "paid",
+        }],
+      };
     });
   }, []);
 
@@ -162,6 +208,18 @@ export function useFinanceData(userId?: string) {
     setData((prev) => {
       if (!prev) return prev;
       return { ...prev, expenses: prev.expenses.filter((e) => e.id !== id) };
+    });
+  }, []);
+
+  const toggleExpenseStatus = useCallback((id: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        expenses: prev.expenses.map((e) =>
+          e.id === id ? { ...e, status: e.status === "paid" ? "pending" as const : "paid" as const } : e
+        ),
+      };
     });
   }, []);
 
@@ -364,7 +422,7 @@ export function useFinanceData(userId?: string) {
 
   return {
     data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth,
-    setupBudget, addExpense, deleteExpense, updatePercentages, updateIncome,
+    setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource, updateIncomeSource,
