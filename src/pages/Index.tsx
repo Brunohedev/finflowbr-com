@@ -13,9 +13,10 @@ import AdvancedDashboard from "@/components/AdvancedDashboard";
 import MonthlyCalendar from "@/components/MonthlyCalendar";
 import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
+import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import { Button } from "@/components/ui/button";
-import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, LineChart } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, LineChart, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
 
@@ -28,7 +29,7 @@ const Index = () => {
   const { user, isAuthenticated, login, register, logout } = useAuth();
   const {
     data, isSetup, monthlyIncome, remainingToday, remainingMonth,
-    setupBudget, addExpense, deleteExpense,
+    setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
@@ -45,6 +46,7 @@ const Index = () => {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [expenseDefaultCategory, setExpenseDefaultCategory] = useState<string | undefined>();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [displayMonth, setDisplayMonth] = useState(new Date());
 
   // Show login screen if not authenticated
   if (!isAuthenticated) {
@@ -57,7 +59,7 @@ const Index = () => {
 
   const totalSpent = data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
   const selectedCategory = data.categories.find((c) => c.id === selectedCategoryId);
-  const currentMonth = format(new Date(), "MMMM yyyy", { locale: ptBR });
+  const moneyLeft = monthlyIncome - totalSpent;
 
   // Compute reserve & investment totals for the card
   const reserveTotal = data.emergencyReserves.reduce((s, r) => s + r.currentAmount, 0);
@@ -90,6 +92,9 @@ const Index = () => {
     desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
     reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20,
   };
+
+  // Pending expenses count
+  const pendingCount = data.expenses.filter(e => e.status === "pending" && e.date.startsWith(data.currentMonth)).length;
 
   return (
     <div className="min-h-screen pb-24">
@@ -150,7 +155,11 @@ const Index = () => {
             onToggleRecurring={toggleRecurringExpense}
           />
         ) : view === "calendar" ? (
-          <MonthlyCalendar data={data} onBack={goBack} />
+          <MonthlyCalendar
+            data={data}
+            onBack={goBack}
+            onToggleExpenseStatus={toggleExpenseStatus}
+          />
         ) : view === "reserva_investimentos" ? (
           <ReservaInvestimentosView
             budget={getBudget("reserva_investimentos")}
@@ -181,18 +190,42 @@ const Index = () => {
             getSpentBySubcategory={getSpentBySubcategory}
             onBack={goBack}
             onDeleteExpense={deleteExpense}
+            onToggleExpenseStatus={toggleExpenseStatus}
             onAddSubcategory={addSubcategory}
             onDeleteSubcategory={deleteSubcategory}
           />
         ) : (
           <div className="space-y-5 animate-in fade-in duration-300">
-            {/* Income & remaining summary */}
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest">{currentMonth}</p>
-              <p className="text-3xl font-bold font-heading">{formatCurrency(monthlyIncome)}</p>
-              <p className="text-sm text-muted-foreground">
-                Utilizado: {formatCurrency(totalSpent)} · Restam: {formatCurrency(monthlyIncome - totalSpent)}
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8" onClick={() => setDisplayMonth(subMonths(displayMonth, 1))}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="font-heading font-semibold capitalize text-sm">
+                {format(displayMonth, "MMMM yyyy", { locale: ptBR })}
+              </span>
+              <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8" onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* 1️⃣ Money Left This Month — PRIMARY METRIC */}
+            <div className="finance-card text-center space-y-2">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Dinheiro Restante Este Mês</p>
+              <p className={`text-4xl font-bold font-heading ${moneyLeft >= 0 ? "text-primary" : "text-destructive"}`}>
+                {formatCurrency(moneyLeft)}
               </p>
+              <div className="flex items-center justify-center gap-1">
+                {moneyLeft >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
+                <p className="text-xs text-muted-foreground">
+                  Renda: {formatCurrency(monthlyIncome)} · Gastos: {formatCurrency(totalSpent)}
+                </p>
+              </div>
+              {pendingCount > 0 && (
+                <p className="text-[10px] text-warning">
+                  {pendingCount} despesa{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""}
+                </p>
+              )}
             </div>
 
             <div className="h-2 rounded-full bg-secondary overflow-hidden">
@@ -203,6 +236,43 @@ const Index = () => {
                 style={{ width: `${Math.min((totalSpent / (monthlyIncome || 1)) * 100, 100)}%` }}
               />
             </div>
+
+            {/* 2️⃣ Budget Allocation Overview */}
+            <div className="finance-card">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Alocação do Orçamento</h3>
+              <div className="space-y-3">
+                {data.categories.map((cat) => {
+                  const budget = getBudget(cat.id);
+                  const spent = getSpentByCategory(cat.id);
+                  const pct = budget > 0 ? (spent / budget) * 100 : 0;
+                  return (
+                    <div key={cat.id} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium">{cat.name} – {cat.percentage}% ({formatCurrency(budget)})</span>
+                        <span className={`font-medium ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning" : "text-primary"}`}>
+                          {formatCurrency(spent)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            pct >= 100 ? "bg-destructive" : pct >= 80 ? "bg-warning" : "bg-primary"
+                          }`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3️⃣ Financial Insights Banner */}
+            <FinancialInsightsBanner
+              data={data}
+              monthlyIncome={monthlyIncome}
+              getSpentByCategory={getSpentByCategory}
+            />
 
             {/* Remaining today / month cards */}
             <div className="grid grid-cols-2 gap-3">
@@ -283,7 +353,15 @@ const Index = () => {
                       return (
                         <div key={expense.id} className="flex items-center justify-between py-1.5">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{expense.name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-medium truncate">{expense.name}</p>
+                              {expense.totalInstallments && expense.totalInstallments > 1 && (
+                                <span className="text-[10px] text-muted-foreground shrink-0">
+                                  {expense.installmentNumber}/{expense.totalInstallments}
+                                </span>
+                              )}
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${expense.status === "paid" ? "bg-primary" : "bg-warning"}`} />
+                            </div>
                             <p className="text-xs text-muted-foreground">{cat?.name}</p>
                           </div>
                           <span className="text-sm font-semibold font-heading ml-3">{formatCurrency(expense.amount)}</span>

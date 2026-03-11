@@ -5,26 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
-  ArrowLeft, TrendingUp, TrendingDown, DollarSign, Target, PiggyBank, BarChart,
-  Plus, Trash2, RotateCcw, Lightbulb, CalendarClock, Clock, AlertTriangle, CheckCircle2
+  ArrowLeft, TrendingUp, DollarSign, Target, PiggyBank,
+  Lightbulb, CalendarClock, Clock, AlertTriangle, CheckCircle2
 } from "lucide-react";
 import { FinanceData, RecurringFrequency } from "@/types/finance";
-import { differenceInDays, parseISO, format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { differenceInDays, parseISO } from "date-fns";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-
-const frequencyLabels: Record<RecurringFrequency, string> = {
-  weekly: "Semanal",
-  monthly: "Mensal",
-  yearly: "Anual",
-};
 
 const frequencyToMonthly = (amount: number, freq: RecurringFrequency) => {
   switch (freq) {
@@ -53,19 +44,10 @@ const AdvancedDashboard = ({
   const [annualReturn, setAnnualReturn] = useState(10);
   const [timePeriod, setTimePeriod] = useState(10);
 
-  // New recurring expense form
-  const [newRecName, setNewRecName] = useState("");
-  const [newRecAmount, setNewRecAmount] = useState("");
-  const [newRecFreq, setNewRecFreq] = useState<RecurringFrequency>("monthly");
-  const [newRecCategory, setNewRecCategory] = useState("");
-
   // Financial metrics
   const totalSaved = data.emergencyReserves.reduce((s, r) => s + r.currentAmount, 0);
   const totalInvestments = data.investments.reduce((s, i) => s + i.amount, 0);
-  const activeGoals = data.financialGoals.length;
-  const totalGoalProgress = data.financialGoals.reduce((s, g) => s + g.currentAmount, 0);
 
-  // Recurring expenses monthly total
   const recurringMonthlyTotal = useMemo(() =>
     data.recurringExpenses.filter((r) => r.active).reduce((s, r) => s + frequencyToMonthly(r.amount, r.frequency), 0),
     [data.recurringExpenses]
@@ -136,14 +118,6 @@ const AdvancedDashboard = ({
     totalProfit: { label: "Lucro Acumulado", color: "hsl(var(--accent))" },
   };
 
-  const handleAddRecurring = () => {
-    if (!newRecName || !newRecAmount || !newRecCategory) return;
-    onAddRecurring(newRecName, Number(newRecAmount), newRecFreq, newRecCategory);
-    setNewRecName("");
-    setNewRecAmount("");
-    setNewRecCategory("");
-  };
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
@@ -157,7 +131,7 @@ const AdvancedDashboard = ({
         </div>
       </div>
 
-      {/* 1. Financial Overview */}
+      {/* Financial Overview */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -185,82 +159,11 @@ const AdvancedDashboard = ({
             <Target className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground">METAS ATIVAS</p>
           </div>
-          <p className="text-lg font-bold font-heading">{activeGoals}</p>
+          <p className="text-lg font-bold font-heading">{data.financialGoals.length}</p>
         </Card>
       </div>
 
-      {/* 5. Recurring Expenses Tracker */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <RotateCcw className="w-5 h-5 text-primary" />
-            Despesas Recorrentes
-          </CardTitle>
-          <CardDescription>
-            Total mensal: <strong>{formatCurrency(recurringMonthlyTotal)}</strong>
-            {monthlyIncome > 0 && (
-              <span className="text-muted-foreground"> ({((recurringMonthlyTotal / monthlyIncome) * 100).toFixed(0)}% da renda)</span>
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Add form */}
-          <div className="grid grid-cols-2 gap-2">
-            <Input placeholder="Nome (ex: Netflix)" value={newRecName} onChange={(e) => setNewRecName(e.target.value)} />
-            <Input placeholder="Valor" type="number" value={newRecAmount} onChange={(e) => setNewRecAmount(e.target.value)} />
-            <Select value={newRecFreq} onValueChange={(v) => setNewRecFreq(v as RecurringFrequency)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekly">Semanal</SelectItem>
-                <SelectItem value="monthly">Mensal</SelectItem>
-                <SelectItem value="yearly">Anual</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={newRecCategory} onValueChange={setNewRecCategory}>
-              <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
-              <SelectContent>
-                {data.categories.filter((c) => c.id !== "reserva_investimentos").map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button size="sm" onClick={handleAddRecurring} disabled={!newRecName || !newRecAmount || !newRecCategory}>
-            <Plus className="w-4 h-4 mr-1" /> Adicionar
-          </Button>
-
-          {/* List */}
-          <div className="space-y-2">
-            {data.recurringExpenses.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma despesa recorrente cadastrada</p>
-            )}
-            {data.recurringExpenses.map((rec) => (
-              <div key={rec.id} className={`flex items-center justify-between p-3 rounded-lg border ${rec.active ? "border-border" : "border-border/50 opacity-60"}`}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <Switch checked={rec.active} onCheckedChange={() => onToggleRecurring(rec.id)} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{rec.name}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">{frequencyLabels[rec.frequency]}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {data.categories.find((c) => c.id === rec.categoryId)?.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold font-heading">{formatCurrency(rec.amount)}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onDeleteRecurring(rec.id)}>
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 6. Financial Goals Summary */}
+      {/* 1️⃣ Financial Goals Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -277,7 +180,6 @@ const AdvancedDashboard = ({
             const daysLeft = goal.deadline ? differenceInDays(parseISO(goal.deadline), new Date()) : null;
             const isCompleted = goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0;
 
-            // Forecast: months to complete at current contribution rate
             const monthlyContribs = goal.contributions
               .filter((c) => c.date.startsWith(data.currentMonth))
               .reduce((s, c) => s + c.amount, 0);
@@ -324,7 +226,7 @@ const AdvancedDashboard = ({
         </CardContent>
       </Card>
 
-      {/* 7. Automated Insights */}
+      {/* Automated Insights */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -358,7 +260,7 @@ const AdvancedDashboard = ({
         </CardContent>
       </Card>
 
-      {/* 2. Financial Growth Simulator */}
+      {/* 2️⃣ Financial Growth Simulator */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Simulador de Crescimento</CardTitle>
@@ -408,7 +310,7 @@ const AdvancedDashboard = ({
         </CardContent>
       </Card>
 
-      {/* 3. Projection Graph */}
+      {/* 3️⃣ Projection Graph */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Projeção de Crescimento</CardTitle>
