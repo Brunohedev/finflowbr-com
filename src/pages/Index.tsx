@@ -276,15 +276,15 @@ const Index = () => {
 
             {/* Remaining today / month cards */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="finance-card !p-3 text-center">
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  {remainingToday >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
-                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Restam Hoje</p>
-                </div>
-                <p className={`text-lg font-bold font-heading ${remainingToday >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {formatCurrency(remainingToday)}
-                </p>
-              </div>
+              
+
+
+
+
+
+
+
+            
               <div className="finance-card !p-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   {remainingMonth >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
