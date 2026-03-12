@@ -288,15 +288,15 @@ const Index = () => {
 
 
             
-              <div className="finance-card !p-3 text-center">
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  {remainingMonth >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
-                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Restam no Mês</p>
-                </div>
-                <p className={`text-lg font-bold font-heading ${remainingMonth >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {formatCurrency(remainingMonth)}
-                </p>
-              </div>
+              
+
+
+
+
+
+
+
+            
             </div>
 
             {/* Pinned items */}
