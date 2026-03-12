@@ -27,8 +27,11 @@ type View = "dashboard" | "category" | "analytics" | "reserva_investimentos" | "
 
 const Index = () => {
   const { user, isAuthenticated, login, register, logout } = useAuth();
+  const [displayMonth, setDisplayMonth] = useState(new Date());
+  const selectedMonth = format(displayMonth, "yyyy-MM");
+
   const {
-    data, isSetup, monthlyIncome, remainingToday, remainingMonth,
+    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
@@ -39,14 +42,13 @@ const Index = () => {
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
     addInvestment, deleteInvestment,
     addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense
-  } = useFinanceData(user?.id);
+  } = useFinanceData(user?.id, selectedMonth);
 
   const [view, setView] = useState<View>("dashboard");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [expenseDefaultCategory, setExpenseDefaultCategory] = useState<string | undefined>();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [displayMonth, setDisplayMonth] = useState(new Date());
 
   // Show login screen if not authenticated
   if (!isAuthenticated) {
@@ -65,7 +67,7 @@ const Index = () => {
   const reserveTotal = data.emergencyReserves.reduce((s, r) => s + r.currentAmount, 0);
   const reserveTarget = data.emergencyReserves.reduce((s, r) => s + r.targetAmount, 0);
   const investmentTotal = data.investments.
-  filter((i) => i.date.startsWith(data.currentMonth)).
+  filter((i) => i.date.startsWith(activeMonth)).
   reduce((s, i) => s + i.amount, 0);
 
   const handleCategoryClick = (catId: string) => {
@@ -94,7 +96,8 @@ const Index = () => {
   };
 
   // Pending expenses count
-  const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(data.currentMonth)).length;
+  const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(activeMonth)).length;
+  const monthExpenses = data.expenses.filter((e) => e.date.startsWith(activeMonth));
 
   return (
     <div className="min-h-screen pb-24 bg-[#ecf3f0]">
@@ -186,7 +189,7 @@ const Index = () => {
         <CategoryDetail
           category={selectedCategory}
           budget={getBudget(selectedCategory.id)}
-          expenses={data.expenses}
+          expenses={monthExpenses}
           getSpentBySubcategory={getSpentBySubcategory}
           onBack={goBack}
           onDeleteExpense={deleteExpense}
@@ -323,7 +326,7 @@ const Index = () => {
               category={cat}
               budget={getBudget(cat.id)}
               spent={getSpentByCategory(cat.id)}
-              expenses={data.expenses.filter((e) => e.categoryId === cat.id)}
+              expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}
               onClick={() => handleCategoryClick(cat.id)}
               onAddExpense={handleAddExpenseFromCategory}
               onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
@@ -341,11 +344,11 @@ const Index = () => {
             </div>
 
             {/* Recent expenses */}
-            {data.expenses.length > 0 &&
+            {monthExpenses.length > 0 &&
           <div className="finance-card">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Últimas Despesas</h3>
                 <div className="space-y-2">
-                  {data.expenses.
+                  {monthExpenses.
               sort((a, b) => b.date.localeCompare(a.date)).
               slice(0, 5).
               map((expense) => {

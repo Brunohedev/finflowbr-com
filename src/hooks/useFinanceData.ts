@@ -75,7 +75,9 @@ const getInitialData = (userId?: string): FinanceData | null => {
   }
 };
 
-export function useFinanceData(userId?: string) {
+export function useFinanceData(userId?: string, selectedMonth?: string) {
+  const activeMonth = selectedMonth || getCurrentMonth();
+
   const [data, setData] = useState<FinanceData | null>(() => getInitialData(userId));
 
   // Reset data when userId changes (account switch)
@@ -94,21 +96,21 @@ export function useFinanceData(userId?: string) {
   const dailyIncome = useMemo(() => data ? getTotalDailyIncome(data.incomeSources) : 0, [data]);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
+  const isCurrentMonth = activeMonth === getCurrentMonth();
 
   const todayExpenses = useMemo(() => {
-    if (!data) return 0;
+    if (!data || !isCurrentMonth) return 0;
     return data.expenses.filter((e) => e.date === todayStr).reduce((s, e) => s + e.amount, 0);
-  }, [data, todayStr]);
+  }, [data, todayStr, isCurrentMonth]);
 
   const monthExpenses = useMemo(() => {
     if (!data) return 0;
-    const month = getCurrentMonth();
-    const expenses = data.expenses.filter((e) => e.date.startsWith(month)).reduce((s, e) => s + e.amount, 0);
-    const reserveContribs = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
-    const goalContribs = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
-    const investContribs = data.investments.filter((i) => i.date.startsWith(month)).reduce((s, i) => s + i.amount, 0);
+    const expenses = data.expenses.filter((e) => e.date.startsWith(activeMonth)).reduce((s, e) => s + e.amount, 0);
+    const reserveContribs = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
+    const goalContribs = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
+    const investContribs = data.investments.filter((i) => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0);
     return expenses + reserveContribs + goalContribs + investContribs;
-  }, [data]);
+  }, [data, activeMonth]);
 
   const remainingToday = dailyIncome - todayExpenses;
   const remainingMonth = monthlyIncome - monthExpenses;
@@ -391,29 +393,27 @@ export function useFinanceData(userId?: string) {
   const getSpentByCategory = useCallback(
     (categoryId: string) => {
       if (!data) return 0;
-      const month = data.currentMonth;
       if (categoryId === "reserva_investimentos") {
-        const rc = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
-        const gc = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
-        const ic = data.investments.filter((i) => i.date.startsWith(month)).reduce((s, i) => s + i.amount, 0);
+        const rc = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
+        const gc = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
+        const ic = data.investments.filter((i) => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0);
         return rc + gc + ic;
       }
       return data.expenses
-        .filter((e) => e.categoryId === categoryId && e.date.startsWith(month))
+        .filter((e) => e.categoryId === categoryId && e.date.startsWith(activeMonth))
         .reduce((sum, e) => sum + e.amount, 0);
     },
-    [data]
+    [data, activeMonth]
   );
 
   const getSpentBySubcategory = useCallback(
     (subcategoryId: string) => {
       if (!data) return 0;
-      const month = data.currentMonth;
       return data.expenses
-        .filter((e) => e.subcategoryId === subcategoryId && e.date.startsWith(month))
+        .filter((e) => e.subcategoryId === subcategoryId && e.date.startsWith(activeMonth))
         .reduce((sum, e) => sum + e.amount, 0);
     },
-    [data]
+    [data, activeMonth]
   );
 
   const getBudget = useCallback(
@@ -426,7 +426,7 @@ export function useFinanceData(userId?: string) {
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth,
+    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
