@@ -5,19 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import {
   TrendingUp, TrendingDown, AlertTriangle, PiggyBank, LineChart as LineChartIcon,
-  Clock, DollarSign, ArrowRight, Sparkles,
-} from "lucide-react";
+  Clock, DollarSign, ArrowRight, Sparkles } from
+"lucide-react";
 import { FinanceData, RecurringExpense } from "@/types/finance";
 import { getDaysInMonth, getDate, format } from "date-fns";
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
 const frequencyToMonthly = (amount: number, frequency: RecurringExpense["frequency"]) => {
   switch (frequency) {
-    case "weekly": return amount * 4.33;
-    case "monthly": return amount;
-    case "yearly": return amount / 12;
+    case "weekly":return amount * 4.33;
+    case "monthly":return amount;
+    case "yearly":return amount / 12;
   }
 };
 
@@ -34,7 +34,7 @@ type QuickAction = "reserve" | "investment" | null;
 
 export default function EndOfMonthPrediction({
   data, monthlyIncome, getSpentByCategory,
-  onAddReserveContribution, onAddInvestment, firstReserveId,
+  onAddReserveContribution, onAddInvestment, firstReserveId
 }: Props) {
   const [actionType, setActionType] = useState<QuickAction>(null);
   const [actionAmount, setActionAmount] = useState("");
@@ -48,19 +48,19 @@ export default function EndOfMonthPrediction({
 
     // Total expenses recorded this month (uses centralized getSpentByCategory)
     const currentMonth = format(now, "yyyy-MM");
-    const totalExpenses = data.categories
-      .filter((c) => c.id !== "reserva_investimentos")
-      .reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
+    const totalExpenses = data.categories.
+    filter((c) => c.id !== "reserva_investimentos").
+    reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
 
     // Recurring expenses remaining this month (active ones, monthly equivalent prorated)
-    const recurringRemaining = data.recurringExpenses
-      .filter((e) => e.active)
-      .reduce((s, e) => {
-        const monthly = frequencyToMonthly(e.amount, e.frequency);
-        // Estimate remaining portion based on days left
-        const dailyRate = monthly / totalDays;
-        return s + dailyRate * daysRemaining;
-      }, 0);
+    const recurringRemaining = data.recurringExpenses.
+    filter((e) => e.active).
+    reduce((s, e) => {
+      const monthly = frequencyToMonthly(e.amount, e.frequency);
+      // Estimate remaining portion based on days left
+      const dailyRate = monthly / totalDays;
+      return s + dailyRate * daysRemaining;
+    }, 0);
 
     // Daily spending rate projected for remaining days
     const dailySpendRate = dayOfMonth > 0 ? totalExpenses / dayOfMonth : 0;
@@ -70,13 +70,13 @@ export default function EndOfMonthPrediction({
     const predictedBalance = monthlyIncome - totalProjectedExpenses;
 
     // Reserve/investment contributions this month
-    const reserveContribs = data.emergencyReserves
-      .flatMap((r) => r.contributions)
-      .filter((c) => c.date.startsWith(currentMonth))
-      .reduce((s, c) => s + c.amount, 0);
-    const investContribs = data.investments
-      .filter((i) => i.date.startsWith(currentMonth))
-      .reduce((s, i) => s + i.amount, 0);
+    const reserveContribs = data.emergencyReserves.
+    flatMap((r) => r.contributions).
+    filter((c) => c.date.startsWith(currentMonth)).
+    reduce((s, c) => s + c.amount, 0);
+    const investContribs = data.investments.
+    filter((i) => i.date.startsWith(currentMonth)).
+    reduce((s, i) => s + i.amount, 0);
 
     const alreadyAllocated = reserveContribs + investContribs;
     const availableToSave = Math.max(0, predictedBalance - alreadyAllocated);
@@ -89,7 +89,7 @@ export default function EndOfMonthPrediction({
       predictedBalance: Math.round(predictedBalance),
       availableToSave: Math.round(availableToSave),
       daysRemaining,
-      ratio: monthlyIncome > 0 ? predictedBalance / monthlyIncome : 0,
+      ratio: monthlyIncome > 0 ? predictedBalance / monthlyIncome : 0
     };
   }, [data, monthlyIncome, getSpentByCategory]);
 
@@ -180,13 +180,13 @@ export default function EndOfMonthPrediction({
                 <p className="font-semibold">{formatCurrency(prediction.recurringRemaining)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 p-2 rounded-lg bg-background/60">
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-muted-foreground">Projeção gastos</p>
-                <p className="font-semibold">{formatCurrency(prediction.projectedAdditionalSpending)}</p>
-              </div>
-            </div>
+            
+
+
+
+
+
+            
           </div>
 
           {/* Suggestion */}
@@ -196,36 +196,36 @@ export default function EndOfMonthPrediction({
           </div>
 
           {/* Quick actions */}
-          {prediction.availableToSave > 0 && (
-            <div className="grid grid-cols-3 gap-2">
+          {prediction.availableToSave > 0 &&
+          <div className="grid grid-cols-3 gap-2">
               <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-8 gap-1 border-primary/20 text-primary hover:bg-primary/10"
-                onClick={() => setActionType("reserve")}
-              >
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 gap-1 border-primary/20 text-primary hover:bg-primary/10"
+              onClick={() => setActionType("reserve")}>
+              
                 <PiggyBank className="w-3 h-3" />
                 Reserva
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-8 gap-1 border-accent/50 text-accent-foreground hover:bg-accent/50"
-                onClick={() => setActionType("investment")}
-              >
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 gap-1 border-accent/50 text-accent-foreground hover:bg-accent/50"
+              onClick={() => setActionType("investment")}>
+              
                 <LineChartIcon className="w-3 h-3" />
                 Investir
               </Button>
               <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs h-8 text-muted-foreground"
-                disabled
-              >
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 text-muted-foreground"
+              disabled>
+              
                 Alocar depois
               </Button>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -246,24 +246,24 @@ export default function EndOfMonthPrediction({
                 value={actionAmount}
                 onChange={(e) => setActionAmount(e.target.value)}
                 min="0"
-                step="0.01"
-              />
-              {prediction.availableToSave > 0 && (
-                <button
-                  className="text-[10px] text-primary mt-1 hover:underline"
-                  onClick={() => setActionAmount(String(prediction.availableToSave))}
-                >
+                step="0.01" />
+              
+              {prediction.availableToSave > 0 &&
+              <button
+                className="text-[10px] text-primary mt-1 hover:underline"
+                onClick={() => setActionAmount(String(prediction.availableToSave))}>
+                
                   Usar projeção: {formatCurrency(prediction.availableToSave)}
                 </button>
-              )}
+              }
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Nota (opcional)</label>
               <Input
                 placeholder="Descrição"
                 value={actionNote}
-                onChange={(e) => setActionNote(e.target.value)}
-              />
+                onChange={(e) => setActionNote(e.target.value)} />
+              
             </div>
           </div>
           <DialogFooter>
@@ -274,6 +274,6 @@ export default function EndOfMonthPrediction({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>);
+
 }
