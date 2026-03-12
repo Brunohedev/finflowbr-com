@@ -137,7 +137,7 @@ export default function EndOfMonthPrediction({
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Projeção Fim do Mês
+                  Fim do Mês
                 </h3>
                 <p className="text-[10px] text-muted-foreground">
                   {prediction.daysRemaining} dias restantes
@@ -150,12 +150,12 @@ export default function EndOfMonthPrediction({
           </div>
 
           {/* Main prediction */}
-          <div className="text-center py-2">
-            
+          
 
-            
-            
-          </div>
+
+
+
+          
 
           {/* Breakdown */}
           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -190,7 +190,7 @@ export default function EndOfMonthPrediction({
           </div>
 
           {/* Suggestion */}
-          <div className="flex items-start gap-2 p-2.5 rounded-lg bg-background/80 border border-border/50">
+          <div className="flex items-start gap-2 p-2.5 rounded-lg border border-border/50 bg-secondary">
             <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground leading-relaxed">{getSuggestionText()}</p>
           </div>
