@@ -46,11 +46,11 @@ export default function EndOfMonthPrediction({
     const dayOfMonth = getDate(now);
     const daysRemaining = totalDays - dayOfMonth;
 
-    // Total expenses recorded this month
+    // Total expenses recorded this month (uses centralized getSpentByCategory)
     const currentMonth = format(now, "yyyy-MM");
-    const totalExpenses = data.expenses
-      .filter((e) => e.date.startsWith(currentMonth))
-      .reduce((s, e) => s + e.amount, 0);
+    const totalExpenses = data.categories
+      .filter((c) => c.id !== "reserva_investimentos")
+      .reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
 
     // Recurring expenses remaining this month (active ones, monthly equivalent prorated)
     const recurringRemaining = data.recurringExpenses

@@ -391,14 +391,16 @@ export function useFinanceData(userId?: string) {
   const getSpentByCategory = useCallback(
     (categoryId: string) => {
       if (!data) return 0;
+      const month = data.currentMonth;
       if (categoryId === "reserva_investimentos") {
-        const month = data.currentMonth;
         const rc = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
         const gc = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(month)).reduce((s, c) => s + c.amount, 0);
         const ic = data.investments.filter((i) => i.date.startsWith(month)).reduce((s, i) => s + i.amount, 0);
         return rc + gc + ic;
       }
-      return data.expenses.filter((e) => e.categoryId === categoryId).reduce((sum, e) => sum + e.amount, 0);
+      return data.expenses
+        .filter((e) => e.categoryId === categoryId && e.date.startsWith(month))
+        .reduce((sum, e) => sum + e.amount, 0);
     },
     [data]
   );
@@ -406,7 +408,10 @@ export function useFinanceData(userId?: string) {
   const getSpentBySubcategory = useCallback(
     (subcategoryId: string) => {
       if (!data) return 0;
-      return data.expenses.filter((e) => e.subcategoryId === subcategoryId).reduce((sum, e) => sum + e.amount, 0);
+      const month = data.currentMonth;
+      return data.expenses
+        .filter((e) => e.subcategoryId === subcategoryId && e.date.startsWith(month))
+        .reduce((sum, e) => sum + e.amount, 0);
     },
     [data]
   );
