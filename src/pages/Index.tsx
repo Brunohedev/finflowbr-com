@@ -27,8 +27,11 @@ type View = "dashboard" | "category" | "analytics" | "reserva_investimentos" | "
 
 const Index = () => {
   const { user, isAuthenticated, login, register, logout } = useAuth();
+  const [displayMonth, setDisplayMonth] = useState(new Date());
+  const selectedMonth = format(displayMonth, "yyyy-MM");
+
   const {
-    data, isSetup, monthlyIncome, remainingToday, remainingMonth,
+    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth,
     addSubcategory, deleteSubcategory,
@@ -39,7 +42,7 @@ const Index = () => {
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
     addInvestment, deleteInvestment,
     addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense
-  } = useFinanceData(user?.id);
+  } = useFinanceData(user?.id, selectedMonth);
 
   const [view, setView] = useState<View>("dashboard");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
