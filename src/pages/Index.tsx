@@ -344,11 +344,11 @@ const Index = () => {
             </div>
 
             {/* Recent expenses */}
-            {data.expenses.length > 0 &&
+            {monthExpenses.length > 0 &&
           <div className="finance-card">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Últimas Despesas</h3>
                 <div className="space-y-2">
-                  {data.expenses.
+                  {monthExpenses.
               sort((a, b) => b.date.localeCompare(a.date)).
               slice(0, 5).
               map((expense) => {
