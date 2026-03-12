@@ -173,13 +173,13 @@ export default function EndOfMonthPrediction({
                 <p className="font-semibold">{formatCurrency(prediction.totalExpenses)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 p-2 rounded-lg bg-background/60">
-              <Clock className="w-3.5 h-3.5 text-warning shrink-0" />
-              <div>
-                <p className="text-muted-foreground">Recorrentes restantes</p>
-                <p className="font-semibold">{formatCurrency(prediction.recurringRemaining)}</p>
-              </div>
-            </div>
+            
+
+
+
+
+
+            
             
 
 
