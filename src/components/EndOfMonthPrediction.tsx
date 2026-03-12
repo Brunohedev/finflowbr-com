@@ -130,7 +130,7 @@ export default function EndOfMonthPrediction({
       <Card className={`${status.bg} ${status.border} border overflow-hidden`}>
         <CardContent className="p-4 space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-lg ${status.bg} flex items-center justify-center`}>
                 <StatusIcon className={`w-4 h-4 ${status.color}`} />
@@ -151,9 +151,9 @@ export default function EndOfMonthPrediction({
 
           {/* Main prediction */}
           <div className="text-center py-2">
-            <p className={`text-2xl font-bold font-heading ${status.color}`}>
-              {formatCurrency(prediction.predictedBalance)}
-            </p>
+            
+
+            
             
           </div>
 
