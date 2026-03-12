@@ -189,7 +189,7 @@ const Index = () => {
         <CategoryDetail
           category={selectedCategory}
           budget={getBudget(selectedCategory.id)}
-          expenses={data.expenses}
+          expenses={monthExpenses}
           getSpentBySubcategory={getSpentBySubcategory}
           onBack={goBack}
           onDeleteExpense={deleteExpense}
