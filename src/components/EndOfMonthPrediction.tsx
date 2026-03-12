@@ -159,13 +159,13 @@ export default function EndOfMonthPrediction({
 
           {/* Breakdown */}
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1.5 p-2 rounded-lg bg-background/60">
-              <DollarSign className="w-3.5 h-3.5 text-primary shrink-0" />
-              <div>
-                <p className="text-muted-foreground">Renda</p>
-                <p className="font-semibold">{formatCurrency(monthlyIncome)}</p>
-              </div>
-            </div>
+            
+
+
+
+
+
+            
             <div className="flex items-center gap-1.5 p-2 rounded-lg bg-background/60">
               <TrendingDown className="w-3.5 h-3.5 text-destructive shrink-0" />
               <div>
