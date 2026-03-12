@@ -49,7 +49,6 @@ const Index = () => {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [expenseDefaultCategory, setExpenseDefaultCategory] = useState<string | undefined>();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [displayMonth, setDisplayMonth] = useState(new Date());
 
   // Show login screen if not authenticated
   if (!isAuthenticated) {
