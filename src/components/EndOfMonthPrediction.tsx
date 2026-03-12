@@ -154,7 +154,7 @@ export default function EndOfMonthPrediction({
             <p className={`text-2xl font-bold font-heading ${status.color}`}>
               {formatCurrency(prediction.predictedBalance)}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">saldo projetado</p>
+            
           </div>
 
           {/* Breakdown */}
