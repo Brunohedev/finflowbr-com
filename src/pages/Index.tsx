@@ -326,7 +326,7 @@ const Index = () => {
               category={cat}
               budget={getBudget(cat.id)}
               spent={getSpentByCategory(cat.id)}
-              expenses={data.expenses.filter((e) => e.categoryId === cat.id)}
+              expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}
               onClick={() => handleCategoryClick(cat.id)}
               onAddExpense={handleAddExpenseFromCategory}
               onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
