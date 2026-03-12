@@ -96,7 +96,8 @@ const Index = () => {
   };
 
   // Pending expenses count
-  const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(data.currentMonth)).length;
+  const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(activeMonth)).length;
+  const monthExpenses = data.expenses.filter((e) => e.date.startsWith(activeMonth));
 
   return (
     <div className="min-h-screen pb-24 bg-[#ecf3f0]">
