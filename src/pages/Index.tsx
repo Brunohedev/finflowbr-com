@@ -314,25 +314,37 @@ const Index = () => {
 
             {/* Categories */}
             <div className="space-y-3">
-            {data.categories.map((cat) =>
-            <CategoryCard
-              key={cat.id}
-              category={cat}
-              budget={getBudget(cat.id)}
-              spent={getSpentByCategory(cat.id)}
-              expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}
-              onClick={() => handleCategoryClick(cat.id)}
-              onAddExpense={handleAddExpenseFromCategory}
-              onAddInvestment={cat.id === "reserva_investimentos" ? addInvestment : undefined}
-              onAddReserveContribution={cat.id === "reserva_investimentos" ? addReserveContribution : undefined}
-              onUpdateReserveTarget={cat.id === "reserva_investimentos" ? (newTarget: number) => {
-                const firstReserve = data.emergencyReserves[0];
-                if (firstReserve) updateEmergencyReserve(firstReserve.id, { targetAmount: newTarget });
-              } : undefined}
-              reserveTotal={cat.id === "reserva_investimentos" ? reserveTotal : undefined}
-              reserveTarget={cat.id === "reserva_investimentos" ? reserveTarget : undefined}
-              investmentTotal={cat.id === "reserva_investimentos" ? investmentTotal : undefined}
-              firstReserveId={cat.id === "reserva_investimentos" ? data.emergencyReserves[0]?.id : undefined} />
+            {data.categories.map((cat) => {
+              const isReserva = cat.id === "reserva_investimentos";
+              const monthContribs = isReserva ? data.emergencyReserves.reduce((s, r) =>
+                s + r.contributions.filter(c => c.date.startsWith(activeMonth)).reduce((a, c) => a + c.amount, 0), 0) : 0;
+              const monthInvest = isReserva ? data.investments
+                .filter(i => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0) : 0;
+
+              return (
+                <CategoryCard
+                  key={cat.id}
+                  category={cat}
+                  budget={getBudget(cat.id)}
+                  spent={getSpentByCategory(cat.id)}
+                  expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  onAddExpense={handleAddExpenseFromCategory}
+                  onAddInvestment={isReserva ? addInvestment : undefined}
+                  onAddReserveContribution={isReserva ? addReserveContribution : undefined}
+                  onUpdateReserveTarget={isReserva ? (newTarget: number) => {
+                    const firstReserve = data.emergencyReserves[0];
+                    if (firstReserve) updateEmergencyReserve(firstReserve.id, { targetAmount: newTarget });
+                  } : undefined}
+                  reserveTotal={isReserva ? reserveTotal : undefined}
+                  reserveTarget={isReserva ? reserveTarget : undefined}
+                  investmentTotal={isReserva ? investmentTotal : undefined}
+                  firstReserveId={isReserva ? data.emergencyReserves[0]?.id : undefined}
+                  monthlyIncome={isReserva ? monthlyIncome : undefined}
+                  monthlySaved={isReserva ? monthContribs + monthInvest : undefined}
+                />
+              );
+            })}
 
             )}
             </div>

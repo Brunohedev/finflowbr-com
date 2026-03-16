@@ -59,9 +59,6 @@ const CategoryCard = ({
   const showAddExpense = category.id !== "reserva_investimentos" && onAddExpense;
   const isReserva = category.id === "reserva_investimentos";
 
-  const reservePct = reserveTarget > 0 ? Math.min((reserveTotal / reserveTarget) * 100, 100) : 0;
-  const reserveGoalReached = reserveTarget > 0 && reserveTotal >= reserveTarget;
-  const suggestedNewTarget = reserveTarget > 0 ? reserveTarget * 2 : reserveTotal * 2;
 
   const handleAddReserve = () => {
     const val = parseNum(addAmount);
