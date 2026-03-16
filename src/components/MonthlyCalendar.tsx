@@ -228,24 +228,24 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
       }
 
       {/* 2️⃣ Monthly Analysis */}
-      <div className="finance-card">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Análise Mensal</h3>
-        {categoryBreakdown.length === 0 ?
-        <p className="text-sm text-muted-foreground text-center py-4">Nenhuma despesa neste mês</p> :
+      
 
-        <div className="space-y-3">
-            <p className="text-sm font-medium">
-              Total Gasto: <span className="text-destructive font-heading">{fmtFull(monthExpenses.reduce((s, e) => s + e.amount, 0))}</span>
-            </p>
-            {categoryBreakdown.map((cat) =>
-          <div key={cat.name} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{cat.name} ({cat.count})</span>
-                <span className="font-semibold font-heading">{fmtFull(cat.total)}</span>
-              </div>
-          )}
-          </div>
-        }
-      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
       {/* 3️⃣ Recurring Expenses summary */}
       
