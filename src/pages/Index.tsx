@@ -22,7 +22,7 @@ import { Percentages } from "@/types/finance";
 const formatCurrency = (value: number) =>
 new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-type View = "dashboard" | "category" | "analytics" | "reserva_investimentos" | "calendar" | "advanced";
+type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
   const { user, isAuthenticated, login, register, logout } = useAuth();
