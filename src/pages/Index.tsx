@@ -6,16 +6,15 @@ import SetupWizard from "@/components/SetupWizard";
 import CategoryCard from "@/components/CategoryCard";
 import CategoryDetail from "@/components/CategoryDetail";
 import ExpenseDialog from "@/components/ExpenseDialog";
-import AnalyticsView from "@/components/AnalyticsView";
 import SettingsDialog from "@/components/SettingsDialog";
 import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
-import AdvancedDashboard from "@/components/AdvancedDashboard";
-import MonthlyCalendar from "@/components/MonthlyCalendar";
+import MonthlyReportPage from "@/components/report/MonthlyReportPage";
+
 import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import { Button } from "@/components/ui/button";
-import { Plus, BarChart3, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, LineChart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
@@ -23,7 +22,7 @@ import { Percentages } from "@/types/finance";
 const formatCurrency = (value: number) =>
 new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-type View = "dashboard" | "category" | "analytics" | "reserva_investimentos" | "calendar" | "advanced";
+type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
   const { user, isAuthenticated, login, register, logout } = useAuth();
@@ -114,25 +113,10 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-1">
             <Button
-              variant={view === "calendar" ? "secondary" : "ghost"}
+              variant={view === "report" ? "secondary" : "ghost"}
               size="icon" className="rounded-xl"
-              onClick={() => setView(view === "calendar" ? "dashboard" : "calendar")}>
-              
+              onClick={() => setView(view === "report" ? "dashboard" : "report")}>
               <CalendarDays className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === "analytics" ? "secondary" : "ghost"}
-              size="icon" className="rounded-xl"
-              onClick={() => setView(view === "analytics" ? "dashboard" : "analytics")}>
-              
-              <BarChart3 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === "advanced" ? "secondary" : "ghost"}
-              size="icon" className="rounded-xl"
-              onClick={() => setView(view === "advanced" ? "dashboard" : "advanced")}>
-              
-              <LineChart className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
@@ -145,21 +129,11 @@ const Index = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-5">
-        {view === "analytics" ?
-        <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} /> :
-        view === "advanced" ?
-        <AdvancedDashboard
+        {view === "report" ?
+        <MonthlyReportPage
           data={data}
-          monthlyIncome={monthlyIncome}
           getSpentByCategory={getSpentByCategory}
-          onBack={goBack}
-          onAddRecurring={addRecurringExpense}
-          onDeleteRecurring={deleteRecurringExpense}
-          onToggleRecurring={toggleRecurringExpense} /> :
-
-        view === "calendar" ?
-        <MonthlyCalendar
-          data={data}
+          getBudget={getBudget}
           onBack={goBack}
           onToggleExpenseStatus={toggleExpenseStatus} /> :
 
