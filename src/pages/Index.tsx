@@ -113,25 +113,10 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-1">
             <Button
-              variant={view === "calendar" ? "secondary" : "ghost"}
+              variant={view === "report" ? "secondary" : "ghost"}
               size="icon" className="rounded-xl"
-              onClick={() => setView(view === "calendar" ? "dashboard" : "calendar")}>
-              
+              onClick={() => setView(view === "report" ? "dashboard" : "report")}>
               <CalendarDays className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === "analytics" ? "secondary" : "ghost"}
-              size="icon" className="rounded-xl"
-              onClick={() => setView(view === "analytics" ? "dashboard" : "analytics")}>
-              
-              <BarChart3 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === "advanced" ? "secondary" : "ghost"}
-              size="icon" className="rounded-xl"
-              onClick={() => setView(view === "advanced" ? "dashboard" : "advanced")}>
-              
-              <LineChart className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
