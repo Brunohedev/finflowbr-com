@@ -19,6 +19,8 @@ interface CategoryCardProps {
   reserveTarget?: number;
   investmentTotal?: number;
   firstReserveId?: string;
+  monthlyIncome?: number;
+  monthlySaved?: number;
 }
 
 const formatCurrency = (value: number) =>
