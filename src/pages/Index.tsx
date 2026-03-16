@@ -9,7 +9,7 @@ import ExpenseDialog from "@/components/ExpenseDialog";
 import SettingsDialog from "@/components/SettingsDialog";
 import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
 import MonthlyReportPage from "@/components/report/MonthlyReportPage";
-import MonthlyCalendar from "@/components/MonthlyCalendar";
+
 import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
