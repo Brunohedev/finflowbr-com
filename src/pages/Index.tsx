@@ -220,11 +220,32 @@ const Index = () => {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Alocação do Orçamento</h3>
               <div className="space-y-3">
                 {data.categories.map((cat) => {
-                const budget = getBudget(cat.id);
-                const spent = getSpentByCategory(cat.id);
-                const pct = budget > 0 ? spent / budget * 100 : 0;
-                return (
-                  <div key={cat.id} className="space-y-1">
+                  const budget = getBudget(cat.id);
+                  const spent = getSpentByCategory(cat.id);
+                  const pct = budget > 0 ? spent / budget * 100 : 0;
+
+                  if (cat.id === "reserva_investimentos") {
+                    const monthContributions = data.emergencyReserves.reduce((s, r) =>
+                      s + r.contributions.filter(c => c.date.startsWith(activeMonth)).reduce((a, c) => a + c.amount, 0), 0);
+                    const monthInvestments = data.investments
+                      .filter(i => i.date.startsWith(activeMonth))
+                      .reduce((s, i) => s + i.amount, 0);
+                    const monthlySaved = monthContributions + monthInvestments;
+
+                    return (
+                      <SavingsTracker
+                        key={cat.id}
+                        monthlyIncome={monthlyIncome}
+                        savingsPercentage={cat.percentage}
+                        monthlySaved={monthlySaved}
+                        totalReserve={reserveTotal}
+                        currentGoal={reserveTarget || 10000}
+                      />
+                    );
+                  }
+
+                  return (
+                    <div key={cat.id} className="space-y-1">
                       <div className="flex justify-between text-xs">
                         <span className="font-medium">{cat.name} – {cat.percentage}% ({formatCurrency(budget)})</span>
                         <span className={`font-medium ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning" : "text-primary"}`}>
@@ -233,15 +254,13 @@ const Index = () => {
                       </div>
                       <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                         <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                        pct >= 100 ? "bg-destructive" : pct >= 80 ? "bg-warning" : "bg-primary"}`
-                        }
-                        style={{ width: `${Math.min(pct, 100)}%` }} />
-                      
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            pct >= 100 ? "bg-destructive" : pct >= 80 ? "bg-warning" : "bg-primary"}`}
+                          style={{ width: `${Math.min(pct, 100)}%` }} />
                       </div>
-                    </div>);
-
-              })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
