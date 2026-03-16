@@ -33,7 +33,8 @@ type AddMode = null | "reserve" | "investment";
 const CategoryCard = ({
   category, budget, spent, onClick, onAddExpense, onAddInvestment,
   onAddReserveContribution, onUpdateReserveTarget,
-  reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId
+  reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId,
+  monthlyIncome = 0, monthlySaved = 0
 }: CategoryCardProps) => {
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [addAmount, setAddAmount] = useState("");
