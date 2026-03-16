@@ -8,6 +8,7 @@ import CategoryDetail from "@/components/CategoryDetail";
 import ExpenseDialog from "@/components/ExpenseDialog";
 import SettingsDialog from "@/components/SettingsDialog";
 import ReservaInvestimentosView from "@/components/ReservaInvestimentosView";
+import SavingsTracker from "@/components/SavingsTracker";
 import MonthlyReportPage from "@/components/report/MonthlyReportPage";
 
 import PinnedItems from "@/components/PinnedItems";
