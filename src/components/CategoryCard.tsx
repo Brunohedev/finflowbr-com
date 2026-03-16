@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Shield, TrendingUp, Trophy, Target, PiggyBank } from "lucide-react";
+import SavingsTracker from "@/components/SavingsTracker";
+import { Plus, Target, PiggyBank, TrendingUp } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -18,6 +19,8 @@ interface CategoryCardProps {
   reserveTarget?: number;
   investmentTotal?: number;
   firstReserveId?: string;
+  monthlyIncome?: number;
+  monthlySaved?: number;
 }
 
 const formatCurrency = (value: number) =>
@@ -30,7 +33,8 @@ type AddMode = null | "reserve" | "investment";
 const CategoryCard = ({
   category, budget, spent, onClick, onAddExpense, onAddInvestment,
   onAddReserveContribution, onUpdateReserveTarget,
-  reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId
+  reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId,
+  monthlyIncome = 0, monthlySaved = 0
 }: CategoryCardProps) => {
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [addAmount, setAddAmount] = useState("");
@@ -55,9 +59,6 @@ const CategoryCard = ({
   const showAddExpense = category.id !== "reserva_investimentos" && onAddExpense;
   const isReserva = category.id === "reserva_investimentos";
 
-  const reservePct = reserveTarget > 0 ? Math.min((reserveTotal / reserveTarget) * 100, 100) : 0;
-  const reserveGoalReached = reserveTarget > 0 && reserveTotal >= reserveTarget;
-  const suggestedNewTarget = reserveTarget > 0 ? reserveTarget * 2 : reserveTotal * 2;
 
   const handleAddReserve = () => {
     const val = parseNum(addAmount);
@@ -113,32 +114,13 @@ const CategoryCard = ({
 
         {isReserva && (
           <div className="space-y-3">
-            {/* Reserva section */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                {reserveGoalReached ? <Trophy className="w-3 h-3 text-[hsl(217,91%,60%)]" /> : <Shield className="w-3 h-3 text-[hsl(217,91%,60%)]" />}
-                <span className="text-xs font-medium">Reserva</span>
-                {reserveGoalReached && <span className="text-[9px] font-bold text-[hsl(217,91%,60%)] bg-[hsl(217,91%,60%)]/10 px-1.5 py-0.5 rounded-full">Meta atingida! 🎉</span>}
-              </div>
-              <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>{formatCurrency(reserveTotal)}</span>
-                <span>{reserveTarget > 0 ? `Meta: ${formatCurrency(reserveTarget)}` : "Sem meta"}</span>
-              </div>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-[hsl(217,91%,60%)] transition-all duration-500" style={{ width: `${reserveTarget > 0 ? reservePct : (reserveTotal > 0 ? 100 : 0)}%` }} />
-              </div>
-            </div>
-
-            {/* Goal reached suggestion */}
-            {reserveGoalReached && onUpdateReserveTarget && (
-              <div className="bg-[hsl(217,91%,60%)]/10 rounded-lg p-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
-                <p className="text-[11px] text-[hsl(217,91%,60%)] font-medium">Continue sua jornada! Nova meta sugerida:</p>
-                <Button size="sm" className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
-                  onClick={() => onUpdateReserveTarget(suggestedNewTarget)}>
-                  <Target className="w-3 h-3 mr-1" /> {formatCurrency(suggestedNewTarget)}
-                </Button>
-              </div>
-            )}
+            <SavingsTracker
+              monthlyIncome={monthlyIncome}
+              savingsPercentage={category.percentage}
+              monthlySaved={monthlySaved}
+              totalReserve={reserveTotal}
+              currentGoal={reserveTarget || 10000}
+            />
 
             {/* Set initial target */}
             {!reserveTarget && onUpdateReserveTarget && (
@@ -156,21 +138,6 @@ const CategoryCard = ({
                 )}
               </div>
             )}
-
-            {/* Investimentos section */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 text-accent-foreground" />
-                <span className="text-xs font-medium">Investimentos</span>
-              </div>
-              <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>{formatCurrency(investmentTotal)}</span>
-                <span>este mês</span>
-              </div>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${investmentTotal > 0 ? 100 : 0}%` }} />
-              </div>
-            </div>
           </div>
         )}
       </button>
