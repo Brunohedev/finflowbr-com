@@ -129,21 +129,11 @@ const Index = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-5">
-        {view === "analytics" ?
-        <AnalyticsView data={data} getSpentByCategory={getSpentByCategory} getBudget={getBudget} /> :
-        view === "advanced" ?
-        <AdvancedDashboard
+        {view === "report" ?
+        <MonthlyReportPage
           data={data}
-          monthlyIncome={monthlyIncome}
           getSpentByCategory={getSpentByCategory}
-          onBack={goBack}
-          onAddRecurring={addRecurringExpense}
-          onDeleteRecurring={deleteRecurringExpense}
-          onToggleRecurring={toggleRecurringExpense} /> :
-
-        view === "calendar" ?
-        <MonthlyCalendar
-          data={data}
+          getBudget={getBudget}
           onBack={goBack}
           onToggleExpenseStatus={toggleExpenseStatus} /> :
 
