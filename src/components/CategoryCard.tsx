@@ -143,10 +143,6 @@ const CategoryCard = ({
             )}
           </div>
         )}
-              </div>
-            </div>
-          </div>
-        )}
       </button>
 
       {/* Regular category: add expense */}
