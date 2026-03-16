@@ -345,8 +345,6 @@ const Index = () => {
                 />
               );
             })}
-
-            )}
             </div>
 
             {/* Recent expenses */}
