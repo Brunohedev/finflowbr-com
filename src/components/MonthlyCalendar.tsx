@@ -13,10 +13,10 @@ interface MonthlyCalendarProps {
 }
 
 const fmt = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact" }).format(v);
+new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact" }).format(v);
 
 const fmtFull = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
 const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -30,7 +30,7 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
   const startDayOfWeek = getDay(monthStart);
 
   const dayData = useMemo(() => {
-    const map: Record<string, { income: number; expenses: number }> = {};
+    const map: Record<string, {income: number;expenses: number;}> = {};
     days.forEach((d) => {
       const key = format(d, "yyyy-MM-dd");
       map[key] = { income: dailyIncome, expenses: 0 };
@@ -64,21 +64,21 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
   const monthTotals = useMemo(() => {
     const daysInMonth = days.length;
     const totalIncome = dailyIncome * daysInMonth;
-    const totalExpenses = Object.entries(dayData)
-      .filter(([k]) => k.startsWith(monthKey))
-      .reduce((s, [, v]) => s + v.expenses, 0);
+    const totalExpenses = Object.entries(dayData).
+    filter(([k]) => k.startsWith(monthKey)).
+    reduce((s, [, v]) => s + v.expenses, 0);
     return { income: totalIncome, expenses: totalExpenses, balance: totalIncome - totalExpenses };
   }, [dayData, dailyIncome, days.length, monthKey]);
 
   // Monthly expenses breakdown by category
   const monthExpenses = useMemo(() => {
-    return data.expenses.filter(e => e.date.startsWith(monthKey));
+    return data.expenses.filter((e) => e.date.startsWith(monthKey));
   }, [data.expenses, monthKey]);
 
   const categoryBreakdown = useMemo(() => {
-    const map: Record<string, { name: string; total: number; count: number }> = {};
-    monthExpenses.forEach(e => {
-      const cat = data.categories.find(c => c.id === e.categoryId);
+    const map: Record<string, {name: string;total: number;count: number;}> = {};
+    monthExpenses.forEach((e) => {
+      const cat = data.categories.find((c) => c.id === e.categoryId);
       if (!map[e.categoryId]) {
         map[e.categoryId] = { name: cat?.name || e.categoryId, total: 0, count: 0 };
       }
@@ -134,14 +134,14 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
 
         {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {weekDays.map((d) => (
-            <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
-          ))}
+          {weekDays.map((d) =>
+          <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
+          )}
         </div>
         <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startDayOfWeek }).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
+          {Array.from({ length: startDayOfWeek }).map((_, i) =>
+          <div key={`empty-${i}`} />
+          )}
           {days.map((day) => {
             const key = format(day, "yyyy-MM-dd");
             const dd = dayData[key];
@@ -158,23 +158,23 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
                   relative p-1 rounded-lg text-center transition-all text-xs min-h-[44px] flex flex-col items-center justify-center gap-0.5
                   ${isSelected ? "bg-primary text-primary-foreground ring-2 ring-primary" : "hover:bg-secondary"}
                   ${isToday && !isSelected ? "ring-1 ring-primary/30" : ""}
-                `}
-              >
+                `}>
+                
                 <span className="font-medium">{format(day, "d")}</span>
-                {hasExpenses && (
-                  <span className={`text-[8px] font-medium ${isSelected ? "text-primary-foreground/80" : balance >= 0 ? "text-primary" : "text-destructive"}`}>
+                {hasExpenses &&
+                <span className={`text-[8px] font-medium ${isSelected ? "text-primary-foreground/80" : balance >= 0 ? "text-primary" : "text-destructive"}`}>
                     {fmt(dd.expenses)}
                   </span>
-                )}
-              </button>
-            );
+                }
+              </button>);
+
           })}
         </div>
       </div>
 
       {/* Selected day detail */}
-      {selectedDate && selectedDayData && (
-        <div className="finance-card space-y-3">
+      {selectedDate && selectedDayData &&
+      <div className="finance-card space-y-3">
           <h3 className="font-heading font-semibold text-sm capitalize">
             {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
           </h3>
@@ -194,88 +194,88 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
               </p>
             </div>
           </div>
-          {selectedDayExpenses.length > 0 && (
-            <div className="space-y-1.5 pt-1 border-t border-border">
+          {selectedDayExpenses.length > 0 &&
+        <div className="space-y-1.5 pt-1 border-t border-border">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Despesas do dia</p>
-              {selectedDayExpenses.map((e) => (
-                <div key={e.id} className="flex items-center justify-between text-xs">
+              {selectedDayExpenses.map((e) =>
+          <div key={e.id} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="truncate">{e.name}</span>
-                    {e.totalInstallments && e.totalInstallments > 1 && (
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 shrink-0">
+                    {e.totalInstallments && e.totalInstallments > 1 &&
+              <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 shrink-0">
                         {e.installmentNumber}/{e.totalInstallments}
                       </Badge>
-                    )}
+              }
                   </div>
                   <div className="flex items-center gap-1.5 ml-2">
                     <span className="font-medium">{fmtFull(e.amount)}</span>
                     <button
-                      onClick={() => onToggleExpenseStatus(e.id)}
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                        e.status === "paid"
-                          ? "bg-primary/15 border-primary/30 text-primary"
-                          : "bg-warning/15 border-warning/30 text-warning"
-                      }`}
-                    >
+                onClick={() => onToggleExpenseStatus(e.id)}
+                className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                e.status === "paid" ?
+                "bg-primary/15 border-primary/30 text-primary" :
+                "bg-warning/15 border-warning/30 text-warning"}`
+                }>
+                
                       {e.status === "paid" ? <Check className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
           )}
+            </div>
+        }
         </div>
-      )}
+      }
 
       {/* 2️⃣ Monthly Analysis */}
       <div className="finance-card">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Análise Mensal</h3>
-        {categoryBreakdown.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Nenhuma despesa neste mês</p>
-        ) : (
-          <div className="space-y-3">
+        {categoryBreakdown.length === 0 ?
+        <p className="text-sm text-muted-foreground text-center py-4">Nenhuma despesa neste mês</p> :
+
+        <div className="space-y-3">
             <p className="text-sm font-medium">
               Total Gasto: <span className="text-destructive font-heading">{fmtFull(monthExpenses.reduce((s, e) => s + e.amount, 0))}</span>
             </p>
-            {categoryBreakdown.map((cat) => (
-              <div key={cat.name} className="flex items-center justify-between text-sm">
+            {categoryBreakdown.map((cat) =>
+          <div key={cat.name} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{cat.name} ({cat.count})</span>
                 <span className="font-semibold font-heading">{fmtFull(cat.total)}</span>
               </div>
-            ))}
+          )}
           </div>
-        )}
+        }
       </div>
 
       {/* 3️⃣ Recurring Expenses summary */}
-      <div className="finance-card">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Despesas Recorrentes</h3>
-        {data.recurringExpenses.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Nenhuma despesa recorrente</p>
-        ) : (
-          <div className="space-y-2">
-            {data.recurringExpenses.map((rec) => {
-              const cat = data.categories.find(c => c.id === rec.categoryId);
-              return (
-                <div key={rec.id} className={`flex items-center justify-between py-1.5 ${!rec.active ? "opacity-50" : ""}`}>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{rec.name}</p>
-                    <p className="text-xs text-muted-foreground">{cat?.name}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px]">
-                      {rec.frequency === "weekly" ? "Semanal" : rec.frequency === "monthly" ? "Mensal" : "Anual"}
-                    </Badge>
-                    <span className="text-sm font-semibold font-heading">{fmtFull(rec.amount)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    </div>);
+
 };
 
 export default MonthlyCalendar;
