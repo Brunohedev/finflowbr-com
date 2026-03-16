@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Shield, TrendingUp, Trophy, Target, PiggyBank } from "lucide-react";
+import SavingsTracker from "@/components/SavingsTracker";
+import { Plus, Target, PiggyBank, TrendingUp } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
