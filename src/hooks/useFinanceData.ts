@@ -103,14 +103,29 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     return data.expenses.filter((e) => e.date === todayStr).reduce((s, e) => s + e.amount, 0);
   }, [data, todayStr, isCurrentMonth]);
 
-  const monthExpenses = useMemo(() => {
+  // Total raw savings contributions (reserves + goals + investments) for the month
+  const monthSavingsRaw = useMemo(() => {
     if (!data) return 0;
-    const expenses = data.expenses.filter((e) => e.date.startsWith(activeMonth)).reduce((s, e) => s + e.amount, 0);
     const reserveContribs = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
     const goalContribs = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
     const investContribs = data.investments.filter((i) => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0);
-    return expenses + reserveContribs + goalContribs + investContribs;
+    return reserveContribs + goalContribs + investContribs;
   }, [data, activeMonth]);
+
+  // The budgeted savings amount (e.g. 20% of income) — only this counts as an "expense"
+  const savingsBudget = useMemo(() => {
+    if (!data) return 0;
+    const cat = data.categories.find((c) => c.id === "reserva_investimentos");
+    return cat ? (monthlyIncome * cat.percentage) / 100 : 0;
+  }, [data, monthlyIncome]);
+
+  const monthExpenses = useMemo(() => {
+    if (!data) return 0;
+    const expenses = data.expenses.filter((e) => e.date.startsWith(activeMonth)).reduce((s, e) => s + e.amount, 0);
+    // Cap savings at the budgeted amount — anything above is an asset transfer, not an expense
+    const savingsAsExpense = Math.min(monthSavingsRaw, savingsBudget);
+    return expenses + savingsAsExpense;
+  }, [data, activeMonth, monthSavingsRaw, savingsBudget]);
 
   const remainingToday = dailyIncome - todayExpenses;
   const remainingMonth = monthlyIncome - monthExpenses;
