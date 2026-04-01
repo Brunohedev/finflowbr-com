@@ -379,6 +379,7 @@ const Index = () => {
                   firstReserveId={isReserva ? data.emergencyReserves[0]?.id : undefined}
                   monthlyIncome={isReserva ? monthlyIncome : undefined}
                   monthlySaved={isReserva ? monthContribs + monthInvest : undefined}
+                  extraContributions={isReserva ? monthSavingsExtra : undefined}
                 />
               );
             })}
