@@ -125,14 +125,15 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     return cat ? (monthlyIncome * cat.percentage) / 100 : 0;
   }, [data, monthlyIncome]);
 
+  // Extra contributions beyond the budget cap (asset transfers, not expenses)
+  const monthSavingsExtra = useMemo(() => Math.max(monthSavingsRaw - savingsBudget, 0), [monthSavingsRaw, savingsBudget]);
+
   const monthExpenses = useMemo(() => {
     if (!data) return 0;
     const expenses = data.expenses.filter((e) => e.date.startsWith(activeMonth)).reduce((s, e) => s + e.amount, 0);
-    // Cap savings at the budgeted amount — anything above is an asset transfer, not an expense
     const savingsAsExpense = Math.min(monthSavingsRaw, savingsBudget);
     return expenses + savingsAsExpense;
   }, [data, activeMonth, monthSavingsRaw, savingsBudget]);
-
   const remainingToday = dailyIncome - todayExpenses;
   const remainingMonth = monthlyIncome - monthExpenses;
 
