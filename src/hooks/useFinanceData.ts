@@ -262,6 +262,14 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => (prev ? { ...prev, income } : prev));
   }, []);
 
+  const setMonthSalary = useCallback((month: string, amount: number) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const salaryByMonth = { ...(prev.salaryByMonth || {}), [month]: amount };
+      return { ...prev, salaryByMonth };
+    });
+  }, []);
+
   const addSubcategory = useCallback((categoryId: string, name: string) => {
     setData((prev) => {
       if (!prev) return prev;
