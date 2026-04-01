@@ -7,6 +7,7 @@ interface SavingsTrackerProps {
   monthlySaved: number;
   totalReserve: number;
   currentGoal: number;
+  extraContributions?: number;
   onGoalReached?: (nextGoal: number) => void;
 }
 
@@ -28,6 +29,7 @@ const SavingsTracker = ({
   monthlySaved,
   totalReserve,
   currentGoal,
+  extraContributions = 0,
   onGoalReached,
 }: SavingsTrackerProps) => {
   const monthlyTarget = useMemo(
@@ -100,6 +102,16 @@ const SavingsTracker = ({
             {formatCurrency(totalReserve)}
           </span>
         </div>
+        {extraContributions > 0 && (
+          <div className="flex items-center justify-between mt-0.5">
+            <span className="text-[10px] text-muted-foreground">
+              Valor Aportado (extra)
+            </span>
+            <span className="text-[10px] font-medium text-primary">
+              +{formatCurrency(extraContributions)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

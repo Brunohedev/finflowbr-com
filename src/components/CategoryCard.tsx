@@ -21,6 +21,7 @@ interface CategoryCardProps {
   firstReserveId?: string;
   monthlyIncome?: number;
   monthlySaved?: number;
+  extraContributions?: number;
 }
 
 const formatCurrency = (value: number) =>
@@ -34,7 +35,7 @@ const CategoryCard = ({
   category, budget, spent, onClick, onAddExpense, onAddInvestment,
   onAddReserveContribution, onUpdateReserveTarget,
   reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId,
-  monthlyIncome = 0, monthlySaved = 0
+  monthlyIncome = 0, monthlySaved = 0, extraContributions = 0
 }: CategoryCardProps) => {
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [addAmount, setAddAmount] = useState("");
@@ -120,6 +121,7 @@ const CategoryCard = ({
               monthlySaved={monthlySaved}
               totalReserve={reserveTotal}
               currentGoal={reserveTarget || 10000}
+              extraContributions={extraContributions}
             />
 
             {/* Set initial target */}

@@ -33,7 +33,7 @@ const Index = () => {
   const {
     data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
-    updatePercentages, updateIncome, resetMonth, setMonthSalary,
+    updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, savingsBudget,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource,
@@ -276,6 +276,7 @@ const Index = () => {
                         monthlySaved={monthlySaved}
                         totalReserve={reserveTotal}
                         currentGoal={reserveTarget || 10000}
+                        extraContributions={monthSavingsExtra}
                       />
                     );
                   }
@@ -378,6 +379,7 @@ const Index = () => {
                   firstReserveId={isReserva ? data.emergencyReserves[0]?.id : undefined}
                   monthlyIncome={isReserva ? monthlyIncome : undefined}
                   monthlySaved={isReserva ? monthContribs + monthInvest : undefined}
+                  extraContributions={isReserva ? monthSavingsExtra : undefined}
                 />
               );
             })}
