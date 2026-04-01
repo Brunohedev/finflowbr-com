@@ -93,8 +93,13 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     }
   }, [data, userId]);
 
-  const monthlyIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
-  const dailyIncome = useMemo(() => data ? getTotalDailyIncome(data.incomeSources) : 0, [data]);
+  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
+  const monthlyIncome = useMemo(() => {
+    if (!data) return 0;
+    const override = data.salaryByMonth?.[activeMonth];
+    return override !== undefined ? override : defaultIncome;
+  }, [data, activeMonth, defaultIncome]);
+  const dailyIncome = useMemo(() => monthlyIncome / 30, [monthlyIncome]);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const isCurrentMonth = activeMonth === getCurrentMonth();
