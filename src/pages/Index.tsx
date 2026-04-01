@@ -33,7 +33,7 @@ const Index = () => {
   const {
     data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
-    updatePercentages, updateIncome, resetMonth,
+    updatePercentages, updateIncome, resetMonth, setMonthSalary,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource,
