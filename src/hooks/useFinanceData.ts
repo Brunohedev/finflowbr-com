@@ -455,7 +455,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth,
+    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
