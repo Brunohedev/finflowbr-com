@@ -206,7 +206,33 @@ const Index = () => {
               <div className="flex items-center justify-center gap-1">
                 {moneyLeft >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
                 <p className="text-xs text-muted-foreground">
-                  Renda: {formatCurrency(monthlyIncome)} · Gastos: {formatCurrency(totalSpent)}
+                  Renda:{" "}
+                  {editingSalary ? (
+                    <input
+                      ref={salaryInputRef}
+                      type="number"
+                      className="inline w-24 bg-transparent border-b border-primary text-xs font-medium text-foreground outline-none px-1"
+                      value={salaryInput}
+                      onChange={(e) => setSalaryInput(e.target.value)}
+                      onBlur={() => {
+                        const val = parseFloat(salaryInput);
+                        if (!isNaN(val) && val > 0) setMonthSalary(activeMonth, val);
+                        setEditingSalary(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                        if (e.key === "Escape") setEditingSalary(false);
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="cursor-pointer border-b border-dashed border-muted-foreground/50 hover:border-primary hover:text-primary transition-colors"
+                      onClick={() => { setSalaryInput(String(monthlyIncome)); setEditingSalary(true); }}
+                    >
+                      {formatCurrency(monthlyIncome)}
+                    </span>
+                  )}
+                  {" "}· Gastos: {formatCurrency(totalSpent)}
                 </p>
               </div>
               {pendingCount > 0 &&
