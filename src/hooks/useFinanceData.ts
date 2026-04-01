@@ -48,7 +48,8 @@ const getInitialData = (userId?: string): FinanceData | null => {
 
     if (!data.financialGoals) data.financialGoals = [...DEFAULT_GOALS];
     if (!data.investments) data.investments = [];
-    if (!data.recurringExpenses) data.recurringExpenses = [];
+  if (!data.recurringExpenses) data.recurringExpenses = [];
+    if (!data.salaryByMonth) data.salaryByMonth = {};
 
     // Migrate single income to incomeSources
     if (!data.incomeSources) {
@@ -92,8 +93,13 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     }
   }, [data, userId]);
 
-  const monthlyIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
-  const dailyIncome = useMemo(() => data ? getTotalDailyIncome(data.incomeSources) : 0, [data]);
+  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
+  const monthlyIncome = useMemo(() => {
+    if (!data) return 0;
+    const override = data.salaryByMonth?.[activeMonth];
+    return override !== undefined ? override : defaultIncome;
+  }, [data, activeMonth, defaultIncome]);
+  const dailyIncome = useMemo(() => monthlyIncome / 30, [monthlyIncome]);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const isCurrentMonth = activeMonth === getCurrentMonth();
@@ -254,6 +260,14 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
   const updateIncome = useCallback((income: number) => {
     setData((prev) => (prev ? { ...prev, income } : prev));
+  }, []);
+
+  const setMonthSalary = useCallback((month: string, amount: number) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const salaryByMonth = { ...(prev.salaryByMonth || {}), [month]: amount };
+      return { ...prev, salaryByMonth };
+    });
   }, []);
 
   const addSubcategory = useCallback((categoryId: string, name: string) => {
@@ -441,7 +455,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth,
+    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,

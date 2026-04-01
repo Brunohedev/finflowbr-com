@@ -85,6 +85,7 @@ export interface IncomeSource {
 export interface FinanceData {
   income: number;
   incomeSources: IncomeSource[];
+  salaryByMonth?: Record<string, number>;
   categories: Category[];
   expenses: Expense[];
   recurringExpenses: RecurringExpense[];
