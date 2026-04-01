@@ -49,6 +49,16 @@ const Index = () => {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [expenseDefaultCategory, setExpenseDefaultCategory] = useState<string | undefined>();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editingSalary, setEditingSalary] = useState(false);
+  const [salaryInput, setSalaryInput] = useState("");
+  const salaryInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingSalary && salaryInputRef.current) {
+      salaryInputRef.current.focus();
+      salaryInputRef.current.select();
+    }
+  }, [editingSalary]);
 
   // Show login screen if not authenticated
   if (!isAuthenticated) {
