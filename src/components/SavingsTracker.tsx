@@ -7,6 +7,7 @@ interface SavingsTrackerProps {
   monthlySaved: number;
   totalReserve: number;
   currentGoal: number;
+  extraContributions?: number;
   onGoalReached?: (nextGoal: number) => void;
 }
 
