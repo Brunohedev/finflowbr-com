@@ -276,6 +276,7 @@ const Index = () => {
                         monthlySaved={monthlySaved}
                         totalReserve={reserveTotal}
                         currentGoal={reserveTarget || 10000}
+                        extraContributions={monthSavingsExtra}
                       />
                     );
                   }
