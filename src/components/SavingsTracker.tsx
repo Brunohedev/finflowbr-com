@@ -29,6 +29,7 @@ const SavingsTracker = ({
   monthlySaved,
   totalReserve,
   currentGoal,
+  extraContributions = 0,
   onGoalReached,
 }: SavingsTrackerProps) => {
   const monthlyTarget = useMemo(
