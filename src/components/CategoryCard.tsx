@@ -121,6 +121,7 @@ const CategoryCard = ({
               monthlySaved={monthlySaved}
               totalReserve={reserveTotal}
               currentGoal={reserveTarget || 10000}
+              extraContributions={extraContributions}
             />
 
             {/* Set initial target */}
