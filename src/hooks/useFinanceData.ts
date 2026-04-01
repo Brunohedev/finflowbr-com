@@ -48,7 +48,8 @@ const getInitialData = (userId?: string): FinanceData | null => {
 
     if (!data.financialGoals) data.financialGoals = [...DEFAULT_GOALS];
     if (!data.investments) data.investments = [];
-    if (!data.recurringExpenses) data.recurringExpenses = [];
+  if (!data.recurringExpenses) data.recurringExpenses = [];
+    if (!data.salaryByMonth) data.salaryByMonth = {};
 
     // Migrate single income to incomeSources
     if (!data.incomeSources) {
