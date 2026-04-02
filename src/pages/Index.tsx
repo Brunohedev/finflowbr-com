@@ -305,7 +305,8 @@ const Index = () => {
             <FinancialInsightsBanner
             data={data}
             monthlyIncome={monthlyIncome}
-            getSpentByCategory={getSpentByCategory} />
+            getSpentByCategory={getSpentByCategory}
+            savingsBudget={savingsBudget} />
           
 
             {/* Remaining today / month cards */}

@@ -35,6 +35,7 @@ const MonthlyReportPage = ({
         data={data}
         getSpentByCategory={getSpentByCategory}
         getBudget={getBudget}
+        savingsBudget={savingsBudget}
       />
 
       {/* 3. Growth Simulator */}
