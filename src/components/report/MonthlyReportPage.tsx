@@ -13,6 +13,7 @@ interface MonthlyReportPageProps {
   getBudget: (id: string) => number;
   onBack: () => void;
   onToggleExpenseStatus: (id: string) => void;
+  savingsBudget?: number;
 }
 
 const MonthlyReportPage = ({
