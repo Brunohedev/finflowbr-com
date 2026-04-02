@@ -146,7 +146,8 @@ const Index = () => {
           getSpentByCategory={getSpentByCategory}
           getBudget={getBudget}
           onBack={goBack}
-          onToggleExpenseStatus={toggleExpenseStatus} /> :
+          onToggleExpenseStatus={toggleExpenseStatus}
+          savingsBudget={savingsBudget} /> :
 
         view === "reserva_investimentos" ?
         <ReservaInvestimentosView
