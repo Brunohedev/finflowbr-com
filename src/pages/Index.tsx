@@ -69,7 +69,11 @@ const Index = () => {
     return <SetupWizard onComplete={setupBudget} />;
   }
 
-  const totalSpent = data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
+  const totalSpent = data.categories.reduce((s, cat) => {
+    const raw = getSpentByCategory(cat.id);
+    if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
+    return s + raw;
+  }, 0);
   const selectedCategory = data.categories.find((c) => c.id === selectedCategoryId);
   const moneyLeft = monthlyIncome - totalSpent;
 
