@@ -6,6 +6,7 @@ interface Props {
   data: FinanceData;
   monthlyIncome: number;
   getSpentByCategory: (id: string) => number;
+  savingsBudget: number;
 }
 
 const formatCurrency = (value: number) =>
