@@ -146,7 +146,8 @@ const Index = () => {
           getSpentByCategory={getSpentByCategory}
           getBudget={getBudget}
           onBack={goBack}
-          onToggleExpenseStatus={toggleExpenseStatus} /> :
+          onToggleExpenseStatus={toggleExpenseStatus}
+          savingsBudget={savingsBudget} /> :
 
         view === "reserva_investimentos" ?
         <ReservaInvestimentosView
@@ -305,7 +306,8 @@ const Index = () => {
             <FinancialInsightsBanner
             data={data}
             monthlyIncome={monthlyIncome}
-            getSpentByCategory={getSpentByCategory} />
+            getSpentByCategory={getSpentByCategory}
+            savingsBudget={savingsBudget} />
           
 
             {/* Remaining today / month cards */}

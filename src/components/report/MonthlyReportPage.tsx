@@ -13,10 +13,11 @@ interface MonthlyReportPageProps {
   getBudget: (id: string) => number;
   onBack: () => void;
   onToggleExpenseStatus: (id: string) => void;
+  savingsBudget?: number;
 }
 
 const MonthlyReportPage = ({
-  data, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus,
+  data, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus, savingsBudget = 0,
 }: MonthlyReportPageProps) => {
   const simulator = useGrowthSimulator();
 
@@ -34,6 +35,7 @@ const MonthlyReportPage = ({
         data={data}
         getSpentByCategory={getSpentByCategory}
         getBudget={getBudget}
+        savingsBudget={savingsBudget}
       />
 
       {/* 3. Growth Simulator */}
