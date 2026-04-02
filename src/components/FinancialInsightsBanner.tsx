@@ -12,12 +12,17 @@ interface Props {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentByCategory }: Props) {
+export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentByCategory, savingsBudget }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const insights = useMemo(() => {
     const list: string[] = [];
-    const totalSpent = data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
+    // Cap reserve/investments at budget — extra contributions are asset transfers, not expenses
+    const totalSpent = data.categories.reduce((s, cat) => {
+      const raw = getSpentByCategory(cat.id);
+      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
+      return s + raw;
+    }, 0);
     const remaining = monthlyIncome - totalSpent;
     const savingsRate = monthlyIncome > 0 ? ((remaining) / monthlyIncome) * 100 : 0;
 

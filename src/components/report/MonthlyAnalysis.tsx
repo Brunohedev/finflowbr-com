@@ -18,20 +18,27 @@ const COLORS = [
   "hsl(250, 60%, 60%)",
 ];
 
-const MonthlyAnalysis = ({ data, getSpentByCategory, getBudget }: MonthlyAnalysisProps) => {
+const MonthlyAnalysis = ({ data, getSpentByCategory, getBudget, savingsBudget = 0 }: MonthlyAnalysisProps) => {
   const totalSpent = useMemo(
-    () => data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0),
-    [data.categories, getSpentByCategory]
+    () => data.categories.reduce((s, cat) => {
+      const raw = getSpentByCategory(cat.id);
+      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
+      return s + raw;
+    }, 0),
+    [data.categories, getSpentByCategory, savingsBudget]
   );
 
   const chartData = useMemo(
     () =>
-      data.categories.map((cat, i) => ({
-        name: cat.name,
-        value: getSpentByCategory(cat.id),
-        color: COLORS[i % COLORS.length],
-      })),
-    [data.categories, getSpentByCategory]
+      data.categories.map((cat, i) => {
+        const raw = getSpentByCategory(cat.id);
+        return {
+          name: cat.name,
+          value: cat.id === "reserva_investimentos" ? Math.min(raw, savingsBudget) : raw,
+          color: COLORS[i % COLORS.length],
+        };
+      }),
+    [data.categories, getSpentByCategory, savingsBudget]
   );
 
   return (
