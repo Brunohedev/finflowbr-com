@@ -6,6 +6,7 @@ interface MonthlyAnalysisProps {
   data: FinanceData;
   getSpentByCategory: (id: string) => number;
   getBudget: (id: string) => number;
+  savingsBudget?: number;
 }
 
 const formatCurrency = (value: number) =>
