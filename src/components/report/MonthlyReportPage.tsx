@@ -17,7 +17,7 @@ interface MonthlyReportPageProps {
 }
 
 const MonthlyReportPage = ({
-  data, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus,
+  data, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus, savingsBudget = 0,
 }: MonthlyReportPageProps) => {
   const simulator = useGrowthSimulator();
 
