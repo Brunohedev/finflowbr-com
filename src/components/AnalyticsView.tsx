@@ -17,10 +17,14 @@ const COLORS = [
   "hsl(250, 60%, 60%)",
 ];
 
-const AnalyticsView = ({ data, getSpentByCategory, getBudget }: AnalyticsViewProps) => {
+const AnalyticsView = ({ data, getSpentByCategory, getBudget, savingsBudget = 0 }: AnalyticsViewProps & { savingsBudget?: number }) => {
   const totalSpent = useMemo(
-    () => data.categories.reduce((s, cat) => s + getSpentByCategory(cat.id), 0),
-    [data.categories, getSpentByCategory]
+    () => data.categories.reduce((s, cat) => {
+      const raw = getSpentByCategory(cat.id);
+      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
+      return s + raw;
+    }, 0),
+    [data.categories, getSpentByCategory, savingsBudget]
   );
 
   const chartData = useMemo(
