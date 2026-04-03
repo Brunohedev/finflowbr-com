@@ -22,8 +22,10 @@ const frequencyToMonthly = (amount: number, frequency: RecurringExpense["frequen
 };
 
 interface Props {
+  activeMonth: string;
   data: FinanceData;
   monthlyIncome: number;
+  monthSavingsUsed: number;
   getSpentByCategory: (catId: string) => number;
   onAddReserveContribution: (reserveId: string, amount: number, note?: string) => void;
   onAddInvestment: (name: string, amount: number, note?: string) => void;
@@ -33,7 +35,7 @@ interface Props {
 type QuickAction = "reserve" | "investment" | null;
 
 export default function EndOfMonthPrediction({
-  data, monthlyIncome, getSpentByCategory,
+  activeMonth, data, monthlyIncome, monthSavingsUsed, getSpentByCategory,
   onAddReserveContribution, onAddInvestment, firstReserveId
 }: Props) {
   const [actionType, setActionType] = useState<QuickAction>(null);
@@ -47,7 +49,6 @@ export default function EndOfMonthPrediction({
     const daysRemaining = totalDays - dayOfMonth;
 
     // Total expenses recorded this month (uses centralized getSpentByCategory)
-    const currentMonth = format(now, "yyyy-MM");
     const totalExpenses = data.categories.
     filter((c) => c.id !== "reserva_investimentos").
     reduce((s, cat) => s + getSpentByCategory(cat.id), 0);
@@ -70,15 +71,7 @@ export default function EndOfMonthPrediction({
     const predictedBalance = monthlyIncome - totalProjectedExpenses;
 
     // Reserve/investment contributions this month
-    const reserveContribs = data.emergencyReserves.
-    flatMap((r) => r.contributions).
-    filter((c) => c.date.startsWith(currentMonth)).
-    reduce((s, c) => s + c.amount, 0);
-    const investContribs = data.investments.
-    filter((i) => i.date.startsWith(currentMonth)).
-    reduce((s, i) => s + i.amount, 0);
-
-    const alreadyAllocated = reserveContribs + investContribs;
+    const alreadyAllocated = monthSavingsUsed;
     const availableToSave = Math.max(0, predictedBalance - alreadyAllocated);
 
     return {
@@ -91,7 +84,7 @@ export default function EndOfMonthPrediction({
       daysRemaining,
       ratio: monthlyIncome > 0 ? predictedBalance / monthlyIncome : 0
     };
-  }, [data, monthlyIncome, getSpentByCategory]);
+  }, [activeMonth, data, monthlyIncome, monthSavingsUsed, getSpentByCategory]);
 
   const getStatus = () => {
     if (prediction.predictedBalance <= 0) return { color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/20", icon: TrendingDown, label: "Projeção negativa" };

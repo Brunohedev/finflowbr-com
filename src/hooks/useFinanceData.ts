@@ -4,12 +4,37 @@ import {
   FinancialGoal, Investment, EmergencyReserve, IncomeSource, IncomeFrequency,
   RecurringExpense, RecurringFrequency,
   DEFAULT_CATEGORIES, DEFAULT_EMERGENCY_RESERVES, DEFAULT_GOALS,
-  getTotalMonthlyIncome, getTotalDailyIncome,
+  getTotalMonthlyIncome,
 } from "@/types/finance";
 import { format, addMonths, parseISO } from "date-fns";
+import { getSavingsAllocationForMonth } from "@/lib/savingsAllocation";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
+
+const getMonthExpenseTotal = (data: FinanceData, monthKey: string) =>
+  data.expenses
+    .filter((expense) => expense.date.startsWith(monthKey))
+    .reduce((sum, expense) => sum + expense.amount, 0);
+
+const logSavingsBalanceUpdate = (source: string, data: FinanceData, deposit: number) => {
+  const monthKey = format(new Date(), "yyyy-MM");
+  const savingsAllocation = getSavingsAllocationForMonth(data, monthKey);
+  const remainingCap = Math.max(0, savingsAllocation.reserveCap - savingsAllocation.reserveUsed);
+  const budgetPart = Math.min(deposit, remainingCap);
+  const extraPart = deposit - budgetPart;
+  const balanceBefore = savingsAllocation.salary - (getMonthExpenseTotal(data, monthKey) + savingsAllocation.reserveUsed);
+  const balanceAfter = balanceBefore - budgetPart;
+
+  console.log({
+    source,
+    deposit,
+    budget_part: budgetPart,
+    extra_part: extraPart,
+    balance_before: balanceBefore,
+    balance_after: balanceAfter,
+  });
+};
 
 const getInitialData = (userId?: string): FinanceData | null => {
   const stored = localStorage.getItem(getStorageKey(userId));
@@ -104,36 +129,34 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const isCurrentMonth = activeMonth === getCurrentMonth();
 
-  const todayExpenses = useMemo(() => {
+  const expenseOnlyToday = useMemo(() => {
     if (!data || !isCurrentMonth) return 0;
     return data.expenses.filter((e) => e.date === todayStr).reduce((s, e) => s + e.amount, 0);
   }, [data, todayStr, isCurrentMonth]);
 
-  // Total raw savings contributions (reserves + goals + investments) for the month
-  const monthSavingsRaw = useMemo(() => {
-    if (!data) return 0;
-    const reserveContribs = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
-    const goalContribs = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
-    const investContribs = data.investments.filter((i) => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0);
-    return reserveContribs + goalContribs + investContribs;
+  const savingsAllocation = useMemo(() => {
+    if (!data) return null;
+    return getSavingsAllocationForMonth(data, activeMonth);
   }, [data, activeMonth]);
 
-  // The budgeted savings amount (e.g. 20% of income) — only this counts as an "expense"
-  const savingsBudget = useMemo(() => {
-    if (!data) return 0;
-    const cat = data.categories.find((c) => c.id === "reserva_investimentos");
-    return cat ? (monthlyIncome * cat.percentage) / 100 : 0;
-  }, [data, monthlyIncome]);
+  const monthSavingsTotal = savingsAllocation?.reserveTotal ?? 0;
+  const monthSavingsUsed = savingsAllocation?.reserveUsed ?? 0;
+  const savingsBudget = savingsAllocation?.reserveCap ?? 0;
+  const monthSavingsExtra = savingsAllocation?.reserveExtra ?? 0;
 
-  // Extra contributions beyond the budget cap (asset transfers, not expenses)
-  const monthSavingsExtra = useMemo(() => Math.max(monthSavingsRaw - savingsBudget, 0), [monthSavingsRaw, savingsBudget]);
+  const todaySavingsUsed = useMemo(() => {
+    if (!isCurrentMonth || !savingsAllocation) return 0;
+    return savingsAllocation.entries
+      .filter((entry) => entry.date === todayStr)
+      .reduce((sum, entry) => sum + entry.budgetPart, 0);
+  }, [isCurrentMonth, savingsAllocation, todayStr]);
+
+  const todayExpenses = expenseOnlyToday + todaySavingsUsed;
 
   const monthExpenses = useMemo(() => {
     if (!data) return 0;
-    const expenses = data.expenses.filter((e) => e.date.startsWith(activeMonth)).reduce((s, e) => s + e.amount, 0);
-    const savingsAsExpense = Math.min(monthSavingsRaw, savingsBudget);
-    return expenses + savingsAsExpense;
-  }, [data, activeMonth, monthSavingsRaw, savingsBudget]);
+    return getMonthExpenseTotal(data, activeMonth) + monthSavingsUsed;
+  }, [data, activeMonth, monthSavingsUsed]);
   const remainingToday = dailyIncome - todayExpenses;
   const remainingMonth = monthlyIncome - monthExpenses;
 
@@ -327,6 +350,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const addReserveContribution = useCallback((reserveId: string, amount: number, note?: string) => {
     setData((prev) => {
       if (!prev) return prev;
+      logSavingsBalanceUpdate("deposit", prev, amount);
       const contribution: Contribution = { id: crypto.randomUUID(), amount, date: format(new Date(), "yyyy-MM-dd"), note };
       return {
         ...prev,
@@ -360,6 +384,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const addGoalContribution = useCallback((goalId: string, amount: number, note?: string) => {
     setData((prev) => {
       if (!prev) return prev;
+      logSavingsBalanceUpdate("deposit", prev, amount);
       const contribution: Contribution = { id: crypto.randomUUID(), amount, date: format(new Date(), "yyyy-MM-dd"), note };
       return {
         ...prev,
@@ -388,6 +413,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const addInvestment = useCallback((name: string, amount: number, note?: string) => {
     setData((prev) => {
       if (!prev) return prev;
+      logSavingsBalanceUpdate("deposit", prev, amount);
       const investment: Investment = { id: crypto.randomUUID(), name, amount, note, date: format(new Date(), "yyyy-MM-dd") };
       return { ...prev, investments: [...prev.investments, investment] };
     });
@@ -424,16 +450,13 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     (categoryId: string) => {
       if (!data) return 0;
       if (categoryId === "reserva_investimentos") {
-        const rc = data.emergencyReserves.flatMap((r) => r.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
-        const gc = data.financialGoals.flatMap((g) => g.contributions).filter((c) => c.date.startsWith(activeMonth)).reduce((s, c) => s + c.amount, 0);
-        const ic = data.investments.filter((i) => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0);
-        return rc + gc + ic;
+        return monthSavingsUsed;
       }
       return data.expenses
         .filter((e) => e.categoryId === categoryId && e.date.startsWith(activeMonth))
         .reduce((sum, e) => sum + e.amount, 0);
     },
-    [data, activeMonth]
+    [data, activeMonth, monthSavingsUsed]
   );
 
   const getSpentBySubcategory = useCallback(
@@ -456,7 +479,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, savingsBudget,
+    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,

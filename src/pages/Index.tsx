@@ -33,7 +33,7 @@ const Index = () => {
   const {
     data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
-    updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, savingsBudget,
+    updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource,
@@ -69,11 +69,7 @@ const Index = () => {
     return <SetupWizard onComplete={setupBudget} />;
   }
 
-  const totalSpent = data.categories.reduce((s, cat) => {
-    const raw = getSpentByCategory(cat.id);
-    if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
-    return s + raw;
-  }, 0);
+  const totalSpent = data.categories.reduce((sum, category) => sum + getSpentByCategory(category.id), 0);
   const selectedCategory = data.categories.find((c) => c.id === selectedCategoryId);
   const moneyLeft = monthlyIncome - totalSpent;
 
@@ -147,11 +143,11 @@ const Index = () => {
         {view === "report" ?
         <MonthlyReportPage
           data={data}
+          monthlyIncome={monthlyIncome}
           getSpentByCategory={getSpentByCategory}
           getBudget={getBudget}
           onBack={goBack}
-          onToggleExpenseStatus={toggleExpenseStatus}
-          savingsBudget={savingsBudget} /> :
+          onToggleExpenseStatus={toggleExpenseStatus} /> :
 
         view === "reserva_investimentos" ?
         <ReservaInvestimentosView
@@ -278,7 +274,7 @@ const Index = () => {
                         key={cat.id}
                         monthlyIncome={monthlyIncome}
                         savingsPercentage={cat.percentage}
-                        monthlySaved={monthlySaved}
+                        monthlySaved={monthSavingsTotal}
                         totalReserve={reserveTotal}
                         currentGoal={reserveTarget || 10000}
                         extraContributions={monthSavingsExtra}
@@ -310,8 +306,7 @@ const Index = () => {
             <FinancialInsightsBanner
             data={data}
             monthlyIncome={monthlyIncome}
-            getSpentByCategory={getSpentByCategory}
-            savingsBudget={savingsBudget} />
+            getSpentByCategory={getSpentByCategory} />
           
 
             {/* Remaining today / month cards */}
@@ -348,7 +343,9 @@ const Index = () => {
             {/* End of month prediction */}
             <EndOfMonthPrediction
             data={data}
+            activeMonth={activeMonth}
             monthlyIncome={monthlyIncome}
+            monthSavingsUsed={getSpentByCategory("reserva_investimentos")}
             getSpentByCategory={getSpentByCategory}
             onAddReserveContribution={addReserveContribution}
             onAddInvestment={addInvestment}
@@ -359,10 +356,6 @@ const Index = () => {
             <div className="space-y-3">
             {data.categories.map((cat) => {
               const isReserva = cat.id === "reserva_investimentos";
-              const monthContribs = isReserva ? data.emergencyReserves.reduce((s, r) =>
-                s + r.contributions.filter(c => c.date.startsWith(activeMonth)).reduce((a, c) => a + c.amount, 0), 0) : 0;
-              const monthInvest = isReserva ? data.investments
-                .filter(i => i.date.startsWith(activeMonth)).reduce((s, i) => s + i.amount, 0) : 0;
 
               return (
                 <CategoryCard
@@ -384,7 +377,7 @@ const Index = () => {
                   investmentTotal={isReserva ? investmentTotal : undefined}
                   firstReserveId={isReserva ? data.emergencyReserves[0]?.id : undefined}
                   monthlyIncome={isReserva ? monthlyIncome : undefined}
-                  monthlySaved={isReserva ? monthContribs + monthInvest : undefined}
+                  monthlySaved={isReserva ? monthSavingsTotal : undefined}
                   extraContributions={isReserva ? monthSavingsExtra : undefined}
                 />
               );

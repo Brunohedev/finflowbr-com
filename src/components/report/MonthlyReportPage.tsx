@@ -9,15 +9,15 @@ import { useGrowthSimulator } from "@/hooks/useGrowthSimulator";
 
 interface MonthlyReportPageProps {
   data: FinanceData;
+  monthlyIncome: number;
   getSpentByCategory: (id: string) => number;
   getBudget: (id: string) => number;
   onBack: () => void;
   onToggleExpenseStatus: (id: string) => void;
-  savingsBudget?: number;
 }
 
 const MonthlyReportPage = ({
-  data, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus, savingsBudget = 0,
+  data, monthlyIncome, getSpentByCategory, getBudget, onBack, onToggleExpenseStatus,
 }: MonthlyReportPageProps) => {
   const simulator = useGrowthSimulator();
 
@@ -26,6 +26,7 @@ const MonthlyReportPage = ({
       {/* 1. Calendar Section */}
       <MonthlyCalendarSection
         data={data}
+        monthlyIncome={monthlyIncome}
         onBack={onBack}
         onToggleExpenseStatus={onToggleExpenseStatus}
       />
@@ -33,9 +34,9 @@ const MonthlyReportPage = ({
       {/* 2. Detailed Analysis */}
       <MonthlyAnalysis
         data={data}
+        monthlyIncome={monthlyIncome}
         getSpentByCategory={getSpentByCategory}
         getBudget={getBudget}
-        savingsBudget={savingsBudget}
       />
 
       {/* 3. Growth Simulator */}
