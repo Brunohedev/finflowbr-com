@@ -1,28 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { Sparkles } from "lucide-react";
-import { FinanceData, getTotalMonthlyIncome } from "@/types/finance";
+import { FinanceData } from "@/types/finance";
 
 interface Props {
   data: FinanceData;
   monthlyIncome: number;
   getSpentByCategory: (id: string) => number;
-  savingsBudget: number;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentByCategory, savingsBudget }: Props) {
+export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentByCategory }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const insights = useMemo(() => {
     const list: string[] = [];
-    // Cap reserve/investments at budget — extra contributions are asset transfers, not expenses
-    const totalSpent = data.categories.reduce((s, cat) => {
-      const raw = getSpentByCategory(cat.id);
-      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
-      return s + raw;
-    }, 0);
+    const totalSpent = data.categories.reduce((sum, category) => sum + getSpentByCategory(category.id), 0);
     const remaining = monthlyIncome - totalSpent;
     const savingsRate = monthlyIncome > 0 ? ((remaining) / monthlyIncome) * 100 : 0;
 

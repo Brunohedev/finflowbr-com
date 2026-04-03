@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
-import { FinanceData, getTotalDailyIncome } from "@/types/finance";
+import { FinanceData } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ChevronLeft, ChevronRight, Check, Clock } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getMonthlyIncomeForMonth, getSavingsAllocationForMonth } from "@/lib/savingsAllocation";
 
 interface MonthlyCalendarProps {
   data: FinanceData;
+  monthlyIncome?: number;
   onBack: () => void;
   onToggleExpenseStatus: (id: string) => void;
 }
@@ -22,12 +24,29 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const dailyIncome = useMemo(() => getTotalDailyIncome(data.incomeSources), [data.incomeSources]);
-
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startDayOfWeek = getDay(monthStart);
+  const monthKey = format(currentDate, "yyyy-MM");
+
+  const monthIncome = useMemo(() => getMonthlyIncomeForMonth(data, monthKey), [data, monthKey]);
+  const dailyIncome = useMemo(() => (days.length > 0 ? monthIncome / days.length : 0), [days.length, monthIncome]);
+  const savingsAllocation = useMemo(() => getSavingsAllocationForMonth(data, monthKey), [data, monthKey]);
+
+  const savingsByDate = useMemo(() => {
+    return savingsAllocation.entries.reduce<Record<string, { budgetPart: number; extraPart: number; total: number }>>((map, entry) => {
+      if (!map[entry.date]) {
+        map[entry.date] = { budgetPart: 0, extraPart: 0, total: 0 };
+      }
+
+      map[entry.date].budgetPart += entry.budgetPart;
+      map[entry.date].extraPart += entry.extraPart;
+      map[entry.date].total += entry.amount;
+
+      return map;
+    }, {});
+  }, [savingsAllocation.entries]);
 
   const dayData = useMemo(() => {
     const map: Record<string, {income: number;expenses: number;}> = {};
@@ -38,17 +57,11 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
     data.expenses.forEach((e) => {
       if (map[e.date]) map[e.date].expenses += e.amount;
     });
-    data.emergencyReserves.flatMap((r) => r.contributions).forEach((c) => {
-      if (map[c.date]) map[c.date].expenses += c.amount;
-    });
-    data.financialGoals.flatMap((g) => g.contributions).forEach((c) => {
-      if (map[c.date]) map[c.date].expenses += c.amount;
-    });
-    data.investments.forEach((i) => {
-      if (map[i.date]) map[i.date].expenses += i.amount;
+    Object.entries(savingsByDate).forEach(([date, allocation]) => {
+      if (map[date]) map[date].expenses += allocation.budgetPart;
     });
     return map;
-  }, [days, data, dailyIncome]);
+  }, [days, data.expenses, dailyIncome, savingsByDate]);
 
   const selectedDayKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
   const selectedDayData = selectedDayKey ? dayData[selectedDayKey] : null;
@@ -60,15 +73,12 @@ const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalenda
 
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-  const monthKey = format(currentDate, "yyyy-MM");
   const monthTotals = useMemo(() => {
-    const daysInMonth = days.length;
-    const totalIncome = dailyIncome * daysInMonth;
     const totalExpenses = Object.entries(dayData).
     filter(([k]) => k.startsWith(monthKey)).
     reduce((s, [, v]) => s + v.expenses, 0);
-    return { income: totalIncome, expenses: totalExpenses, balance: totalIncome - totalExpenses };
-  }, [dayData, dailyIncome, days.length, monthKey]);
+    return { income: monthIncome, expenses: totalExpenses, balance: monthIncome - totalExpenses };
+  }, [dayData, monthIncome, monthKey]);
 
   // Monthly expenses breakdown by category
   const monthExpenses = useMemo(() => {

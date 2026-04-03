@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface AnalyticsViewProps {
   data: FinanceData;
+  monthlyIncome: number;
   getSpentByCategory: (id: string) => number;
   getBudget: (id: string) => number;
 }
@@ -17,14 +18,10 @@ const COLORS = [
   "hsl(250, 60%, 60%)",
 ];
 
-const AnalyticsView = ({ data, getSpentByCategory, getBudget, savingsBudget = 0 }: AnalyticsViewProps & { savingsBudget?: number }) => {
+const AnalyticsView = ({ data, monthlyIncome, getSpentByCategory, getBudget }: AnalyticsViewProps) => {
   const totalSpent = useMemo(
-    () => data.categories.reduce((s, cat) => {
-      const raw = getSpentByCategory(cat.id);
-      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
-      return s + raw;
-    }, 0),
-    [data.categories, getSpentByCategory, savingsBudget]
+    () => data.categories.reduce((sum, category) => sum + getSpentByCategory(category.id), 0),
+    [data.categories, getSpentByCategory]
   );
 
   const chartData = useMemo(
@@ -45,7 +42,7 @@ const AnalyticsView = ({ data, getSpentByCategory, getBudget, savingsBudget = 0 
         <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Utilizado</p>
         <p className="text-3xl font-bold font-heading mt-1">{formatCurrency(totalSpent)}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          de {formatCurrency(data.income)} ({((totalSpent / data.income) * 100).toFixed(0)}%)
+          de {formatCurrency(monthlyIncome)} ({monthlyIncome > 0 ? ((totalSpent / monthlyIncome) * 100).toFixed(0) : 0}%)
         </p>
       </div>
 

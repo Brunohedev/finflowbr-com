@@ -4,9 +4,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface MonthlyAnalysisProps {
   data: FinanceData;
+  monthlyIncome: number;
   getSpentByCategory: (id: string) => number;
   getBudget: (id: string) => number;
-  savingsBudget?: number;
 }
 
 const formatCurrency = (value: number) =>
@@ -18,27 +18,22 @@ const COLORS = [
   "hsl(250, 60%, 60%)",
 ];
 
-const MonthlyAnalysis = ({ data, getSpentByCategory, getBudget, savingsBudget = 0 }: MonthlyAnalysisProps) => {
+const MonthlyAnalysis = ({ data, monthlyIncome, getSpentByCategory, getBudget }: MonthlyAnalysisProps) => {
   const totalSpent = useMemo(
-    () => data.categories.reduce((s, cat) => {
-      const raw = getSpentByCategory(cat.id);
-      if (cat.id === "reserva_investimentos") return s + Math.min(raw, savingsBudget);
-      return s + raw;
-    }, 0),
-    [data.categories, getSpentByCategory, savingsBudget]
+    () => data.categories.reduce((sum, category) => sum + getSpentByCategory(category.id), 0),
+    [data.categories, getSpentByCategory]
   );
 
   const chartData = useMemo(
     () =>
       data.categories.map((cat, i) => {
-        const raw = getSpentByCategory(cat.id);
         return {
           name: cat.name,
-          value: cat.id === "reserva_investimentos" ? Math.min(raw, savingsBudget) : raw,
+          value: getSpentByCategory(cat.id),
           color: COLORS[i % COLORS.length],
         };
       }),
-    [data.categories, getSpentByCategory, savingsBudget]
+    [data.categories, getSpentByCategory]
   );
 
   return (
@@ -49,7 +44,7 @@ const MonthlyAnalysis = ({ data, getSpentByCategory, getBudget, savingsBudget = 
         <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Utilizado</p>
         <p className="text-3xl font-bold font-heading mt-1">{formatCurrency(totalSpent)}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          de {formatCurrency(data.income)} ({data.income > 0 ? ((totalSpent / data.income) * 100).toFixed(0) : 0}%)
+          de {formatCurrency(monthlyIncome)} ({monthlyIncome > 0 ? ((totalSpent / monthlyIncome) * 100).toFixed(0) : 0}%)
         </p>
       </div>
 
