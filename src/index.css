@@ -123,6 +123,7 @@
     @apply text-warning;
   }
 
- .status-danger {
+  .status-danger {
     @apply text-destructive;
   }
+}
