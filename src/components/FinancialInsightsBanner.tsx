@@ -6,6 +6,7 @@ import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savi
 interface Props {
   data: FinanceData;
   monthlyIncome: number;
+  activeMonth: string;
   getSpentByCategory: (id: string) => number;
 }
 
