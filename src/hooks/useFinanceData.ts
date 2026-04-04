@@ -285,7 +285,15 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const setMonthSalary = useCallback((month: string, amount: number) => {
     setData((prev) => {
       if (!prev) return prev;
-      const salaryByMonth = { ...(prev.salaryByMonth || {}), [month]: amount };
+      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources);
+      const salaryByMonth = { ...(prev.salaryByMonth || {}) };
+
+      if (Math.abs(amount - defaultIncome) < 0.01) {
+        delete salaryByMonth[month];
+      } else {
+        salaryByMonth[month] = amount;
+      }
+
       return { ...prev, salaryByMonth };
     });
   }, []);
