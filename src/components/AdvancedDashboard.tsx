@@ -85,8 +85,8 @@ const AdvancedDashboard = ({
     }
 
     const essenciaisSpent = getSpentByCategory("essenciais");
-    const essenciaisBudget = data.categories.find((c) => c.id === "essenciais");
-    if (essenciaisBudget && essenciaisSpent > (monthlyIncome * essenciaisBudget.percentage / 100)) {
+    const essenciaisBudgetVal = getBudget("essenciais");
+    if (essenciaisBudgetVal > 0 && essenciaisSpent > essenciaisBudgetVal) {
       list.push({ type: "warning", text: "Gastos essenciais ultrapassaram o orçamento. Revise aluguel, mercado e contas." });
     }
 
