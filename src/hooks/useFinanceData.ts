@@ -273,14 +273,10 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const updatePercentages = useCallback((percentages: Percentages) => {
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        categories: prev.categories.map((cat) => ({
-          ...cat, percentage: percentages[cat.id as keyof Percentages] ?? cat.percentage,
-        })),
-      };
+      const percentagesByMonth = { ...(prev.percentagesByMonth || {}), [activeMonth]: percentages };
+      return { ...prev, percentagesByMonth };
     });
-  }, []);
+  }, [activeMonth]);
 
   const updateIncome = useCallback((income: number) => {
     setData((prev) => (prev ? { ...prev, income } : prev));
