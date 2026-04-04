@@ -99,11 +99,7 @@ const Index = () => {
     setSelectedCategoryId(null);
   };
 
-  const pcts: Percentages = {
-    essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
-    desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
-    reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20
-  };
+  const pcts = monthPercentages;
 
   // Pending expenses count
   const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(activeMonth)).length;
