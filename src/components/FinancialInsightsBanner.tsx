@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { FinanceData } from "@/types/finance";
+import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 
 interface Props {
   data: FinanceData;
