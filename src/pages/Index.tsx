@@ -281,7 +281,7 @@ const Index = () => {
                   return (
                     <div key={cat.id} className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium">{cat.name} – {cat.percentage}% ({formatCurrency(budget)})</span>
+                        <span className="font-medium">{cat.name} – {pcts[cat.id as keyof Percentages] ?? cat.percentage}% ({formatCurrency(budget)})</span>
                         <span className={`font-medium ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning" : "text-primary"}`}>
                           {formatCurrency(spent)}
                         </span>
