@@ -12,6 +12,7 @@ import {
   Lightbulb, CalendarClock, Clock, AlertTriangle, CheckCircle2
 } from "lucide-react";
 import { FinanceData, RecurringFrequency } from "@/types/finance";
+import { getPercentagesForMonth } from "@/lib/savingsAllocation";
 import { differenceInDays, parseISO } from "date-fns";
 
 const formatCurrency = (value: number) =>
