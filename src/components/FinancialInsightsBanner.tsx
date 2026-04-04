@@ -47,7 +47,7 @@ export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentB
     });
 
     const desejosSpent = getSpentByCategory("desejos");
-    const desejosBudget = (data.categories.find(c => c.id === "desejos")?.percentage ?? 30) / 100 * monthlyIncome;
+    const desejosBudget = getBudget("desejos");
     if (desejosSpent < desejosBudget * 0.5 && monthlyIncome > 0) {
       list.push(`Seus gastos com desejos estão bem controlados. Parabéns! ✨`);
     }

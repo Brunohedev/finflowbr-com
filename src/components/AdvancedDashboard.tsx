@@ -91,8 +91,8 @@ const AdvancedDashboard = ({
     }
 
     const desejosSpent = getSpentByCategory("desejos");
-    const desejosBudget = data.categories.find((c) => c.id === "desejos");
-    if (desejosBudget && desejosSpent < (monthlyIncome * desejosBudget.percentage / 100) * 0.5) {
+    const desejosBudgetVal = getBudget("desejos");
+    if (desejosBudgetVal > 0 && desejosSpent < desejosBudgetVal * 0.5) {
       list.push({ type: "success", text: "Seus gastos com desejos estão bem controlados. Continue assim!" });
     }
 
