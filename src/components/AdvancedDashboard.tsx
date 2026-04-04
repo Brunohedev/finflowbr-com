@@ -94,7 +94,7 @@ const AdvancedDashboard = ({
     }
 
     const desejosSpent = getSpentByCategory("desejos");
-    const desejosBudgetVal = getBudget("desejos");
+    const desejosBudgetVal = (monthPcts.desejos / 100) * monthlyIncome;
     if (desejosBudgetVal > 0 && desejosSpent < desejosBudgetVal * 0.5) {
       list.push({ type: "success", text: "Seus gastos com desejos estão bem controlados. Continue assim!" });
     }

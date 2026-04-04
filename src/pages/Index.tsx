@@ -302,6 +302,7 @@ const Index = () => {
             <FinancialInsightsBanner
             data={data}
             monthlyIncome={monthlyIncome}
+            activeMonth={activeMonth}
             getSpentByCategory={getSpentByCategory} />
           
 
