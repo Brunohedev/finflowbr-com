@@ -1,17 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { FinanceData } from "@/types/finance";
+import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 
 interface Props {
   data: FinanceData;
   monthlyIncome: number;
+  activeMonth: string;
   getSpentByCategory: (id: string) => number;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentByCategory }: Props) {
+export default function FinancialInsightsBanner({ data, monthlyIncome, activeMonth, getSpentByCategory }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const insights = useMemo(() => {
@@ -47,7 +49,8 @@ export default function FinancialInsightsBanner({ data, monthlyIncome, getSpentB
     });
 
     const desejosSpent = getSpentByCategory("desejos");
-    const desejosBudget = (data.categories.find(c => c.id === "desejos")?.percentage ?? 30) / 100 * monthlyIncome;
+    const desejosPct = getPercentagesForMonth(data, activeMonth).desejos;
+    const desejosBudget = (desejosPct / 100) * monthlyIncome;
     if (desejosSpent < desejosBudget * 0.5 && monthlyIncome > 0) {
       list.push(`Seus gastos com desejos estão bem controlados. Parabéns! ✨`);
     }

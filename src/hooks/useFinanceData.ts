@@ -7,7 +7,7 @@ import {
   getTotalMonthlyIncome,
 } from "@/types/finance";
 import { format, addMonths, parseISO } from "date-fns";
-import { getSavingsAllocationForMonth } from "@/lib/savingsAllocation";
+import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
@@ -273,14 +273,10 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const updatePercentages = useCallback((percentages: Percentages) => {
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        categories: prev.categories.map((cat) => ({
-          ...cat, percentage: percentages[cat.id as keyof Percentages] ?? cat.percentage,
-        })),
-      };
+      const percentagesByMonth = { ...(prev.percentagesByMonth || {}), [activeMonth]: percentages };
+      return { ...prev, percentagesByMonth };
     });
-  }, []);
+  }, [activeMonth]);
 
   const updateIncome = useCallback((income: number) => {
     setData((prev) => (prev ? { ...prev, income } : prev));
@@ -469,17 +465,22 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     [data, activeMonth]
   );
 
+  const monthPercentages = useMemo(() => {
+    if (!data) return { essenciais: 50, desejos: 30, reserva_investimentos: 20 };
+    return getPercentagesForMonth(data, activeMonth);
+  }, [data, activeMonth]);
+
   const getBudget = useCallback(
     (categoryId: string) => {
       if (!data) return 0;
-      const cat = data.categories.find((c) => c.id === categoryId);
-      return cat ? (monthlyIncome * cat.percentage) / 100 : 0;
+      const pct = monthPercentages[categoryId as keyof Percentages];
+      return pct !== undefined ? (monthlyIncome * pct) / 100 : 0;
     },
-    [data, monthlyIncome]
+    [data, monthlyIncome, monthPercentages]
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget,
+    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget, monthPercentages,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,

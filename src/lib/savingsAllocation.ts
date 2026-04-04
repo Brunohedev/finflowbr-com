@@ -1,4 +1,4 @@
-import { FinanceData, getTotalMonthlyIncome } from "@/types/finance";
+import { FinanceData, Percentages, getTotalMonthlyIncome } from "@/types/finance";
 
 export interface SavingsAllocationEntry {
   id: string;
@@ -20,8 +20,18 @@ export interface SavingsAllocationSummary {
   salary: number;
 }
 
-const getReservePercentage = (data: FinanceData) =>
-  data.categories.find((category) => category.id === "reserva_investimentos")?.percentage ?? 0;
+export const getPercentagesForMonth = (data: FinanceData, monthKey: string): Percentages => {
+  const override = data.percentagesByMonth?.[monthKey];
+  if (override) return override;
+  return {
+    essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
+    desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
+    reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20,
+  };
+};
+
+const getReservePercentage = (data: FinanceData, monthKey: string) =>
+  getPercentagesForMonth(data, monthKey).reserva_investimentos;
 
 export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) => {
   const override = data.salaryByMonth?.[monthKey];
@@ -30,7 +40,7 @@ export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) =>
 
 export const getSavingsAllocationForMonth = (data: FinanceData, monthKey: string): SavingsAllocationSummary => {
   const salary = getMonthlyIncomeForMonth(data, monthKey);
-  const reservePercentage = getReservePercentage(data);
+  const reservePercentage = getReservePercentage(data, monthKey);
   const reserveCap = (salary * reservePercentage) / 100;
 
   const entries = [

@@ -31,7 +31,7 @@ const Index = () => {
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
   const {
-    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
+    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal,
     addSubcategory, deleteSubcategory,
@@ -99,11 +99,7 @@ const Index = () => {
     setSelectedCategoryId(null);
   };
 
-  const pcts: Percentages = {
-    essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
-    desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
-    reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20
-  };
+  const pcts = monthPercentages;
 
   // Pending expenses count
   const pendingCount = data.expenses.filter((e) => e.status === "pending" && e.date.startsWith(activeMonth)).length;
@@ -273,7 +269,7 @@ const Index = () => {
                       <SavingsTracker
                         key={cat.id}
                         monthlyIncome={monthlyIncome}
-                        savingsPercentage={cat.percentage}
+                        savingsPercentage={pcts.reserva_investimentos}
                         monthlySaved={monthSavingsTotal}
                         totalReserve={reserveTotal}
                         currentGoal={reserveTarget || 10000}
@@ -285,7 +281,7 @@ const Index = () => {
                   return (
                     <div key={cat.id} className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium">{cat.name} – {cat.percentage}% ({formatCurrency(budget)})</span>
+                        <span className="font-medium">{cat.name} – {pcts[cat.id as keyof Percentages] ?? cat.percentage}% ({formatCurrency(budget)})</span>
                         <span className={`font-medium ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning" : "text-primary"}`}>
                           {formatCurrency(spent)}
                         </span>
@@ -306,6 +302,7 @@ const Index = () => {
             <FinancialInsightsBanner
             data={data}
             monthlyIncome={monthlyIncome}
+            activeMonth={activeMonth}
             getSpentByCategory={getSpentByCategory} />
           
 
@@ -360,7 +357,7 @@ const Index = () => {
               return (
                 <CategoryCard
                   key={cat.id}
-                  category={cat}
+                  category={{ ...cat, percentage: pcts[cat.id as keyof Percentages] ?? cat.percentage }}
                   budget={getBudget(cat.id)}
                   spent={getSpentByCategory(cat.id)}
                   expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}

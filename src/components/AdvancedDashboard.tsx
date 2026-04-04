@@ -12,6 +12,7 @@ import {
   Lightbulb, CalendarClock, Clock, AlertTriangle, CheckCircle2
 } from "lucide-react";
 import { FinanceData, RecurringFrequency } from "@/types/finance";
+import { getPercentagesForMonth } from "@/lib/savingsAllocation";
 import { differenceInDays, parseISO } from "date-fns";
 
 const formatCurrency = (value: number) =>
@@ -29,6 +30,7 @@ interface AdvancedDashboardProps {
   data: FinanceData;
   monthlyIncome: number;
   getSpentByCategory: (categoryId: string) => number;
+  activeMonth: string;
   onBack: () => void;
   onAddRecurring: (name: string, amount: number, frequency: RecurringFrequency, categoryId: string, subcategoryId?: string) => void;
   onDeleteRecurring: (id: string) => void;
@@ -36,7 +38,7 @@ interface AdvancedDashboardProps {
 }
 
 const AdvancedDashboard = ({
-  data, monthlyIncome, getSpentByCategory, onBack,
+  data, monthlyIncome, getSpentByCategory, activeMonth, onBack,
   onAddRecurring, onDeleteRecurring, onToggleRecurring,
 }: AdvancedDashboardProps) => {
   const [monthlyContribution, setMonthlyContribution] = useState(500);
@@ -85,14 +87,15 @@ const AdvancedDashboard = ({
     }
 
     const essenciaisSpent = getSpentByCategory("essenciais");
-    const essenciaisBudget = data.categories.find((c) => c.id === "essenciais");
-    if (essenciaisBudget && essenciaisSpent > (monthlyIncome * essenciaisBudget.percentage / 100)) {
+    const monthPcts = getPercentagesForMonth(data, activeMonth);
+    const essenciaisBudgetVal = (monthPcts.essenciais / 100) * monthlyIncome;
+    if (essenciaisBudgetVal > 0 && essenciaisSpent > essenciaisBudgetVal) {
       list.push({ type: "warning", text: "Gastos essenciais ultrapassaram o orçamento. Revise aluguel, mercado e contas." });
     }
 
     const desejosSpent = getSpentByCategory("desejos");
-    const desejosBudget = data.categories.find((c) => c.id === "desejos");
-    if (desejosBudget && desejosSpent < (monthlyIncome * desejosBudget.percentage / 100) * 0.5) {
+    const desejosBudgetVal = (monthPcts.desejos / 100) * monthlyIncome;
+    if (desejosBudgetVal > 0 && desejosSpent < desejosBudgetVal * 0.5) {
       list.push({ type: "success", text: "Seus gastos com desejos estão bem controlados. Continue assim!" });
     }
 
