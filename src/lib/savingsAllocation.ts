@@ -1,4 +1,4 @@
-import { FinanceData, getTotalMonthlyIncome } from "@/types/finance";
+import { FinanceData, Percentages, getTotalMonthlyIncome } from "@/types/finance";
 
 export interface SavingsAllocationEntry {
   id: string;
