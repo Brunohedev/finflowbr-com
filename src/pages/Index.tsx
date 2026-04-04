@@ -269,7 +269,7 @@ const Index = () => {
                       <SavingsTracker
                         key={cat.id}
                         monthlyIncome={monthlyIncome}
-                        savingsPercentage={cat.percentage}
+                        savingsPercentage={pcts.reserva_investimentos}
                         monthlySaved={monthSavingsTotal}
                         totalReserve={reserveTotal}
                         currentGoal={reserveTarget || 10000}
