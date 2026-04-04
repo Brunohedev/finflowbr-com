@@ -465,13 +465,18 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     [data, activeMonth]
   );
 
+  const monthPercentages = useMemo(() => {
+    if (!data) return { essenciais: 50, desejos: 30, reserva_investimentos: 20 };
+    return getPercentagesForMonth(data, activeMonth);
+  }, [data, activeMonth]);
+
   const getBudget = useCallback(
     (categoryId: string) => {
       if (!data) return 0;
-      const cat = data.categories.find((c) => c.id === categoryId);
-      return cat ? (monthlyIncome * cat.percentage) / 100 : 0;
+      const pct = monthPercentages[categoryId as keyof Percentages];
+      return pct !== undefined ? (monthlyIncome * pct) / 100 : 0;
     },
-    [data, monthlyIncome]
+    [data, monthlyIncome, monthPercentages]
   );
 
   return {
