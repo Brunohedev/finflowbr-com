@@ -356,7 +356,7 @@ const Index = () => {
               return (
                 <CategoryCard
                   key={cat.id}
-                  category={cat}
+                  category={{ ...cat, percentage: pcts[cat.id as keyof Percentages] ?? cat.percentage }}
                   budget={getBudget(cat.id)}
                   spent={getSpentByCategory(cat.id)}
                   expenses={monthExpenses.filter((e) => e.categoryId === cat.id)}
