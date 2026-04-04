@@ -31,7 +31,7 @@ const Index = () => {
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
   const {
-    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth,
+    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal,
     addSubcategory, deleteSubcategory,
