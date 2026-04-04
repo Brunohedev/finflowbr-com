@@ -38,7 +38,7 @@ interface AdvancedDashboardProps {
 }
 
 const AdvancedDashboard = ({
-  data, monthlyIncome, getSpentByCategory, onBack,
+  data, monthlyIncome, getSpentByCategory, activeMonth, onBack,
   onAddRecurring, onDeleteRecurring, onToggleRecurring,
 }: AdvancedDashboardProps) => {
   const [monthlyContribution, setMonthlyContribution] = useState(500);
