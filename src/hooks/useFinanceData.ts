@@ -7,7 +7,7 @@ import {
   getTotalMonthlyIncome,
 } from "@/types/finance";
 import { format, addMonths, parseISO } from "date-fns";
-import { getSavingsAllocationForMonth } from "@/lib/savingsAllocation";
+import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
