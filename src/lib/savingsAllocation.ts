@@ -40,7 +40,7 @@ export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) =>
 
 export const getSavingsAllocationForMonth = (data: FinanceData, monthKey: string): SavingsAllocationSummary => {
   const salary = getMonthlyIncomeForMonth(data, monthKey);
-  const reservePercentage = getReservePercentage(data);
+  const reservePercentage = getReservePercentage(data, monthKey);
   const reserveCap = (salary * reservePercentage) / 100;
 
   const entries = [
