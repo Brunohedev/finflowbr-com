@@ -30,6 +30,7 @@ interface AdvancedDashboardProps {
   data: FinanceData;
   monthlyIncome: number;
   getSpentByCategory: (categoryId: string) => number;
+  activeMonth: string;
   onBack: () => void;
   onAddRecurring: (name: string, amount: number, frequency: RecurringFrequency, categoryId: string, subcategoryId?: string) => void;
   onDeleteRecurring: (id: string) => void;
