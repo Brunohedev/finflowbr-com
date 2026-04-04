@@ -86,6 +86,7 @@ export interface FinanceData {
   income: number;
   incomeSources: IncomeSource[];
   salaryByMonth?: Record<string, number>;
+  percentagesByMonth?: Record<string, Percentages>;
   categories: Category[];
   expenses: Expense[];
   recurringExpenses: RecurringExpense[];

@@ -20,8 +20,18 @@ export interface SavingsAllocationSummary {
   salary: number;
 }
 
-const getReservePercentage = (data: FinanceData) =>
-  data.categories.find((category) => category.id === "reserva_investimentos")?.percentage ?? 0;
+export const getPercentagesForMonth = (data: FinanceData, monthKey: string): Percentages => {
+  const override = data.percentagesByMonth?.[monthKey];
+  if (override) return override;
+  return {
+    essenciais: data.categories.find((c) => c.id === "essenciais")?.percentage ?? 50,
+    desejos: data.categories.find((c) => c.id === "desejos")?.percentage ?? 30,
+    reserva_investimentos: data.categories.find((c) => c.id === "reserva_investimentos")?.percentage ?? 20,
+  };
+};
+
+const getReservePercentage = (data: FinanceData, monthKey: string) =>
+  getPercentagesForMonth(data, monthKey).reserva_investimentos;
 
 export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) => {
   const override = data.salaryByMonth?.[monthKey];
