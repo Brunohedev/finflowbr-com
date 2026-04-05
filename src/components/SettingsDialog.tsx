@@ -70,6 +70,13 @@ const SettingsDialog = ({
   };
 
   const handleSave = () => {
+    if (total === 100 && isIncomeValid) {
+      onSave(pcts, parsedIncome);
+      onOpenChange(false);
+    }
+  };
+
+  const restoreDefault = () => {
     setIncomeInput(String(defaultIncome));
   };
 
@@ -85,7 +92,7 @@ const SettingsDialog = ({
             <label className="text-xs font-medium text-muted-foreground block">
               Fontes de Renda <span className="text-muted-foreground/70">(base para todos os meses)</span>
             </label>
-            <IncomeManager sources={incomeSources} onAdd={onAddSource} onDelete={onDeleteSource} compact />
+            <IncomeManager sources={incomeSources} onAdd={handleAddIncomeSource} onDelete={onDeleteSource} compact />
             <p className="text-xs text-muted-foreground">
               Total mensal base: <span className="text-foreground font-semibold">{fmt(defaultIncome)}</span>
             </p>
