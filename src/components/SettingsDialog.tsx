@@ -55,6 +55,12 @@ const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages
           <DialogTitle className="font-heading">Configurações</DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
+          {/* Income Sources with frequency selector */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground block">Fontes de Renda</label>
+            <IncomeManager sources={incomeSources} onAdd={onAddSource} onDelete={onDeleteSource} compact />
+          </div>
+
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground block">
               Renda deste mês · <span className="text-foreground font-semibold">{fmt(income)}</span>
