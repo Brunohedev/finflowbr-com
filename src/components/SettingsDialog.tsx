@@ -58,6 +58,17 @@ const SettingsDialog = ({
     setIncomeInput(String(income));
   }, [open, percentages, income]);
 
+  const handleAddIncomeSource = (name: string, amount: number, frequency: IncomeFrequency) => {
+    if (frequency === "once") {
+      const currentIncome = Number.parseFloat(incomeInput);
+      const safeIncome = Number.isFinite(currentIncome) ? currentIncome : income;
+      setIncomeInput(String(safeIncome + amount));
+      return;
+    }
+
+    onAddSource(name, amount, frequency);
+  };
+
   const handleSave = () => {
     if (total === 100 && isIncomeValid) {
       onSave(pcts, parsedIncome);
@@ -81,7 +92,7 @@ const SettingsDialog = ({
             <label className="text-xs font-medium text-muted-foreground block">
               Fontes de Renda <span className="text-muted-foreground/70">(base para todos os meses)</span>
             </label>
-            <IncomeManager sources={incomeSources} onAdd={onAddSource} onDelete={onDeleteSource} compact />
+            <IncomeManager sources={incomeSources} onAdd={handleAddIncomeSource} onDelete={onDeleteSource} compact />
             <p className="text-xs text-muted-foreground">
               Total mensal base: <span className="text-foreground font-semibold">{fmt(defaultIncome)}</span>
             </p>
