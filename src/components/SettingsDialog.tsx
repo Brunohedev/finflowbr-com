@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Percentages, IncomeSource, getTotalMonthlyIncome } from "@/types/finance";
+import { Percentages, IncomeSource, IncomeFrequency, getTotalMonthlyIncome } from "@/types/finance";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import IncomeManager from "@/components/IncomeManager";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -13,6 +14,8 @@ interface SettingsDialogProps {
   percentages: Percentages;
   onSave: (percentages: Percentages, income: number) => void;
   onReset: () => void;
+  onAddSource: (name: string, amount: number, frequency: IncomeFrequency) => void;
+  onDeleteSource: (id: string) => void;
 }
 
 const LABELS: Record<keyof Percentages, string> = {
@@ -24,7 +27,7 @@ const LABELS: Record<keyof Percentages, string> = {
 const fmt = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
-const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages, onSave, onReset }: SettingsDialogProps) => {
+const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages, onSave, onReset, onAddSource, onDeleteSource }: SettingsDialogProps) => {
   const [pcts, setPcts] = useState(percentages);
   const [incomeInput, setIncomeInput] = useState(String(income));
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
@@ -52,6 +55,12 @@ const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages
           <DialogTitle className="font-heading">Configurações</DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
+          {/* Income Sources with frequency selector */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground block">Fontes de Renda</label>
+            <IncomeManager sources={incomeSources} onAdd={onAddSource} onDelete={onDeleteSource} compact />
+          </div>
+
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground block">
               Renda deste mês · <span className="text-foreground font-semibold">{fmt(income)}</span>
