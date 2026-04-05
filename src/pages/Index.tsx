@@ -442,6 +442,7 @@ const Index = () => {
         income={monthlyIncome}
         incomeSources={data.incomeSources}
         percentages={pcts}
+        activeMonth={activeMonth}
         onSave={(p, income) => { updatePercentages(p); setMonthSalary(activeMonth, income); }}
         onReset={resetMonth}
         onAddSource={addIncomeSource}
