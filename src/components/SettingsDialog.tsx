@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Percentages, IncomeSource, getTotalMonthlyIncome } from "@/types/finance";
+import { Percentages, IncomeSource, IncomeFrequency, getTotalMonthlyIncome } from "@/types/finance";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import IncomeManager from "@/components/IncomeManager";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -13,6 +14,8 @@ interface SettingsDialogProps {
   percentages: Percentages;
   onSave: (percentages: Percentages, income: number) => void;
   onReset: () => void;
+  onAddSource: (name: string, amount: number, frequency: IncomeFrequency) => void;
+  onDeleteSource: (id: string) => void;
 }
 
 const LABELS: Record<keyof Percentages, string> = {
