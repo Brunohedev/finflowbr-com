@@ -27,7 +27,7 @@ const LABELS: Record<keyof Percentages, string> = {
 const fmt = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
-const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages, onSave, onReset }: SettingsDialogProps) => {
+const SettingsDialog = ({ open, onOpenChange, income, incomeSources, percentages, onSave, onReset, onAddSource, onDeleteSource }: SettingsDialogProps) => {
   const [pcts, setPcts] = useState(percentages);
   const [incomeInput, setIncomeInput] = useState(String(income));
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
