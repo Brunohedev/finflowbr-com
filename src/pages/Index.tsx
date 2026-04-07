@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFinanceData } from "@/hooks/useFinanceData";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
 import SetupWizard from "@/components/SetupWizard";
 import CategoryCard from "@/components/CategoryCard";
