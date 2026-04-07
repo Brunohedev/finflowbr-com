@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Wallet, LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import { Wallet, LogIn, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
 
 interface LoginScreenProps {
-  onLogin: (email: string, password: string) => { success: boolean; error?: string };
-  onRegister: (name: string, email: string, password: string) => { success: boolean; error?: string };
+  onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  onRegister: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
@@ -14,18 +14,24 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
-    if (mode === "login") {
-      if (!email.trim() || !password) { setError("Preencha todos os campos"); return; }
-      const result = onLogin(email.trim(), password);
-      if (!result.success) setError(result.error || "Erro ao entrar");
-    } else {
-      if (!name.trim() || !email.trim() || !password) { setError("Preencha todos os campos"); return; }
-      if (password.length < 4) { setError("Senha deve ter pelo menos 4 caracteres"); return; }
-      const result = onRegister(name.trim(), email.trim(), password);
-      if (!result.success) setError(result.error || "Erro ao criar conta");
+    setLoading(true);
+    try {
+      if (mode === "login") {
+        if (!email.trim() || !password) { setError("Preencha todos os campos"); setLoading(false); return; }
+        const result = await onLogin(email.trim(), password);
+        if (!result.success) setError(result.error || "Erro ao entrar");
+      } else {
+        if (!name.trim() || !email.trim() || !password) { setError("Preencha todos os campos"); setLoading(false); return; }
+        if (password.length < 6) { setError("Senha deve ter pelo menos 6 caracteres"); setLoading(false); return; }
+        const result = await onRegister(name.trim(), email.trim(), password);
+        if (!result.success) setError(result.error || "Erro ao criar conta");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,12 +52,12 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
           {mode === "register" && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
-              <Input placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
             </div>
           )}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Email</label>
-            <Input type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Senha</label>
@@ -60,20 +66,28 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               placeholder="••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+              disabled={loading}
             />
           </div>
 
           {error && <p className="text-xs text-destructive font-medium">{error}</p>}
 
-          <Button className="w-full h-11 font-semibold" onClick={handleSubmit}>
-            {mode === "login" ? <><LogIn className="w-4 h-4 mr-2" /> Entrar</> : <><UserPlus className="w-4 h-4 mr-2" /> Criar Conta</>}
+          <Button className="w-full h-11 font-semibold" onClick={handleSubmit} disabled={loading}>
+            {loading ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Aguarde...</>
+            ) : mode === "login" ? (
+              <><LogIn className="w-4 h-4 mr-2" /> Entrar</>
+            ) : (
+              <><UserPlus className="w-4 h-4 mr-2" /> Criar Conta</>
+            )}
           </Button>
         </div>
 
         <button
           onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
           className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          disabled={loading}
         >
           {mode === "login" ? "Não tem conta? Criar conta" : (
             <span className="flex items-center justify-center gap-1"><ArrowLeft className="w-3 h-3" /> Já tenho uma conta</span>
