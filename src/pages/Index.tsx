@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFinanceData } from "@/hooks/useFinanceData";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
 import SetupWizard from "@/components/SetupWizard";
 import CategoryCard from "@/components/CategoryCard";
@@ -26,7 +26,7 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, login, register, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -59,6 +59,15 @@ const Index = () => {
       salaryInputRef.current.select();
     }
   }, [editingSalary]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   // Show login screen if not authenticated
   if (!isAuthenticated) {
@@ -115,7 +124,7 @@ const Index = () => {
             </div>
             <div>
               <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
-              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.name}</p>}
+              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
             </div>
           </div>
           <div className="flex items-center gap-1">
