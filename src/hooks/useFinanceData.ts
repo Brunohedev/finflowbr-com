@@ -355,7 +355,9 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => {
       if (!prev) return prev;
       logSavingsBalanceUpdate("deposit", prev, amount);
-      const contribution: Contribution = { id: crypto.randomUUID(), amount, date: format(new Date(), "yyyy-MM-dd"), note };
+      // Use activeMonth so the contribution is scoped to the selected month
+      const contributionDate = `${activeMonth}-15`;
+      const contribution: Contribution = { id: crypto.randomUUID(), amount, date: contributionDate, note };
       return {
         ...prev,
         emergencyReserves: prev.emergencyReserves.map((r) =>
@@ -363,7 +365,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
         ),
       };
     });
-  }, []);
+  }, [activeMonth]);
 
   const toggleReservePin = useCallback((reserveId: string) => {
     setData((prev) => {
