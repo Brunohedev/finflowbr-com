@@ -124,7 +124,7 @@ const Index = () => {
             </div>
             <div>
               <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
-              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.name}</p>}
+              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
             </div>
           </div>
           <div className="flex items-center gap-1">
