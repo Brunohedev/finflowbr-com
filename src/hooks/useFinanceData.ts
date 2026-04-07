@@ -422,10 +422,12 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => {
       if (!prev) return prev;
       logSavingsBalanceUpdate("deposit", prev, amount);
-      const investment: Investment = { id: crypto.randomUUID(), name, amount, note, date: format(new Date(), "yyyy-MM-dd") };
+      // Use activeMonth so the investment is scoped to the selected month
+      const investmentDate = `${activeMonth}-15`;
+      const investment: Investment = { id: crypto.randomUUID(), name, amount, note, date: investmentDate };
       return { ...prev, investments: [...prev.investments, investment] };
     });
-  }, []);
+  }, [activeMonth]);
 
   const deleteInvestment = useCallback((id: string) => {
     setData((prev) => prev ? { ...prev, investments: prev.investments.filter((i) => i.id !== id) } : prev);
