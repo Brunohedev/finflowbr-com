@@ -2,11 +2,20 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+interface SubscriptionInfo {
+  subscribed: boolean;
+  plan: string | null;
+  subscriptionId: string | null;
+  subscriptionEnd: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  subscription: SubscriptionInfo | null;
+  checkSubscription: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -18,24 +27,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
+
+  const checkSubscription = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      setSubscription({
+        subscribed: data.subscribed ?? false,
+        plan: data.plan ?? null,
+        subscriptionId: data.subscription_id ?? null,
+        subscriptionEnd: data.subscription_end ?? null,
+      });
+    } catch (err) {
+      console.error("Error checking subscription:", err);
+    }
+  }, []);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
     });
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => authSub.unsubscribe();
   }, []);
+
+  // Check subscription when user is authenticated
+  useEffect(() => {
+    if (session) {
+      checkSubscription();
+      const interval = setInterval(checkSubscription, 60000);
+      return () => clearInterval(interval);
+    } else {
+      setSubscription(null);
+    }
+  }, [session, checkSubscription]);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -73,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         isAuthenticated: !!session,
         isLoading,
+        subscription,
+        checkSubscription,
         login,
         register,
         logout,
