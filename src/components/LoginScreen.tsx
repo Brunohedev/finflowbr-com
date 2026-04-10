@@ -44,6 +44,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               autoPlay
               muted
               playsInline
+              loop
               className="w-[300px] h-[300px] object-contain"
               src="/finflow-logo-transparent.webm"
             />
