@@ -47,7 +47,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
             />
           </div>
           <p className="text-muted-foreground text-sm">
-            {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}
+            {mode === "login" ? "Comece a ver o dinheiro sobrar" : "Crie sua conta"}
           </p>
         </div>
 
