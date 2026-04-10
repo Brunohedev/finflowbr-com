@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown } from "lucide-react";
@@ -57,19 +57,16 @@ const Pricing = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
 
-  // Redirect unauthenticated users to login
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/", { replace: true });
-    }
-  }, [isLoading, isAuthenticated, navigate]);
-
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
 
   const handleSubscribe = async (plan: string) => {
