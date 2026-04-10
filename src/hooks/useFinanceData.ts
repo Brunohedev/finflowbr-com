@@ -177,7 +177,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
         const payload = withSyncedIncome(localData);
         const { error: upsertError } = await supabase
           .from("finance_data")
-          .upsert({ user_id: userId, data: payload }, { onConflict: "user_id" });
+          .upsert([{ user_id: userId, data: payload }], { onConflict: "user_id" });
 
         if (cancelled) return;
 
@@ -217,7 +217,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
     void supabase
       .from("finance_data")
-      .upsert({ user_id: userId, data: synced }, { onConflict: "user_id" })
+      .upsert([{ user_id: userId, data: synced }], { onConflict: "user_id" })
       .then(({ error }) => {
         if (error) {
           console.error("Finance sync save error:", error.message);
