@@ -34,6 +34,7 @@ await renderMedia({
   muted: true,
   concurrency: 1,
   pixelFormat: "yuva420p",
+  imageFormat: "png",
 });
 
 await browser.close({ silent: false });
