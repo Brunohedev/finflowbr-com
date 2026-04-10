@@ -62,6 +62,13 @@ const Index = () => {
     }
   }, [editingSalary]);
 
+  // Redirect to pricing if no active subscription
+  useEffect(() => {
+    if (isAuthenticated && subscription !== null && !subscription.subscribed) {
+      navigate("/planos", { replace: true });
+    }
+  }, [isAuthenticated, subscription, navigate]);
+
   // Show loading while checking auth
   if (isLoading || isSyncLoading) {
     return (
@@ -76,14 +83,8 @@ const Index = () => {
     return <LoginScreen onLogin={login} onRegister={register} />;
   }
 
-  // Redirect to pricing if no active subscription
-  useEffect(() => {
-    if (isAuthenticated && subscription !== null && !subscription.subscribed) {
-      navigate("/planos", { replace: true });
-    }
-  }, [isAuthenticated, subscription, navigate]);
-
-  if (isAuthenticated && (subscription === null || !subscription.subscribed)) {
+  // Wait for subscription check
+  if (subscription === null || !subscription.subscribed) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
