@@ -79,24 +79,6 @@ const Pricing = () => {
     );
   }
 
-  const handleSubscribe = (plan: Plan) => {
-    const checkoutWindow = window.open(plan.checkoutUrl, "_blank", "noopener,noreferrer");
-
-    if (!checkoutWindow) {
-      try {
-        if (window.top) {
-          window.top.location.href = plan.checkoutUrl;
-          return;
-        }
-      } catch {
-        window.location.assign(plan.checkoutUrl);
-        return;
-      }
-
-      window.location.assign(plan.checkoutUrl);
-    }
-  };
-
   const handleManageSubscription = async () => {
     setLoading("portal");
     try {
@@ -187,17 +169,25 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full"
-                  variant={plan.popular ? "default" : "outline"}
-                  disabled={!!loading || isCurrentPlan}
-                  onClick={() => handleSubscribe(plan)}
-                >
-                  {loading === plan.id ? (
-                    <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                  ) : null}
-                  {isCurrentPlan ? "Plano atual" : "Assinar"}
-                </Button>
+                {isCurrentPlan ? (
+                  <Button
+                    className="w-full"
+                    variant={plan.popular ? "default" : "outline"}
+                    disabled
+                  >
+                    Plano atual
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    variant={plan.popular ? "default" : "outline"}
+                    asChild
+                  >
+                    <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                      Assinar
+                    </a>
+                  </Button>
+                )}
               </div>
             );
           })}
