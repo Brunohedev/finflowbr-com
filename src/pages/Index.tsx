@@ -139,6 +139,9 @@ const Index = () => {
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
             </Button>
+            <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate("/planos")} title="Ver Planos">
+              <CreditCard className="w-4 h-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
               <LogOut className="w-4 h-4" />
             </Button>
