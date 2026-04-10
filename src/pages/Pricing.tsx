@@ -13,6 +13,7 @@ const PLANS = [
     price: "R$ 29,90",
     period: "/mês",
     description: "Ideal para começar",
+    checkoutUrl: "https://buy.stripe.com/fZueVd6KcfL0aW5alC4Ja03",
     features: [
       "Controle completo de gastos",
       "Categorias personalizáveis",
@@ -28,6 +29,7 @@ const PLANS = [
     period: "/6 meses",
     description: "Economia de ~5%",
     popular: true,
+    checkoutUrl: "https://buy.stripe.com/00waEXfgIcyOc09dxO4Ja04",
     features: [
       "Features do plano Mensal + Semestral integradas",
       "Economia em relação ao mensal",
@@ -42,6 +44,7 @@ const PLANS = [
     price: "R$ 299,04",
     period: "/ano",
     description: "Melhor custo-benefício",
+    checkoutUrl: "https://buy.stripe.com/aFaeVd4C46aqc09gK04Ja05",
     features: [
       "Todas as funcionalidades integradas",
       "Maior economia",
@@ -65,27 +68,8 @@ const Pricing = () => {
     );
   }
 
-  const handleSubscribe = async (plan: string) => {
-    if (!isAuthenticated || !session) {
-      navigate("/");
-      return;
-    }
-
-    setLoading(plan);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan },
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (err: any) {
-      console.error("Checkout error:", err);
-    } finally {
-      setLoading(null);
-    }
+  const handleSubscribe = (plan: typeof PLANS[number]) => {
+    window.location.href = plan.checkoutUrl;
   };
 
   const handleManageSubscription = async () => {
@@ -182,7 +166,7 @@ const Pricing = () => {
                   className="w-full"
                   variant={plan.popular ? "default" : "outline"}
                   disabled={!!loading || isCurrentPlan}
-                  onClick={() => handleSubscribe(plan.id)}
+                  onClick={() => handleSubscribe(plan)}
                 >
                   {loading === plan.id ? (
                     <Loader2 className="animate-spin mr-2 h-4 w-4" />
