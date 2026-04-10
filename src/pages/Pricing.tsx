@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Plan {
   id: string;
@@ -70,6 +71,7 @@ const Pricing = () => {
   const { isAuthenticated, isLoading, subscription, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -183,7 +185,7 @@ const Pricing = () => {
                     variant={plan.popular ? "default" : "outline"}
                     asChild
                   >
-                    <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={plan.checkoutUrl} target={isMobile ? "_top" : "_blank"} rel="noopener noreferrer">
                       Assinar
                     </a>
                   </Button>
