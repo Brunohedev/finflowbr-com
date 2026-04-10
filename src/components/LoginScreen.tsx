@@ -30,7 +30,12 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
         if (!name.trim() || !email.trim() || !password) { setError("Preencha todos os campos"); setLoading(false); return; }
         if (password.length < 6) { setError("Senha deve ter pelo menos 6 caracteres"); setLoading(false); return; }
         const result = await onRegister(name.trim(), email.trim(), password);
-        if (!result.success) setError(result.error || "Erro ao criar conta");
+        if (!result.success) {
+          setError(result.error || "Erro ao criar conta");
+        } else {
+          navigate("/planos", { replace: true });
+          return;
+        }
       }
     } finally {
       setLoading(false);
