@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
@@ -26,7 +27,8 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, register, logout, subscription } = useAuth();
+  const navigate = useNavigate();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -60,6 +62,13 @@ const Index = () => {
     }
   }, [editingSalary]);
 
+  // Redirect to pricing if no active subscription
+  useEffect(() => {
+    if (isAuthenticated && subscription !== null && !subscription.subscribed) {
+      navigate("/planos", { replace: true });
+    }
+  }, [isAuthenticated, subscription, navigate]);
+
   // Show loading while checking auth
   if (isLoading || isSyncLoading) {
     return (
@@ -72,6 +81,15 @@ const Index = () => {
   // Show login screen if not authenticated
   if (!isAuthenticated) {
     return <LoginScreen onLogin={login} onRegister={register} />;
+  }
+
+  // Wait for subscription check
+  if (subscription === null || !subscription.subscribed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
   }
 
   if (!isSetup || !data) {
