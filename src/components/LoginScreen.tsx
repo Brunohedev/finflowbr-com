@@ -120,7 +120,6 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
             className="w-full text-center text-sm text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1.5"
           >
             <CreditCard className="w-3.5 h-3.5" />
-            Ver Planos
           </button>
         )}
       </div>
