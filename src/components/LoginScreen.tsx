@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogIn, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
+import { LogIn, UserPlus, ArrowLeft, Loader2, CreditCard } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -9,6 +10,7 @@ interface LoginScreenProps {
 }
 
 const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -104,6 +106,16 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
             <span className="flex items-center justify-center gap-1"><ArrowLeft className="w-3 h-3" /> Já tenho uma conta</span>
           )}
         </button>
+
+        {mode === "register" && (
+          <button
+            onClick={() => navigate("/planos")}
+            className="w-full text-center text-sm text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1.5"
+          >
+            <CreditCard className="w-3.5 h-3.5" />
+            Ver Planos
+          </button>
+        )}
       </div>
     </div>
   );
