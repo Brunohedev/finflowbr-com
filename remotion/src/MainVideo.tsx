@@ -146,7 +146,7 @@ export const MainVideo: React.FC = () => {
           top: centerY + receiveBounce,
           transform: `scale(${finalPulse})`,
           transformOrigin: "center center",
-          filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.10))",
+          
         }}
       >
         <Wallet scale={1} />
