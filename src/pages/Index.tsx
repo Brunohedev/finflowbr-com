@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
