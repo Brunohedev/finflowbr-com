@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Wallet, LogIn, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
+import { LogIn, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -39,10 +39,15 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-2">
-            <Wallet className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-40 h-24 mb-2 overflow-hidden" style={{ mixBlendMode: 'multiply' }}>
+            <video
+              autoPlay
+              muted
+              playsInline
+              className="w-full h-full object-contain"
+              src="/finflow-logo.mp4"
+            />
           </div>
-          <h1 className="text-3xl font-bold font-heading">FinFlow</h1>
           <p className="text-muted-foreground text-sm">
             {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}
           </p>
