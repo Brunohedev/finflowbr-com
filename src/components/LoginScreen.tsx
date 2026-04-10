@@ -39,12 +39,20 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center w-full max-w-sm h-[300px] mx-auto -mb-16 overflow-hidden">
-            <img
-              src="/finflow-logo.gif"
-              alt="FinFlow"
-              className="w-[300px] h-[300px] object-contain"
-            />
+          <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto -mb-16">
+            <div className="h-[300px] flex items-center justify-center overflow-hidden">
+              <img
+                src="/finflow-logo.gif"
+                alt="FinFlow"
+                className="w-[300px] h-[300px] object-contain"
+              />
+            </div>
+            <p className="text-xs tracking-wide -mt-14 mb-4">
+              <span className="text-foreground">Feito para </span>
+              <span style={{ color: '#FFDF00' }}>Bra</span>
+              <span style={{ color: '#1B3A8A' }}>sil</span>
+              <span style={{ color: '#009739' }}>eiros</span>
+            </p>
           </div>
           <p className="text-muted-foreground text-sm whitespace-pre-line">
             {mode === "login" ? "     Começar a ver o \ndinheiro sobrar agora:" : "Crie sua conta"}
