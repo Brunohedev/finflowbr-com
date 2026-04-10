@@ -57,7 +57,6 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               {mode === "login" ? "Começar a ver o dinheiro sobrar agora:" : "Crie sua conta"}
             </p>
           </div>
-          </p>
         </div>
 
         <div className="finance-card space-y-4">
