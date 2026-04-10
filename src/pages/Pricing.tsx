@@ -81,6 +81,28 @@ const Pricing = () => {
     );
   }
 
+  const handleSubscribe = async (planId: string) => {
+    console.log("[Pricing] handleSubscribe called for plan:", planId);
+    setLoading(planId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan: planId },
+      });
+      console.log("[Pricing] create-checkout response:", data, error);
+      if (error) throw error;
+      if (data?.url) {
+        console.log("[Pricing] Redirecting to:", data.url);
+        window.location.href = data.url;
+      } else {
+        console.error("[Pricing] No URL returned from create-checkout");
+      }
+    } catch (err: any) {
+      console.error("[Pricing] Checkout error:", err);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const handleManageSubscription = async () => {
     setLoading("portal");
     try {
@@ -183,11 +205,11 @@ const Pricing = () => {
                   <Button
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
-                    asChild
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={loading === plan.id}
                   >
-                    <a href={plan.checkoutUrl} target={isMobile ? "_top" : "_blank"} rel="noopener noreferrer">
-                      Assinar
-                    </a>
+                    {loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                    {loading === plan.id ? "Redirecionando..." : "Assinar"}
                   </Button>
                 )}
               </div>
