@@ -27,7 +27,8 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, register, logout, subscription } = useAuth();
+  const navigate = useNavigate();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
