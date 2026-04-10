@@ -59,7 +59,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 p-5">
           {mode === "register" && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
