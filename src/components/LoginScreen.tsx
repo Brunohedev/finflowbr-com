@@ -46,8 +46,8 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               className="w-[300px] h-[300px] object-contain"
             />
           </div>
-          <p className="text-muted-foreground text-sm">
-            {mode === "login" ? "Comece a ver o dinheiro sobrar" : "Crie sua conta"}
+          <p className="text-muted-foreground text-sm whitespace-pre-line">
+            {mode === "login" ? "     Começar a ver o \ndinheiro sobrar agora:" : "Crie sua conta"}
           </p>
         </div>
 
