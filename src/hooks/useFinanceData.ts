@@ -9,6 +9,7 @@ import {
 import { format, addMonths, parseISO } from "date-fns";
 import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
@@ -21,6 +22,8 @@ const withSyncedIncome = (financeData: FinanceData): FinanceData => ({
 const saveToLocalStorage = (userId: string | undefined, financeData: FinanceData) => {
   localStorage.setItem(getStorageKey(userId), JSON.stringify(financeData));
 };
+
+const toFinanceJson = (financeData: FinanceData): Json => financeData as unknown as Json;
 
 const getMonthExpenseTotal = (data: FinanceData, monthKey: string) =>
   data.expenses
@@ -177,7 +180,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
         const payload = withSyncedIncome(localData);
         const { error: upsertError } = await supabase
           .from("finance_data")
-          .upsert([{ user_id: userId, data: payload }], { onConflict: "user_id" });
+          .upsert([{ user_id: userId, data: toFinanceJson(payload) }], { onConflict: "user_id" });
 
         if (cancelled) return;
 
@@ -217,7 +220,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
     void supabase
       .from("finance_data")
-      .upsert([{ user_id: userId, data: synced }], { onConflict: "user_id" })
+      .upsert([{ user_id: userId, data: toFinanceJson(synced) }], { onConflict: "user_id" })
       .then(({ error }) => {
         if (error) {
           console.error("Finance sync save error:", error.message);
