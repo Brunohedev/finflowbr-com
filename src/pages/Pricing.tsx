@@ -199,7 +199,7 @@ const Pricing = () => {
         </div>
 
         <div className="text-center mt-8">
-          <Button variant="ghost" onClick={() => navigate("/?mode=register")}>
+          <Button variant="ghost" onClick={() => navigate("/")}>
             Voltar à tela de cadastro
           </Button>
         </div>
