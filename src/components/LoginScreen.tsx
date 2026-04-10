@@ -47,13 +47,13 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
                 className="w-[250px] h-[250px] object-contain"
               />
             </div>
-            <p className="text-xs tracking-wide font-bold -mt-20">
+            <p className="text-xs tracking-wide font-bold -mt-24">
               <span className="text-foreground">Feito para </span>
               <span style={{ color: '#FFDF00' }}>Bra</span>
               <span style={{ color: '#1B3A8A' }}>sil</span>
               <span style={{ color: '#009739' }}>eiros</span>
             </p>
-            <p className="text-muted-foreground text-sm mt-8">
+            <p className="text-muted-foreground text-sm mt-10">
               {mode === "login" ? "Começar a ver o dinheiro sobrar agora:" : "Crie sua conta"}
             </p>
           </div>
