@@ -15,8 +15,7 @@ import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
@@ -28,7 +27,6 @@ type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
   const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
-  const navigate = useNavigate();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -138,9 +136,6 @@ const Index = () => {
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate("/planos")} title="Ver Planos">
-              <CreditCard className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
               <LogOut className="w-4 h-4" />
