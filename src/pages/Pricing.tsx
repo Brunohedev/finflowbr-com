@@ -65,10 +65,6 @@ const Pricing = () => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
   const handleSubscribe = async (plan: string) => {
     if (!isAuthenticated || !session) {
       navigate("/");
