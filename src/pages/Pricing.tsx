@@ -65,10 +65,6 @@ const Pricing = () => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
   const handleSubscribe = async (plan: string) => {
     if (!isAuthenticated || !session) {
       navigate("/");
@@ -199,7 +195,7 @@ const Pricing = () => {
         </div>
 
         <div className="text-center mt-8">
-          <Button variant="ghost" onClick={async () => { await logout(); navigate("/", { replace: true }); }}>
+          <Button variant="ghost" onClick={async () => { if (isAuthenticated) await logout(); navigate("/", { replace: true }); }}>
             Voltar à tela de cadastro
           </Button>
         </div>
