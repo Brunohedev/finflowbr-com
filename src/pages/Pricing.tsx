@@ -205,11 +205,11 @@ const Pricing = () => {
                   <Button
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
-                    asChild
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={loading === plan.id}
                   >
-                    <a href={plan.checkoutUrl} target={isMobile ? "_top" : "_blank"} rel="noopener noreferrer">
-                      Assinar
-                    </a>
+                    {loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                    {loading === plan.id ? "Redirecionando..." : "Assinar"}
                   </Button>
                 )}
               </div>
