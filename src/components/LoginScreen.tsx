@@ -53,8 +53,8 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               <span style={{ color: '#1B3A8A' }}>sil</span>
               <span style={{ color: '#009739' }}>eiros</span>
             </p>
-            <p className="text-muted-foreground text-sm mt-10">
-              {mode === "login" ? "Começar a ver o dinheiro sobrar agora:" : "Crie sua conta"}
+            <p className="text-muted-foreground text-sm mt-10 whitespace-pre-line">
+              {mode === "login" ? "\n\nCadastrar agora:" : "Crie sua conta"}
             </p>
           </div>
         </div>
