@@ -166,7 +166,7 @@ const Pricing = () => {
                   className="w-full"
                   variant={plan.popular ? "default" : "outline"}
                   disabled={!!loading || isCurrentPlan}
-                  onClick={() => handleSubscribe(plan.id)}
+                  onClick={() => handleSubscribe(plan)}
                 >
                   {loading === plan.id ? (
                     <Loader2 className="animate-spin mr-2 h-4 w-4" />
