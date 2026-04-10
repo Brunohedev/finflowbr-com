@@ -12,7 +12,7 @@ const PLANS = [
     name: "Mensal",
     price: "R$ 29,90",
     period: "/mês",
-    description: "Ideal para experimentar",
+    description: "Ideal para começar",
     features: [
       "Controle completo de gastos",
       "Categorias personalizáveis",
@@ -29,7 +29,7 @@ const PLANS = [
     description: "Economia de ~5%",
     popular: true,
     features: [
-      "Tudo do plano mensal",
+      "Features do plano Mensal + Semestral integradas",
       "Economia em relação ao mensal",
       "Suporte prioritário",
       "Insights avançados",
@@ -43,7 +43,7 @@ const PLANS = [
     period: "/ano",
     description: "Melhor custo-benefício",
     features: [
-      "Tudo do plano semestral",
+      "Todas as funcionalidades integradas",
       "Maior economia",
       "Acesso antecipado a novidades",
       "Relatórios anuais completos",
