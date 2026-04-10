@@ -47,7 +47,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
                 className="w-[250px] h-[250px] object-contain"
               />
             </div>
-            <p className="text-xs tracking-wide font-bold -mt-10">
+            <p className="text-xs tracking-wide font-bold -mt-16">
               <span className="text-foreground">Feito para </span>
               <span style={{ color: '#FFDF00' }}>Bra</span>
               <span style={{ color: '#1B3A8A' }}>sil</span>
