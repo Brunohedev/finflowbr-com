@@ -17,7 +17,6 @@ const Wallet: React.FC<{ scale?: number }> = ({ scale = 1 }) => (
   >
     <rect x="2" y="10" width="76" height="52" rx="7" fill="#1a1a1a" />
     <path d="M9 10C9 4.48 13.48 0 19 0H69C74.52 0 79 4.48 79 10H9Z" fill="#2a2a2a" />
-    <rect x="54" y="28" width="24" height="16" rx="8" fill="#333" />
     <circle cx="66" cy="36" r="4.5" fill="#2ECC71" />
     <rect x="9" y="19" width="35" height="3.5" rx="1.75" fill="#333" opacity="0.5" />
     <rect x="9" y="26" width="26" height="3.5" rx="1.75" fill="#333" opacity="0.3" />
