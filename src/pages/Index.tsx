@@ -119,13 +119,16 @@ const Index = () => {
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-primary" />
+            <div className="h-10 w-20 relative overflow-hidden" style={{ mixBlendMode: 'multiply' }}>
+              <video
+                autoPlay
+                muted
+                playsInline
+                className="h-full w-full object-contain"
+                src="/finflow-logo.mp4"
+              />
             </div>
-            <div>
-              <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
-              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
-            </div>
+            {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
           </div>
           <div className="flex items-center gap-1">
             <Button
