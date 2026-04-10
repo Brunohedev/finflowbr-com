@@ -6,7 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PLANS = [
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  checkoutUrl: string;
+  features: string[];
+  popular?: boolean;
+}
+
+const PLANS: Plan[] = [
   {
     id: "mensal",
     name: "Mensal",
@@ -53,7 +64,7 @@ const PLANS = [
       "Simulador de crescimento",
     ],
   },
-] as const;
+];
 
 const Pricing = () => {
   const { isAuthenticated, isLoading, subscription, logout } = useAuth();
@@ -68,7 +79,7 @@ const Pricing = () => {
     );
   }
 
-  const handleSubscribe = (plan: (typeof PLANS)[number]) => {
+  const handleSubscribe = (plan: Plan) => {
     const checkoutWindow = window.open(plan.checkoutUrl, "_blank", "noopener,noreferrer");
 
     if (!checkoutWindow) {
