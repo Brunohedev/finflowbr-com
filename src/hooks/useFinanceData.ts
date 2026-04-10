@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   FinanceData, Expense, Percentages, Contribution,
   FinancialGoal, Investment, EmergencyReserve, IncomeSource, IncomeFrequency,
@@ -8,9 +8,19 @@ import {
 } from "@/types/finance";
 import { format, addMonths, parseISO } from "date-fns";
 import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
+import { supabase } from "@/integrations/supabase/client";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
+
+const withSyncedIncome = (financeData: FinanceData): FinanceData => ({
+  ...financeData,
+  income: getTotalMonthlyIncome(financeData.incomeSources),
+});
+
+const saveToLocalStorage = (userId: string | undefined, financeData: FinanceData) => {
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(financeData));
+};
 
 const getMonthExpenseTotal = (data: FinanceData, monthKey: string) =>
   data.expenses
@@ -36,11 +46,15 @@ const logSavingsBalanceUpdate = (source: string, data: FinanceData, deposit: num
   });
 };
 
-const getInitialData = (userId?: string): FinanceData | null => {
-  const stored = localStorage.getItem(getStorageKey(userId));
-  if (!stored) return null;
+const normalizeFinanceData = (raw: unknown): FinanceData | null => {
+  if (!raw || typeof raw !== "object") return null;
+
   try {
-    const data = JSON.parse(stored) as any;
+    const data = JSON.parse(JSON.stringify(raw)) as any;
+
+    if (!Array.isArray(data.categories) || !Array.isArray(data.expenses)) {
+      return null;
+    }
 
     // Migrate to merged reserva_investimentos
     if (!data.categories.find((c: any) => c.id === "reserva_investimentos")) {
@@ -95,7 +109,18 @@ const getInitialData = (userId?: string): FinanceData | null => {
     if (data.currentMonth !== getCurrentMonth()) {
       return { ...data, expenses: data.expenses || [], currentMonth: getCurrentMonth() } as FinanceData;
     }
-    return data as FinanceData;
+    return withSyncedIncome(data as FinanceData);
+  } catch {
+    return null;
+  }
+};
+
+const getInitialData = (userId?: string): FinanceData | null => {
+  const stored = localStorage.getItem(getStorageKey(userId));
+  if (!stored) return null;
+
+  try {
+    return normalizeFinanceData(JSON.parse(stored));
   } catch {
     return null;
   }
@@ -105,18 +130,101 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const activeMonth = selectedMonth || getCurrentMonth();
 
   const [data, setData] = useState<FinanceData | null>(() => getInitialData(userId));
+  const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "loaded">("idle");
+  const lastSyncedSnapshotRef = useRef<string | null>(data ? JSON.stringify(withSyncedIncome(data)) : null);
+  const isSyncLoading = !!userId && syncStatus !== "loaded";
 
-  // Reset data when userId changes (account switch)
   useEffect(() => {
-    setData(getInitialData(userId));
+    const localData = getInitialData(userId);
+
+    setData(localData);
+    lastSyncedSnapshotRef.current = localData ? JSON.stringify(withSyncedIncome(localData)) : null;
+
+    if (!userId) {
+      setSyncStatus("idle");
+      return;
+    }
+
+    let cancelled = false;
+    setSyncStatus("loading");
+
+    const hydrateFromSupabase = async () => {
+      const { data: remoteRow, error } = await supabase
+        .from("finance_data")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("Finance sync load error:", error.message);
+        setSyncStatus("loaded");
+        return;
+      }
+
+      const remoteData = normalizeFinanceData(remoteRow?.data);
+
+      if (remoteData) {
+        saveToLocalStorage(userId, remoteData);
+        lastSyncedSnapshotRef.current = JSON.stringify(remoteData);
+        setData(remoteData);
+        setSyncStatus("loaded");
+        return;
+      }
+
+      if (localData) {
+        const payload = withSyncedIncome(localData);
+        const { error: upsertError } = await supabase
+          .from("finance_data")
+          .upsert({ user_id: userId, data: payload }, { onConflict: "user_id" });
+
+        if (cancelled) return;
+
+        if (upsertError) {
+          console.error("Finance sync bootstrap error:", upsertError.message);
+        } else {
+          lastSyncedSnapshotRef.current = JSON.stringify(payload);
+        }
+      }
+
+      setSyncStatus("loaded");
+    };
+
+    void hydrateFromSupabase();
+
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   useEffect(() => {
-    if (data) {
-      const synced = { ...data, income: getTotalMonthlyIncome(data.incomeSources) };
-      localStorage.setItem(getStorageKey(userId), JSON.stringify(synced));
+    if (!data) {
+      lastSyncedSnapshotRef.current = null;
+      return;
     }
-  }, [data, userId]);
+
+    const synced = withSyncedIncome(data);
+    const snapshot = JSON.stringify(synced);
+
+    saveToLocalStorage(userId, synced);
+
+    if (!userId || syncStatus !== "loaded" || lastSyncedSnapshotRef.current === snapshot) {
+      return;
+    }
+
+    lastSyncedSnapshotRef.current = snapshot;
+
+    void supabase
+      .from("finance_data")
+      .upsert({ user_id: userId, data: synced }, { onConflict: "user_id" })
+      .then(({ error }) => {
+        if (error) {
+          console.error("Finance sync save error:", error.message);
+          lastSyncedSnapshotRef.current = null;
+        }
+      });
+  }, [data, userId, syncStatus]);
 
   const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
   const monthlyIncome = useMemo(() => {
@@ -494,7 +602,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   );
 
   return {
-    data, isSetup: !!data, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget, monthPercentages,
+    data, isSetup: !!data, isSyncLoading, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget, monthPercentages,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
