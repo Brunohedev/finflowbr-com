@@ -53,7 +53,7 @@ const PLANS = [
 ];
 
 const Pricing = () => {
-  const { isAuthenticated, isLoading, session, subscription } = useAuth();
+  const { isAuthenticated, isLoading, session, subscription, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -199,7 +199,7 @@ const Pricing = () => {
         </div>
 
         <div className="text-center mt-8">
-          <Button variant="ghost" onClick={() => navigate("/")}>
+          <Button variant="ghost" onClick={async () => { await logout(); navigate("/", { replace: true }); }}>
             Voltar à tela de cadastro
           </Button>
         </div>
