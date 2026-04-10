@@ -13,6 +13,7 @@ const PLANS = [
     price: "R$ 29,90",
     period: "/mês",
     description: "Ideal para começar",
+    checkoutUrl: "https://buy.stripe.com/fZueVd6KcfL0aW5alC4Ja03",
     features: [
       "Controle completo de gastos",
       "Categorias personalizáveis",
@@ -28,6 +29,7 @@ const PLANS = [
     period: "/6 meses",
     description: "Economia de ~5%",
     popular: true,
+    checkoutUrl: "https://buy.stripe.com/00waEXfgIcyOc09dxO4Ja04",
     features: [
       "Features do plano Mensal + Semestral integradas",
       "Economia em relação ao mensal",
@@ -42,6 +44,7 @@ const PLANS = [
     price: "R$ 299,04",
     period: "/ano",
     description: "Melhor custo-benefício",
+    checkoutUrl: "https://buy.stripe.com/aFaeVd4C46aqc09gK04Ja05",
     features: [
       "Todas as funcionalidades integradas",
       "Maior economia",
