@@ -76,6 +76,12 @@ const Index = () => {
     return <LoginScreen onLogin={login} onRegister={register} />;
   }
 
+  // Redirect to pricing if no active subscription
+  if (subscription !== null && !subscription.subscribed) {
+    navigate("/planos", { replace: true });
+    return null;
+  }
+
   if (!isSetup || !data) {
     return <SetupWizard onComplete={setupBudget} />;
   }
