@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PLANS = [
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  checkoutUrl: string;
+  features: string[];
+  popular?: boolean;
+}
+
+const PLANS: Plan[] = [
   {
     id: "mensal",
     name: "Mensal",
@@ -56,7 +67,7 @@ const PLANS = [
 ];
 
 const Pricing = () => {
-  const { isAuthenticated, isLoading, session, subscription, logout } = useAuth();
+  const { isAuthenticated, isLoading, subscription, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -68,8 +79,22 @@ const Pricing = () => {
     );
   }
 
-  const handleSubscribe = (plan: typeof PLANS[number]) => {
-    window.location.href = plan.checkoutUrl;
+  const handleSubscribe = (plan: Plan) => {
+    const checkoutWindow = window.open(plan.checkoutUrl, "_blank", "noopener,noreferrer");
+
+    if (!checkoutWindow) {
+      try {
+        if (window.top) {
+          window.top.location.href = plan.checkoutUrl;
+          return;
+        }
+      } catch {
+        window.location.assign(plan.checkoutUrl);
+        return;
+      }
+
+      window.location.assign(plan.checkoutUrl);
+    }
   };
 
   const handleManageSubscription = async () => {
