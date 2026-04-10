@@ -39,7 +39,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center w-full max-w-sm h-[400px] mx-auto mt-20 -mb-20 overflow-hidden" style={{ mixBlendMode: 'multiply' }}>
+          <div className="flex items-center justify-center w-full max-w-sm h-[400px] mx-auto mt-20 -mb-32 overflow-hidden" style={{ mixBlendMode: 'multiply' }}>
             <img
               src="/finflow-logo.gif"
               alt="FinFlow"
