@@ -200,7 +200,7 @@ const Pricing = () => {
 
         <div className="text-center mt-8">
           <Button variant="ghost" onClick={() => navigate("/")}>
-            Voltar ao dashboard
+            Voltar à tela inicial
           </Button>
         </div>
       </div>
