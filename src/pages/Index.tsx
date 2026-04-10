@@ -31,7 +31,7 @@ const Index = () => {
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
   const {
-    data, isSetup, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
+    data, isSetup, isSyncLoading, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
     setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal,
     addSubcategory, deleteSubcategory,
@@ -61,7 +61,7 @@ const Index = () => {
   }, [editingSalary]);
 
   // Show loading while checking auth
-  if (isLoading) {
+  if (isLoading || isSyncLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
