@@ -176,21 +176,12 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
         return;
       }
 
-      if (localData) {
-        const payload = withSyncedIncome(localData);
-        const { error: upsertError } = await supabase
-          .from("finance_data")
-          .upsert([{ user_id: userId, data: toFinanceJson(payload) }], { onConflict: "user_id" });
-
-        if (cancelled) return;
-
-        if (upsertError) {
-          console.error("Finance sync bootstrap error:", upsertError.message);
-        } else {
-          lastSyncedSnapshotRef.current = JSON.stringify(payload);
-        }
-      }
-
+      // No remote data = new user. Clear any leftover local data so they see the SetupWizard.
+      console.log("New user detected – no remote finance data. Starting fresh onboarding.");
+      localStorage.removeItem(getStorageKey(userId));
+      localStorage.removeItem(getStorageKey(undefined)); // clear generic key too
+      setData(null);
+      lastSyncedSnapshotRef.current = null;
       setSyncStatus("loaded");
     };
 
