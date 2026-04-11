@@ -132,21 +132,25 @@ const getInitialData = (userId?: string): FinanceData | null => {
 export function useFinanceData(userId?: string, selectedMonth?: string) {
   const activeMonth = selectedMonth || getCurrentMonth();
 
-  const [data, setData] = useState<FinanceData | null>(() => getInitialData(userId));
-  const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "loaded">("idle");
-  const lastSyncedSnapshotRef = useRef<string | null>(data ? JSON.stringify(withSyncedIncome(data)) : null);
+  // When a userId is present, start with null and wait for Supabase to respond.
+  // This prevents showing stale/other-user localStorage data before the remote check.
+  const [data, setData] = useState<FinanceData | null>(() => userId ? null : getInitialData(undefined));
+  const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "loaded">(userId ? "loading" : "idle");
+  const lastSyncedSnapshotRef = useRef<string | null>(null);
   const isSyncLoading = !!userId && syncStatus !== "loaded";
 
   useEffect(() => {
-    const localData = getInitialData(userId);
-
-    setData(localData);
-    lastSyncedSnapshotRef.current = localData ? JSON.stringify(withSyncedIncome(localData)) : null;
-
     if (!userId) {
+      const localData = getInitialData(undefined);
+      setData(localData);
+      lastSyncedSnapshotRef.current = localData ? JSON.stringify(withSyncedIncome(localData)) : null;
       setSyncStatus("idle");
       return;
     }
+
+    // For authenticated users, always start blank and wait for Supabase.
+    setData(null);
+    lastSyncedSnapshotRef.current = null;
 
     let cancelled = false;
     setSyncStatus("loading");
