@@ -31,16 +31,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSubscription = useCallback(async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
+        body: null,
+      });
+      clearTimeout(timeout);
       if (error) throw error;
       setSubscription({
-        subscribed: data.subscribed ?? false,
-        plan: data.plan ?? null,
-        subscriptionId: data.subscription_id ?? null,
-        subscriptionEnd: data.subscription_end ?? null,
+        subscribed: data?.subscribed ?? false,
+        plan: data?.plan ?? null,
+        subscriptionId: data?.subscription_id ?? null,
+        subscriptionEnd: data?.subscription_end ?? null,
       });
     } catch (err) {
       console.error("Error checking subscription:", err);
+      setSubscription({
+        subscribed: false,
+        plan: null,
+        subscriptionId: null,
+        subscriptionEnd: null,
+      });
     }
   }, []);
 

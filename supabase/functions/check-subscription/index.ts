@@ -169,11 +169,21 @@ serve(async (req) => {
     );
 
     if (activeSubscription) {
+      let subscriptionEnd: string | null = null;
+      try {
+        const endTs = activeSubscription.current_period_end;
+        if (typeof endTs === "number" && endTs > 0) {
+          subscriptionEnd = new Date(endTs * 1000).toISOString();
+        }
+      } catch {
+        logStep("Failed to parse current_period_end", { value: activeSubscription.current_period_end });
+      }
+
       const snapshot: SubscriptionSnapshot = {
         subscribed: true,
         plan: PRICE_TO_PLAN[activeSubscription.items.data[0]?.price.id] || storedSnapshot.plan || "unknown",
         subscriptionId: activeSubscription.id,
-        subscriptionEnd: new Date(activeSubscription.current_period_end * 1000).toISOString(),
+        subscriptionEnd,
         customerId,
       };
 
