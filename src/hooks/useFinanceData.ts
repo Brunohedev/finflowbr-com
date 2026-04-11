@@ -140,15 +140,17 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const isSyncLoading = !!userId && syncStatus !== "loaded";
 
   useEffect(() => {
-    const localData = getInitialData(userId);
-
-    setData(localData);
-    lastSyncedSnapshotRef.current = localData ? JSON.stringify(withSyncedIncome(localData)) : null;
-
     if (!userId) {
+      const localData = getInitialData(undefined);
+      setData(localData);
+      lastSyncedSnapshotRef.current = localData ? JSON.stringify(withSyncedIncome(localData)) : null;
       setSyncStatus("idle");
       return;
     }
+
+    // For authenticated users, always start blank and wait for Supabase.
+    setData(null);
+    lastSyncedSnapshotRef.current = null;
 
     let cancelled = false;
     setSyncStatus("loading");
