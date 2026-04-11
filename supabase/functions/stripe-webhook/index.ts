@@ -7,6 +7,50 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+
+const buildAppMetadata = (
+  currentMetadata: Record<string, unknown> | undefined,
+  {
+    customerId,
+    subscriptionId,
+    plan,
+  }: {
+    customerId: string | null;
+    subscriptionId: string | null;
+    plan: string | null;
+  },
+) => ({
+  ...(currentMetadata ?? {}),
+  subscription_status: "active",
+  is_active: true,
+  stripe_customer_id: customerId,
+  subscription_id: subscriptionId,
+  plan,
+});
+
+const findUserByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, email: string) => {
+  const normalizedEmail = email.trim().toLowerCase();
+  let page = 1;
+  const perPage = 200;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users ?? [];
+    const match = users.find((user) => user.email?.trim().toLowerCase() === normalizedEmail);
+    if (match) return match;
+
+    if (users.length < perPage) return null;
+    page += 1;
+  }
+};
+
 serve(async (req) => {
   // Webhooks are POST only
   if (req.method !== "POST") {
@@ -20,6 +64,11 @@ serve(async (req) => {
     if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not set");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
@@ -31,31 +80,41 @@ serve(async (req) => {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      const customerEmail = session.customer_details?.email;
-      const customerId = session.customer as string;
-      const subscriptionId = session.subscription as string;
+      const customerEmail = session.customer_details?.email ?? session.customer_email ?? null;
+      const customerId = typeof session.customer === "string" ? session.customer : null;
+      const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
       const plan = session.metadata?.plan || null;
 
       logStep("Checkout completed", { customerEmail, customerId, subscriptionId, plan });
 
       if (!customerEmail) {
         logStep("No customer email found, skipping user creation");
-        return new Response(JSON.stringify({ received: true }), { status: 200 });
+        return jsonResponse({ received: true });
       }
 
-      // Use service role to create/manage users
-      const supabaseAdmin = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-
-      // Check if user already exists
-      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find(u => u.email === customerEmail);
+      const existingUser = await findUserByEmail(supabaseAdmin, customerEmail);
+      const nextAppMetadata = buildAppMetadata(existingUser?.app_metadata, {
+        customerId,
+        subscriptionId,
+        plan,
+      });
 
       if (existingUser) {
         logStep("User already exists", { userId: existingUser.id });
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+          app_metadata: nextAppMetadata,
+        });
+
+        if (updateError) {
+          logStep("Error activating existing user", { error: updateError.message, userId: existingUser.id });
+          throw updateError;
+        }
+
+        logStep("Existing user activated", {
+          userId: existingUser.id,
+          subscriptionStatus: nextAppMetadata.subscription_status,
+          isActive: nextAppMetadata.is_active,
+        });
       } else {
         // Create new user with a random password (user can reset later)
         const tempPassword = crypto.randomUUID() + "Aa1!";
@@ -63,7 +122,8 @@ serve(async (req) => {
           email: customerEmail,
           password: tempPassword,
           email_confirm: true,
-          user_metadata: { plan, stripe_customer_id: customerId },
+          app_metadata: nextAppMetadata,
+          user_metadata: plan ? { plan } : undefined,
         });
 
         if (createError) {
@@ -89,15 +149,10 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ received: true });
   } catch (error) {
-    logStep("ERROR", { message: error.message });
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    const message = error instanceof Error ? error.message : String(error);
+    logStep("ERROR", { message });
+    return jsonResponse({ error: message }, 400);
   }
 });
