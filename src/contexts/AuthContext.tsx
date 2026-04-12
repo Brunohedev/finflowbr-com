@@ -56,16 +56,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const refreshUser = async (session: Session | null) => {
+      if (session) {
+        // Force fresh user fetch to get latest app_metadata (critical for magic links)
+        const { data: { user: freshUser } } = await supabase.auth.getUser();
+        setSession(session);
+        setUser(freshUser ?? session.user ?? null);
+      } else {
+        setSession(null);
+        setUser(null);
+      }
       setIsLoading(false);
+    };
+
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Fire and forget - don't await inside callback to avoid deadlocks
+      refreshUser(session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      refreshUser(session);
     });
 
     return () => authSub.unsubscribe();
