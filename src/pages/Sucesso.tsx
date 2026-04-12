@@ -9,12 +9,12 @@ const Sucesso = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="text-center max-w-md">
         <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-foreground mb-2">Assinatura confirmada!</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Pagamento confirmado com sucesso</h1>
         <p className="text-muted-foreground mb-6">
-          Seu pagamento foi processado com sucesso. Agora você tem acesso completo ao FinFlow.
+          Sua assinatura foi ativada. Agora você pode acessar o sistema utilizando seu email e senha cadastrados.
         </p>
-        <Button onClick={() => navigate("/")} className="w-full">
-          Ir para o dashboard
+        <Button onClick={() => navigate("/", { replace: true })} className="w-full">
+          Ir para login
         </Button>
       </div>
     </div>
