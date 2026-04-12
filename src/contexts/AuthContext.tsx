@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: { name },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: "https://finflowbr.com/",
       },
     });
     if (error) {

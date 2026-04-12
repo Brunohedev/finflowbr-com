@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
@@ -27,8 +26,7 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, isLoading, login, register, logout, subscription } = useAuth();
-  const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -62,18 +60,6 @@ const Index = () => {
     }
   }, [editingSalary]);
 
-  // Redirect to pricing only after subscription check completes and confirms not subscribed
-  // Also check app_metadata directly as fallback for magic link users
-  const hasAccessViaMetadata = user?.app_metadata?.is_active === true || 
-    user?.app_metadata?.subscription_status === "active";
-  const hasAccess = subscription?.subscribed || hasAccessViaMetadata;
-
-  useEffect(() => {
-    if (isAuthenticated && subscription !== null && !hasAccess) {
-      navigate("/planos", { replace: true });
-    }
-  }, [isAuthenticated, subscription, hasAccess, navigate]);
-
   // Show loading while checking auth
   if (isLoading || isSyncLoading) {
     return (
@@ -86,24 +72,6 @@ const Index = () => {
   // Show login screen if not authenticated
   if (!isAuthenticated) {
     return <LoginScreen onLogin={login} onRegister={register} />;
-  }
-
-  // Wait for subscription check - but allow access if metadata already confirms it
-  if (subscription === null && !hasAccessViaMetadata) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  // If subscription check completed but no access, pricing redirect will handle it
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
   }
 
   if (!isSetup || !data) {

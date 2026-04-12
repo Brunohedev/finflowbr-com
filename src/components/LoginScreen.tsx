@@ -35,7 +35,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
         if (!result.success) {
           setError(result.error || "Erro ao criar conta");
         } else {
-          navigate("/planos", { replace: true });
+          navigate("/", { replace: true });
           return;
         }
       }
