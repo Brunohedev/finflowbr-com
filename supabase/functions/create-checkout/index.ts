@@ -67,8 +67,8 @@ serve(async (req) => {
     const sessionParams: any = {
       line_items: [{ price: PRICE_MAP[plan], quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/sucesso`,
-      cancel_url: `${req.headers.get("origin")}/cancelado`,
+      success_url: `${req.headers.get("origin") || "https://finflowbr-com.lovable.app"}/sucesso`,
+      cancel_url: `${req.headers.get("origin") || "https://finflowbr-com.lovable.app"}/cancelado`,
       metadata: { plan },
     };
 
