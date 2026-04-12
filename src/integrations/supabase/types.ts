@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invites: {
+        Row: {
+          access_type: string | null
+          created_at: string | null
+          email: string
+          id: string
+        }
+        Insert: {
+          access_type?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+        }
+        Update: {
+          access_type?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       finance_data: {
         Row: {
           created_at: string
@@ -62,6 +83,30 @@ export type Database = {
           name?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_entitlements: {
+        Row: {
+          access_type: string
+          created_at: string | null
+          id: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          access_type?: string
+          created_at?: string | null
+          id?: string
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_type?: string
+          created_at?: string | null
+          id?: string
+          source?: string
+          user_id?: string | null
         }
         Relationships: []
       }
