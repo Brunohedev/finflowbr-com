@@ -62,12 +62,17 @@ const Index = () => {
     }
   }, [editingSalary]);
 
-  // Redirect to pricing if no active subscription
+  // Redirect to pricing only after subscription check completes and confirms not subscribed
+  // Also check app_metadata directly as fallback for magic link users
+  const hasAccessViaMetadata = user?.app_metadata?.is_active === true || 
+    user?.app_metadata?.subscription_status === "active";
+  const hasAccess = subscription?.subscribed || hasAccessViaMetadata;
+
   useEffect(() => {
-    if (isAuthenticated && subscription !== null && !subscription.subscribed) {
+    if (isAuthenticated && subscription !== null && !hasAccess) {
       navigate("/planos", { replace: true });
     }
-  }, [isAuthenticated, subscription, navigate]);
+  }, [isAuthenticated, subscription, hasAccess, navigate]);
 
   // Show loading while checking auth
   if (isLoading || isSyncLoading) {
@@ -83,8 +88,17 @@ const Index = () => {
     return <LoginScreen onLogin={login} onRegister={register} />;
   }
 
-  // Wait for subscription check
-  if (subscription === null || !subscription.subscribed) {
+  // Wait for subscription check - but allow access if metadata already confirms it
+  if (subscription === null && !hasAccessViaMetadata) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  // If subscription check completed but no access, pricing redirect will handle it
+  if (!hasAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
