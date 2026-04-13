@@ -118,6 +118,41 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // ── Check user_entitlements table FIRST ──
+    // If user has "unlimited" access (admin invite / magic link), grant immediate access
+    const { data: entitlements } = await supabaseClient
+      .from("user_entitlements")
+      .select("access_type, source")
+      .eq("user_id", user.id)
+      .eq("access_type", "unlimited")
+      .limit(1);
+
+    if (entitlements && entitlements.length > 0) {
+      logStep("User has unlimited entitlement, granting access", {
+        userId: user.id,
+        source: entitlements[0].source,
+      });
+
+      const snapshot: SubscriptionSnapshot = {
+        subscribed: true,
+        plan: "unlimited",
+        subscriptionId: null,
+        subscriptionEnd: null,
+        customerId: null,
+      };
+
+      // Sync to app_metadata so fallback also works
+      await syncSnapshot(supabaseClient, user, snapshot);
+
+      return new Response(JSON.stringify(buildResponseBody(snapshot)), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    logStep("No unlimited entitlement found, checking Stripe");
+
+    // ── Existing Stripe logic ──
     const storedSnapshot = getStoredSnapshot(user);
     logStep("Stored access metadata loaded", {
       userId: user.id,

@@ -15,7 +15,8 @@ import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
@@ -26,7 +27,8 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, register, logout, subscription } = useAuth();
+  const navigate = useNavigate();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -72,6 +74,25 @@ const Index = () => {
   // Show login screen if not authenticated
   if (!isAuthenticated) {
     return <LoginScreen onLogin={login} onRegister={register} />;
+  }
+
+  // Block access for users without subscription/entitlement → redirect to /planos
+  if (subscription && !subscription.subscribed) {
+    navigate("/planos", { replace: true });
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  // Still loading subscription info
+  if (!subscription) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
   }
 
   if (!isSetup || !data) {
@@ -128,6 +149,12 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost" size="icon" className="rounded-xl"
+              onClick={() => window.open("https://wa.me/7722567978", "_blank")}
+              title="Suporte">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
             <Button
               variant={view === "report" ? "secondary" : "ghost"}
               size="icon" className="rounded-xl"
