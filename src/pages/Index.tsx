@@ -27,14 +27,10 @@ new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(va
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 
 const Index = () => {
-  const { user, isAuthenticated, isLoading, isCheckingSubscription, login, register, logout, subscription } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, subscription } = useAuth();
   const navigate = useNavigate();
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
-  const access = subscription ? { access_type: subscription.plan } : null;
-  const isAccessLoading = isAuthenticated && (isCheckingSubscription || subscription === null);
-  const hasUnlimitedAccess = access?.access_type === "unlimited";
-  const hasSystemAccess = hasUnlimitedAccess || subscription?.subscribed === true;
 
   const {
     data, isSetup, isSyncLoading, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
@@ -66,31 +62,9 @@ const Index = () => {
     }
   }, [editingSalary]);
 
-  useEffect(() => {
-    if (isLoading || isSyncLoading || !isAuthenticated || isAccessLoading) {
-      return;
-    }
-
-    if (!hasSystemAccess) {
-      navigate("/planos", { replace: true });
-    }
-  }, [hasSystemAccess, isAccessLoading, isAuthenticated, isLoading, isSyncLoading, navigate]);
-
-  // Show loading while checking auth
-  if (isLoading || isSyncLoading || isAccessLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  // Show login screen if not authenticated
-  if (!isAuthenticated) {
-    return <LoginScreen onLogin={login} onRegister={register} />;
-  }
-
-  if (!hasSystemAccess) {
+  // ProtectedRoute already handles auth + access checks
+  // Only need to handle data sync loading and setup
+  if (isSyncLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
