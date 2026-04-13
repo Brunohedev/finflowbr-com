@@ -14,6 +14,7 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isCheckingSubscription: boolean;
   subscription: SubscriptionInfo | null;
   checkSubscription: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -27,9 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
 
   const checkSubscription = useCallback(async () => {
+    setIsCheckingSubscription(true);
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
@@ -87,12 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscriptionId: null,
         subscriptionEnd: null,
       });
+    } finally {
+      setIsCheckingSubscription(false);
     }
   }, []);
 
   useEffect(() => {
     const refreshUser = async (session: Session | null) => {
       if (session) {
+        setSubscription(null);
+        setIsCheckingSubscription(true);
         // Force fresh user fetch to get latest app_metadata (critical for magic links)
         const { data: { user: freshUser } } = await supabase.auth.getUser();
         setSession(session);
@@ -100,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setSession(null);
         setUser(null);
+        setSubscription(null);
+        setIsCheckingSubscription(false);
       }
       setIsLoading(false);
     };
@@ -119,11 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check subscription when user is authenticated
   useEffect(() => {
     if (session) {
-      checkSubscription();
-      const interval = setInterval(checkSubscription, 60000);
+      void checkSubscription();
+      const interval = setInterval(() => {
+        void checkSubscription();
+      }, 60000);
       return () => clearInterval(interval);
     } else {
       setSubscription(null);
+      setIsCheckingSubscription(false);
     }
   }, [session, checkSubscription]);
 
@@ -163,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         isAuthenticated: !!session,
         isLoading,
+        isCheckingSubscription,
         subscription,
         checkSubscription,
         login,
