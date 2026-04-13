@@ -2,7 +2,6 @@ import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAccess } from "@/lib/getAccess";
-import LoginScreen from "@/components/LoginScreen";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,8 +14,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     isLoading,
     isCheckingSubscription,
     subscription,
-    login,
-    register,
   } = useAuth();
 
   const [accessLevel, setAccessLevel] = useState<"unlimited" | "pro" | "none" | null>(null);
@@ -47,7 +44,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // 2. Not logged in
   if (!isAuthenticated) {
-    return <LoginScreen onLogin={login} onRegister={register} />;
+    return <Navigate to="/login" replace />;
   }
 
   // 3. Still checking subscription OR access
