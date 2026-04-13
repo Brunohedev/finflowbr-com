@@ -68,7 +68,7 @@ serve(async (req) => {
       line_items: [{ price: PRICE_MAP[plan], quantity: 1 }],
       mode: "subscription",
       success_url: `${req.headers.get("origin") || "https://finflowbr-com.lovable.app"}/sucesso`,
-      cancel_url: `${req.headers.get("origin") || "https://finflowbr-com.lovable.app"}/cancelado`,
+      cancel_url: `${req.headers.get("origin") || "https://finflowbr-com.lovable.app"}/planos`,
       metadata: { plan },
     };
 
