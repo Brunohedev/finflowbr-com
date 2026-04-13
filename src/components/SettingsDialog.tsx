@@ -27,7 +27,7 @@ const LABELS: Record<keyof Percentages, string> = {
 };
 
 const fmt = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
 const MONTH_LABELS: Record<string, string> = {
   "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",

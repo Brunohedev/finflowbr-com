@@ -5,7 +5,7 @@ import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { SimulationDataPoint } from "@/hooks/useGrowthSimulator";
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 interface GrowthProjectionChartProps {
   yearlyData: SimulationDataPoint[];
@@ -40,7 +40,7 @@ const GrowthProjectionChart = React.memo(({ yearlyData, timePeriod }: GrowthProj
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+                <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent

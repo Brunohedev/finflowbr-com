@@ -22,7 +22,7 @@ import { ptBR } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
 
 const formatCurrency = (value: number) =>
-new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 

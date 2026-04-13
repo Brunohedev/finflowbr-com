@@ -20,7 +20,7 @@ interface CategoryDetailProps {
 }
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onToggleExpenseStatus, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
   const categoryExpenses = expenses.filter((e) => e.categoryId === category.id);

@@ -35,7 +35,7 @@ interface Props {
 }
 
 const fmt = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
@@ -313,7 +313,7 @@ const ReservaInvestimentosView = ({
           <div className="space-y-2 p-3 rounded-lg bg-secondary/50">
             <Input placeholder="Nome (ex: Ações, ETFs)" value={invName} onChange={(e) => setInvName(e.target.value)} className="h-9 text-sm" />
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
               <Input placeholder="0,00" value={invAmount} onChange={(e) => setInvAmount(e.target.value)} className="h-9 text-sm pl-9" inputMode="decimal" />
             </div>
             <Textarea placeholder="Notas (opcional)" value={invNote} onChange={(e) => setInvNote(e.target.value)} rows={2} className="text-sm" />
@@ -505,7 +505,7 @@ const ReservaInvestimentosView = ({
             <div className="space-y-1.5">
               <Label className="text-xs">Valor</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                 <Input
                   placeholder="0,00"
                   value={modalAmount}
@@ -552,7 +552,7 @@ const ReservaInvestimentosView = ({
             <div className="space-y-1.5">
               <Label className="text-xs">Valor</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                 <Input placeholder="0,00" value={modalAmount} onChange={(e) => setModalAmount(e.target.value)} className="pl-9" inputMode="decimal" />
               </div>
             </div>

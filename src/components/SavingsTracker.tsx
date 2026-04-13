@@ -12,7 +12,7 @@ interface SavingsTrackerProps {
 }
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const GOAL_MILESTONES = [5000, 10000, 15000, 20000, 30000, 50000, 75000, 100000, 150000, 200000];
 
