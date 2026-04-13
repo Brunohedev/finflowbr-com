@@ -76,9 +76,8 @@ const Index = () => {
     return <LoginScreen onLogin={login} onRegister={register} />;
   }
 
-  // Block access for users without subscription/entitlement → redirect to /planos
-  if (subscription && !subscription.subscribed) {
-    navigate("/planos", { replace: true });
+  // Still loading subscription info — wait before any redirect decision
+  if (!subscription) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -86,8 +85,9 @@ const Index = () => {
     );
   }
 
-  // Still loading subscription info
-  if (!subscription) {
+  // Block access for users without subscription/entitlement → redirect to /planos
+  if (!subscription.subscribed) {
+    navigate("/planos", { replace: true });
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
