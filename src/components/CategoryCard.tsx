@@ -25,7 +25,7 @@ interface CategoryCardProps {
 }
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
@@ -128,7 +128,7 @@ const CategoryCard = ({
             {!reserveTarget && onUpdateReserveTarget && (
               <div className="space-y-2 mt-1" onClick={(e) => e.stopPropagation()}>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
                   <Input placeholder="Definir meta..." value={customTarget} onChange={(e) => setCustomTarget(e.target.value)}
                     className="h-7 text-xs pl-9" inputMode="decimal" />
                 </div>
@@ -181,7 +181,7 @@ const CategoryCard = ({
             <span className="text-xs font-semibold">Adicionar à Reserva</span>
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
             <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
               className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
           </div>
@@ -209,7 +209,7 @@ const CategoryCard = ({
             <span className="text-xs font-semibold">Adicionar aos Investimentos</span>
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
             <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
               className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
           </div>

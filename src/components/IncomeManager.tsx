@@ -21,7 +21,7 @@ const FREQ_LABELS: Record<IncomeFrequency, string> = {
 };
 
 const fmt = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
@@ -63,7 +63,7 @@ const IncomeManager = ({ sources, onAdd, onDelete, compact }: IncomeManagerProps
           <Input placeholder="Nome (ex: Salário)" value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-sm" />
           <div className="grid grid-cols-2 gap-2">
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
               <Input placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-9 text-sm pl-9" inputMode="decimal" />
             </div>
             <Select value={frequency} onValueChange={(v) => setFrequency(v as IncomeFrequency)}>

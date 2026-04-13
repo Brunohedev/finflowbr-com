@@ -15,10 +15,10 @@ interface MonthlyCalendarProps {
 }
 
 const fmt = (v: number) =>
-new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact" }).format(v);
+new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact" }).format(v);
 
 const fmtFull = (v: number) =>
-new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
 const MonthlyCalendar = ({ data, onBack, onToggleExpenseStatus }: MonthlyCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());

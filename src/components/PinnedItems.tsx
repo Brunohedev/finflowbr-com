@@ -11,7 +11,7 @@ interface PinnedItemsProps {
 }
 
 const fmt = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
 const PinnedItems = ({ reserves, goals, onUnpinReserve, onUnpinGoal, onNavigateToReserva }: PinnedItemsProps) => {
   const pinnedReserves = reserves.filter((r) => r.pinnedToDashboard);

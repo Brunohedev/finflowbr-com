@@ -15,7 +15,7 @@ const FREQ_LABELS: Record<IncomeFrequency, string> = {
 };
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const parseNum = (s: string) => parseFloat(s.replace(/[^\d.,]/g, "").replace(",", ".")) || 0;
 
@@ -88,7 +88,7 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
               <Input placeholder="Nome (ex: Salário)" value={newName} onChange={(e) => setNewName(e.target.value)} className="h-9 text-sm" />
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
                   <Input placeholder="0,00" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="h-9 text-sm pl-9" inputMode="decimal" />
                 </div>
                 <Select value={newFreq} onValueChange={(v) => setNewFreq(v as IncomeFrequency)}>

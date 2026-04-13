@@ -22,7 +22,7 @@ const PLANS: Plan[] = [
   {
     id: "mensal",
     name: "Mensal",
-    price: "R$ 29,90",
+    price: "$29.90",
     period: "/mês",
     description: "Ideal para começar",
     checkoutUrl: "https://buy.stripe.com/fZueVd6KcfL0aW5alC4Ja03",
@@ -37,7 +37,7 @@ const PLANS: Plan[] = [
   {
     id: "semestral",
     name: "Semestral",
-    price: "R$ 187,86",
+    price: "$187.86",
     period: "/6 meses",
     description: "Economia de ~5%",
     popular: true,
@@ -53,7 +53,7 @@ const PLANS: Plan[] = [
   {
     id: "anual",
     name: "Anual",
-    price: "R$ 299,04",
+    price: "$299.04",
     period: "/ano",
     description: "Melhor custo-benefício",
     checkoutUrl: "https://buy.stripe.com/aFaeVd4C46aqc09gK04Ja05",

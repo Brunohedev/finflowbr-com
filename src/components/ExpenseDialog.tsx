@@ -84,7 +84,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Valor Total</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
               <Input type="text" inputMode="decimal" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} className="pl-10" />
             </div>
           </div>
@@ -131,7 +131,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAd
                 </div>
                 {totalAmount > 0 && installmentCount > 1 && (
                   <p className="text-xs text-primary font-medium">
-                    {installmentCount}x de {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(installmentValue)}
+                    {installmentCount}x de {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(installmentValue)}
                   </p>
                 )}
               </div>

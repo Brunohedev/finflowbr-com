@@ -16,7 +16,7 @@ import { getPercentagesForMonth } from "@/lib/savingsAllocation";
 import { differenceInDays, parseISO } from "date-fns";
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const frequencyToMonthly = (amount: number, freq: RecurringFrequency) => {
   switch (freq) {
@@ -334,7 +334,7 @@ const AdvancedDashboard = ({
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+                <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
