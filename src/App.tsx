@@ -8,6 +8,8 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Sucesso from "./pages/Sucesso";
 import Cancelado from "./pages/Cancelado";
+import Login from "./pages/Login";
+import RootRedirect from "./pages/RootRedirect";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -21,8 +23,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Root: redirect to /login or /app based on auth */}
+            <Route path="/" element={<RootRedirect />} />
+            {/* Login page: public, redirects to /app if already authenticated */}
+            <Route path="/login" element={<Login />} />
             {/* Protected: requires auth + active plan */}
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             {/* Public routes: no auth required */}
             <Route path="/planos" element={<Pricing />} />
             <Route path="/sucesso" element={<Sucesso />} />
