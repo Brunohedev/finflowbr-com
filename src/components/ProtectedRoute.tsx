@@ -1,24 +1,16 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { getAccess } from "@/lib/getAccess";
 import LoginScreen from "@/components/LoginScreen";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
-/**
- * Wraps protected routes with auth + subscription checks.
- * 
- * Flow:
- * 1. Loading → spinner
- * 2. Not authenticated → LoginScreen
- * 3. Authenticated but still checking subscription → spinner
- * 4. Authenticated, no active plan → redirect to /planos
- * 5. Authenticated + active plan → render children
- */
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const {
+    user,
     isAuthenticated,
     isLoading,
     isCheckingSubscription,
@@ -26,6 +18,23 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     login,
     register,
   } = useAuth();
+
+  const [accessLevel, setAccessLevel] = useState<"unlimited" | "pro" | "none" | null>(null);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
+
+  // Run getAccess as secondary check once user is available
+  useEffect(() => {
+    if (!user) {
+      setAccessLevel(null);
+      return;
+    }
+
+    setIsCheckingAccess(true);
+    getAccess(user)
+      .then(setAccessLevel)
+      .catch(() => setAccessLevel(null))
+      .finally(() => setIsCheckingAccess(false));
+  }, [user]);
 
   // 1. Still restoring session
   if (isLoading) {
@@ -36,13 +45,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // 2. Not logged in → show login (NOT /planos)
+  // 2. Not logged in
   if (!isAuthenticated) {
     return <LoginScreen onLogin={login} onRegister={register} />;
   }
 
-  // 3. Logged in but subscription check still in progress
-  if (isCheckingSubscription || subscription === null) {
+  // 3. Still checking subscription OR access
+  if (isCheckingSubscription || subscription === null || isCheckingAccess || accessLevel === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -50,16 +59,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // 4. Logged in, subscription loaded, but no active plan → paywall
-  const hasAccess =
-    subscription.subscribed === true ||
-    subscription.plan === "unlimited";
+  // 4. Grant access if EITHER check passes
+  const hasSubscription = subscription.subscribed === true || subscription.plan === "unlimited";
+  const hasDirectAccess = accessLevel === "unlimited" || accessLevel === "pro";
 
-  if (!hasAccess) {
+  if (!hasSubscription && !hasDirectAccess) {
     return <Navigate to="/planos" replace />;
   }
 
-  // 5. All good → render the protected content
+  // 5. Access granted
   return <>{children}</>;
 };
 
