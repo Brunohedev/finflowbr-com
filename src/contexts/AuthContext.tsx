@@ -46,14 +46,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (err) {
       console.error("Error checking subscription:", err);
-      // On error, check app_metadata before assuming no access
-      // This prevents blocking invited/magic-link users when the edge function fails
+      // On error, check app_metadata AND user_entitlements before assuming no access
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       const meta = currentUser?.app_metadata;
       const hasMetaAccess = meta?.is_active === true || meta?.subscription_status === "active";
+
+      if (hasMetaAccess) {
+        setSubscription({
+          subscribed: true,
+          plan: meta?.plan ?? "invited",
+          subscriptionId: null,
+          subscriptionEnd: null,
+        });
+        return;
+      }
+
+      // Secondary fallback: check user_entitlements table directly
+      if (currentUser?.id) {
+        const { data: entitlements } = await supabase
+          .from("user_entitlements")
+          .select("access_type")
+          .eq("user_id", currentUser.id)
+          .eq("access_type", "unlimited")
+          .limit(1);
+
+        if (entitlements && entitlements.length > 0) {
+          setSubscription({
+            subscribed: true,
+            plan: "unlimited",
+            subscriptionId: null,
+            subscriptionEnd: null,
+          });
+          return;
+        }
+      }
+
       setSubscription({
-        subscribed: hasMetaAccess,
-        plan: hasMetaAccess ? (meta?.plan ?? "invited") : null,
+        subscribed: false,
+        plan: null,
         subscriptionId: null,
         subscriptionEnd: null,
       });
