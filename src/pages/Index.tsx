@@ -150,6 +150,12 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-1">
             <Button
+              variant="ghost" size="icon" className="rounded-xl"
+              onClick={() => window.open("https://wa.me/7722567978", "_blank")}
+              title="Suporte">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
+            <Button
               variant={view === "report" ? "secondary" : "ghost"}
               size="icon" className="rounded-xl"
               onClick={() => setView(view === "report" ? "dashboard" : "report")}>
