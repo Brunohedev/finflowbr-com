@@ -9,6 +9,7 @@ import Pricing from "./pages/Pricing";
 import Sucesso from "./pages/Sucesso";
 import Cancelado from "./pages/Cancelado";
 import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            {/* Protected: requires auth + active plan */}
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* Public routes: no auth required */}
             <Route path="/planos" element={<Pricing />} />
             <Route path="/sucesso" element={<Sucesso />} />
             <Route path="/cancelado" element={<Cancelado />} />

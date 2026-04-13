@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import { useAuth } from "@/contexts/AuthContext";
-import LoginScreen from "@/components/LoginScreen";
+// LoginScreen is now handled by ProtectedRoute
 import SetupWizard from "@/components/SetupWizard";
 import CategoryCard from "@/components/CategoryCard";
 import CategoryDetail from "@/components/CategoryDetail";
