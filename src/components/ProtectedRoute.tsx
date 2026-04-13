@@ -14,8 +14,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     isLoading,
     isCheckingSubscription,
     subscription,
-    login,
-    register,
   } = useAuth();
 
   const [accessLevel, setAccessLevel] = useState<"unlimited" | "pro" | "none" | null>(null);
