@@ -96,10 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const refreshUser = async (session: Session | null) => {
+    const refreshUser = async (event: string, session: Session | null) => {
       if (session) {
-        setSubscription(null);
-        setIsCheckingSubscription(true);
+        // Only reset subscription on initial login or explicit sign-in events
+        // TOKEN_REFRESHED should NOT reset subscription state (causes spinner + redirect loop)
+        const isNewLogin = event === "SIGNED_IN" || event === "INITIAL_SESSION";
+        if (isNewLogin) {
+          setSubscription(null);
+          setIsCheckingSubscription(true);
+        }
         // Force fresh user fetch to get latest app_metadata (critical for magic links)
         const { data: { user: freshUser } } = await supabase.auth.getUser();
         setSession(session);
@@ -113,13 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     };
 
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Fire and forget - don't await inside callback to avoid deadlocks
-      refreshUser(session);
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
+      refreshUser(event, session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      refreshUser(session);
+      refreshUser("INITIAL_SESSION", session);
     });
 
     return () => authSub.unsubscribe();
