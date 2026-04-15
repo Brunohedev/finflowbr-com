@@ -446,6 +446,7 @@ const Index = () => {
         onOpenChange={setExpenseOpen}
         categories={data.categories}
         defaultCategoryId={expenseDefaultCategory}
+        activeMonth={activeMonth}
         onAdd={addExpense} />
       
 
