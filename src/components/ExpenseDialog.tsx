@@ -52,6 +52,13 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installments, setInstallments] = useState("2");
 
+  // Reset date when dialog opens or activeMonth changes
+  useEffect(() => {
+    if (open) {
+      setDate(getDefaultDate());
+    }
+  }, [open, activeMonth]);
+
   const selectedCategory = expenseCategories.find((c) => c.id === categoryId);
 
   const handleSubmit = () => {
