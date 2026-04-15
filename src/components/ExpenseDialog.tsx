@@ -18,6 +18,7 @@ interface ExpenseDialogProps {
   onOpenChange: (open: boolean) => void;
   categories: Category[];
   defaultCategoryId?: string;
+  activeMonth?: string;
   onAdd: (expense: {
     name: string;
     amount: number;
@@ -31,14 +32,21 @@ interface ExpenseDialogProps {
   }) => void;
 }
 
-const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, onAdd }: ExpenseDialogProps) => {
+const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, activeMonth, onAdd }: ExpenseDialogProps) => {
   const expenseCategories = categories.filter((c) => c.id !== "reserva_investimentos");
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState(defaultCategoryId || "");
   const [subcategoryId, setSubcategoryId] = useState("");
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const getDefaultDate = () => {
+    const currentMonth = format(new Date(), "yyyy-MM");
+    if (activeMonth && activeMonth !== currentMonth) {
+      return `${activeMonth}-01`;
+    }
+    return format(new Date(), "yyyy-MM-dd");
+  };
+  const [date, setDate] = useState(getDefaultDate);
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"paid" | "pending">("pending");
   const [hasInstallments, setHasInstallments] = useState(false);
