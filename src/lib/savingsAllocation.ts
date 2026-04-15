@@ -35,7 +35,7 @@ const getReservePercentage = (data: FinanceData, monthKey: string) =>
 
 export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) => {
   const override = data.salaryByMonth?.[monthKey];
-  return override !== undefined ? override : getTotalMonthlyIncome(data.incomeSources ?? []);
+  return override !== undefined ? override : getTotalMonthlyIncome(data.incomeSources ?? [], monthKey);
 };
 
 export const getSavingsAllocationForMonth = (data: FinanceData, monthKey: string): SavingsAllocationSummary => {

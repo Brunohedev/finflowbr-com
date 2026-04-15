@@ -14,9 +14,9 @@ import type { Json } from "@/integrations/supabase/types";
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
 
-const withSyncedIncome = (financeData: FinanceData): FinanceData => ({
+const withSyncedIncome = (financeData: FinanceData, month?: string): FinanceData => ({
   ...financeData,
-  income: getTotalMonthlyIncome(financeData.incomeSources),
+  income: getTotalMonthlyIncome(financeData.incomeSources, month),
 });
 
 const saveToLocalStorage = (userId: string | undefined, financeData: FinanceData) => {
@@ -224,7 +224,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
       });
   }, [data, userId, syncStatus]);
 
-  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
+  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources, activeMonth) : 0, [data, activeMonth]);
   const monthlyIncome = useMemo(() => {
     if (!data) return 0;
     const override = data.salaryByMonth?.[activeMonth];
@@ -271,7 +271,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
       ...cat, percentage: percentages[cat.id as keyof Percentages],
     }));
     setData({
-      income: getTotalMonthlyIncome(incomeSources),
+      income: getTotalMonthlyIncome(incomeSources, getCurrentMonth()),
       incomeSources,
       categories,
       expenses: [],
@@ -287,17 +287,17 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const addIncomeSource = useCallback((name: string, amount: number, frequency: IncomeFrequency) => {
     setData((prev) => {
       if (!prev) return prev;
-      const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency };
+      const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency, ...(frequency === "once" ? { month: activeMonth } : {}) };
       const newSources = [...prev.incomeSources, source];
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
-  }, []);
+  }, [activeMonth]);
 
   const deleteIncomeSource = useCallback((id: string) => {
     setData((prev) => {
       if (!prev) return prev;
       const newSources = prev.incomeSources.filter((s) => s.id !== id);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
   }, []);
 
@@ -305,7 +305,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => {
       if (!prev) return prev;
       const newSources = prev.incomeSources.map((s) => s.id === id ? { ...s, ...updates } : s);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
   }, []);
 
@@ -391,7 +391,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const setMonthSalary = useCallback((month: string, amount: number) => {
     setData((prev) => {
       if (!prev) return prev;
-      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources);
+      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources, month);
       const salaryByMonth = { ...(prev.salaryByMonth || {}) };
 
       if (Math.abs(amount - defaultIncome) < 0.01) {

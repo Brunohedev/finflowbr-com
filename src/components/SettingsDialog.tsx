@@ -47,7 +47,7 @@ const SettingsDialog = ({
   const [pcts, setPcts] = useState(percentages);
   const [incomeInput, setIncomeInput] = useState(String(income));
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
-  const defaultIncome = getTotalMonthlyIncome(incomeSources);
+  const defaultIncome = getTotalMonthlyIncome(incomeSources, activeMonth);
   const parsedIncome = Number.parseFloat(incomeInput);
   const isIncomeValid = Number.isFinite(parsedIncome) && parsedIncome > 0;
   const hasOverride = isIncomeValid && Math.abs(parsedIncome - defaultIncome) >= 0.01;
