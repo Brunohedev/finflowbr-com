@@ -14,9 +14,9 @@ import type { Json } from "@/integrations/supabase/types";
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
 
-const withSyncedIncome = (financeData: FinanceData): FinanceData => ({
+const withSyncedIncome = (financeData: FinanceData, month?: string): FinanceData => ({
   ...financeData,
-  income: getTotalMonthlyIncome(financeData.incomeSources),
+  income: getTotalMonthlyIncome(financeData.incomeSources, month),
 });
 
 const saveToLocalStorage = (userId: string | undefined, financeData: FinanceData) => {
@@ -224,7 +224,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
       });
   }, [data, userId, syncStatus]);
 
-  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources) : 0, [data]);
+  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources, activeMonth) : 0, [data, activeMonth]);
   const monthlyIncome = useMemo(() => {
     if (!data) return 0;
     const override = data.salaryByMonth?.[activeMonth];
@@ -287,11 +287,11 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const addIncomeSource = useCallback((name: string, amount: number, frequency: IncomeFrequency) => {
     setData((prev) => {
       if (!prev) return prev;
-      const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency };
+      const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency, ...(frequency === "once" ? { month: activeMonth } : {}) };
       const newSources = [...prev.incomeSources, source];
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
-  }, []);
+  }, [activeMonth]);
 
   const deleteIncomeSource = useCallback((id: string) => {
     setData((prev) => {
