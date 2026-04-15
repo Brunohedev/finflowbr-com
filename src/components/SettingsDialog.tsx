@@ -59,14 +59,15 @@ const SettingsDialog = ({
   }, [open, percentages, income]);
 
   const handleAddIncomeSource = (name: string, amount: number, frequency: IncomeFrequency) => {
+    onAddSource(name, amount, frequency);
+
+    // For one-time income, also bump this month's override so the value
+    // is reflected immediately in the monthly income for the active month.
     if (frequency === "once") {
       const currentIncome = Number.parseFloat(incomeInput);
       const safeIncome = Number.isFinite(currentIncome) ? currentIncome : income;
       setIncomeInput(String(safeIncome + amount));
-      return;
     }
-
-    onAddSource(name, amount, frequency);
   };
 
   const handleSave = () => {
