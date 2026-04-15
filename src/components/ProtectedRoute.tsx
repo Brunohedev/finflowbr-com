@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       .then(setAccessLevel)
       .catch(() => setAccessLevel(null))
       .finally(() => setIsCheckingAccess(false));
-  }, [user]);
+  }, [user?.id]);
 
   // 1. Still restoring session
   if (isLoading) {

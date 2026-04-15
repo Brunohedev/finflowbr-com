@@ -96,19 +96,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const refreshUser = async (event: string, session: Session | null) => {
+    // CRITICAL: onAuthStateChange must NOT be async or await Supabase calls
+    // Awaiting inside this callback blocks the auth listener and causes deadlocks
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
+      const isNewLogin = event === "SIGNED_IN" || event === "INITIAL_SESSION";
+
       if (session) {
-        // Only reset subscription on initial login or explicit sign-in events
-        // TOKEN_REFRESHED should NOT reset subscription state (causes spinner + redirect loop)
-        const isNewLogin = event === "SIGNED_IN" || event === "INITIAL_SESSION";
         if (isNewLogin) {
           setSubscription(null);
           setIsCheckingSubscription(true);
+          // Only set session/user on NEW logins to avoid re-triggering checkSubscription loop
+          setSession(session);
+          setUser(session.user ?? null);
+          // Fire-and-forget: fetch fresh user for latest app_metadata
+          supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+            if (freshUser) setUser(freshUser);
+          });
         }
-        // Force fresh user fetch to get latest app_metadata (critical for magic links)
-        const { data: { user: freshUser } } = await supabase.auth.getUser();
-        setSession(session);
-        setUser(freshUser ?? session.user ?? null);
+        // TOKEN_REFRESHED / USER_UPDATED: silently update user without resetting session ref
+        // This prevents the checkSubscription useEffect from re-firing
+        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          setUser(session.user ?? null);
+        }
       } else {
         setSession(null);
         setUser(null);
@@ -116,14 +125,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsCheckingSubscription(false);
       }
       setIsLoading(false);
-    };
-
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
-      refreshUser(event, session);
     });
 
+    // Bootstrap: get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      refreshUser("INITIAL_SESSION", session);
+      if (session) {
+        setSession(session);
+        setUser(session.user ?? null);
+        // Fire-and-forget fresh user fetch
+        supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+          if (freshUser) setUser(freshUser);
+        });
+      }
+      setIsLoading(false);
     });
 
     return () => authSub.unsubscribe();
