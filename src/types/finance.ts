@@ -80,6 +80,7 @@ export interface IncomeSource {
   name: string;
   amount: number;
   frequency: IncomeFrequency;
+  month?: string; // Only used for "once" frequency – scopes the income to a specific month
 }
 
 export interface FinanceData {
@@ -122,8 +123,10 @@ export const normalizeToDaily = (amount: number, frequency: IncomeFrequency): nu
   }
 };
 
-export const getTotalMonthlyIncome = (sources: IncomeSource[]): number =>
-  sources.reduce((sum, s) => sum + normalizeToMonthly(s.amount, s.frequency), 0);
+export const getTotalMonthlyIncome = (sources: IncomeSource[], month?: string): number =>
+  sources
+    .filter((s) => s.frequency !== "once" || !s.month || s.month === month)
+    .reduce((sum, s) => sum + normalizeToMonthly(s.amount, s.frequency), 0);
 
 export const getTotalDailyIncome = (sources: IncomeSource[]): number =>
   sources.reduce((sum, s) => sum + normalizeToDaily(s.amount, s.frequency), 0);
