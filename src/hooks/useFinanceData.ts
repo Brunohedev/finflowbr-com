@@ -271,7 +271,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
       ...cat, percentage: percentages[cat.id as keyof Percentages],
     }));
     setData({
-      income: getTotalMonthlyIncome(incomeSources),
+      income: getTotalMonthlyIncome(incomeSources, getCurrentMonth()),
       incomeSources,
       categories,
       expenses: [],
@@ -297,7 +297,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => {
       if (!prev) return prev;
       const newSources = prev.incomeSources.filter((s) => s.id !== id);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
   }, []);
 
@@ -305,7 +305,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     setData((prev) => {
       if (!prev) return prev;
       const newSources = prev.incomeSources.map((s) => s.id === id ? { ...s, ...updates } : s);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources) };
+      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
     });
   }, []);
 
@@ -391,7 +391,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const setMonthSalary = useCallback((month: string, amount: number) => {
     setData((prev) => {
       if (!prev) return prev;
-      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources);
+      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources, month);
       const salaryByMonth = { ...(prev.salaryByMonth || {}) };
 
       if (Math.abs(amount - defaultIncome) < 0.01) {
