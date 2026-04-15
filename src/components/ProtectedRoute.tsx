@@ -47,8 +47,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. Still checking subscription OR access
-  if (isCheckingSubscription || subscription === null || isCheckingAccess || accessLevel === null) {
+  // 3. Only block during the initial access resolution.
+  // Background subscription refreshes must not unmount the app.
+  if (subscription === null || accessLevel === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
