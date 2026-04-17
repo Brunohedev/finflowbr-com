@@ -57,15 +57,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // 4. Grant access if EITHER check passes
-  const hasSubscription = subscription.subscribed === true || subscription.plan === "unlimited";
-  const hasDirectAccess = accessLevel === "unlimited" || accessLevel === "pro";
-
-  if (!hasSubscription && !hasDirectAccess) {
-    return <Navigate to="/planos" replace />;
-  }
-
-  // 5. Access granted
+  // 4. Authenticated users always reach the main app.
+  // Subscription/entitlement checks continue in the background and are
+  // surfaced inside the app (e.g., upgrade prompts), but we never bounce
+  // a logged-in user out to /planos automatically after login.
   return <>{children}</>;
 };
 
