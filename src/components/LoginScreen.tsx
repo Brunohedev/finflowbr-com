@@ -63,10 +63,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
               />
             </div>
             <p className="text-xs tracking-wide font-bold -mt-24">
-              <span className="text-foreground">{t("Feito para ")}</span>
-              <span style={{ color: '#FFDF00' }}>Bra</span>
-              <span style={{ color: '#1B3A8A' }}>sil</span>
-              <span style={{ color: '#009739' }}>eiros</span>
+              <span className="text-foreground">{t("Seu dinheiro finalmente sobrando")}</span>
             </p>
             <p className="text-muted-foreground text-sm mt-10">
               {mode === "login" ? t("Entrar na minha conta") : t("Crie sua conta")}
