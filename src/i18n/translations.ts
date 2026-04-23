@@ -110,7 +110,6 @@ const en: Dict = {
   "Adicione suas fontes de renda para começar.": "Add your income sources to get started.",
   "Renda mensal total": "Total monthly income",
   "Defina suas proporções": "Set your proportions",
-  "Renda:": "Income:",
   "(deve ser 100%)": "(must be 100%)",
   "Começar a controlar": "Start tracking",
 
