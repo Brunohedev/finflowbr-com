@@ -10,6 +10,7 @@ import Sucesso from "./pages/Sucesso";
 import Cancelado from "./pages/Cancelado";
 import Login from "./pages/Login";
 import RootRedirect from "./pages/RootRedirect";
+import VSL from "./pages/VSL";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
