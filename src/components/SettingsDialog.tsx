@@ -6,6 +6,7 @@ import { Percentages, IncomeSource, IncomeFrequency, getTotalMonthlyIncome } fro
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import IncomeManager from "@/components/IncomeManager";
 import { RotateCcw } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -35,15 +36,17 @@ const MONTH_LABELS: Record<string, string> = {
   "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro",
 };
 
-const formatMonth = (monthKey: string) => {
-  const [year, month] = monthKey.split("-");
-  return `${MONTH_LABELS[month] || month}/${year}`;
-};
+// formatMonth moved into component to use translations
 
 const SettingsDialog = ({
   open, onOpenChange, income, incomeSources, percentages, activeMonth,
   onSave, onReset, onAddSource, onDeleteSource
 }: SettingsDialogProps) => {
+  const { t } = useLanguage();
+  const formatMonth = (monthKey: string) => {
+    const [year, month] = monthKey.split("-");
+    return `${t(MONTH_LABELS[month] || month)}/${year}`;
+  };
   const [pcts, setPcts] = useState(percentages);
   const [incomeInput, setIncomeInput] = useState(String(income));
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
@@ -85,27 +88,27 @@ const SettingsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading">Configurações</DialogTitle>
+          <DialogTitle className="font-heading">{t("Configurações")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
           {/* Global income sources */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground block">
-              Fontes de Renda <span className="text-muted-foreground/70">(base para todos os meses)</span>
+              {t("Fontes de Renda")} <span className="text-muted-foreground/70">{t("(base para todos os meses)")}</span>
             </label>
             <IncomeManager sources={incomeSources} onAdd={handleAddIncomeSource} onDelete={onDeleteSource} compact />
             <p className="text-xs text-muted-foreground">
-              Total mensal base: <span className="text-foreground font-semibold">{fmt(defaultIncome)}</span>
+              {t("Total mensal base:")} <span className="text-foreground font-semibold">{fmt(defaultIncome)}</span>
             </p>
           </div>
 
           {/* Month-specific override */}
           <div className="space-y-2 p-3 rounded-lg border border-border bg-secondary/30">
             <label className="text-xs font-medium text-foreground block">
-              Renda somente para {formatMonth(activeMonth)}
+              {t("Renda somente para")} {formatMonth(activeMonth)}
             </label>
             <p className="text-[11px] text-muted-foreground">
-              Alterar aqui afeta <strong>apenas</strong> este mês. Os demais meses usam o valor base.
+              {t("Alterar aqui afeta")} <strong>{t("apenas")}</strong> {t("este mês. Os demais meses usam o valor base.")}
             </p>
             <div className="flex gap-2">
               <Input
@@ -118,14 +121,14 @@ const SettingsDialog = ({
                 className="flex-1"
               />
               {hasOverride && (
-                <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" title="Restaurar valor base" onClick={restoreDefault}>
+                <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" title={t("Restaurar valor base")} onClick={restoreDefault}>
                   <RotateCcw className="w-4 h-4" />
                 </Button>
               )}
             </div>
             {hasOverride && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                ⚠ Valor diferente da base ({fmt(defaultIncome)}). Só afeta {formatMonth(activeMonth)}.
+                ⚠ {t("Valor diferente da base")} ({fmt(defaultIncome)}). {t("Só afeta")} {formatMonth(activeMonth)}.
               </p>
             )}
           </div>
@@ -133,7 +136,7 @@ const SettingsDialog = ({
           {(Object.keys(LABELS) as (keyof Percentages)[]).map((key) => (
             <div key={key} className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="font-medium">{LABELS[key]}</span>
+                <span className="font-medium">{t(LABELS[key])}</span>
                 <span className="font-heading font-bold">{pcts[key]}%</span>
               </div>
               <Slider value={[pcts[key]]} onValueChange={([v]) => setPcts((p) => ({ ...p, [key]: v }))} max={100} min={0} step={1} />
@@ -141,12 +144,12 @@ const SettingsDialog = ({
           ))}
 
           <p className={`text-center text-sm font-medium ${total === 100 ? "text-primary" : "text-destructive"}`}>
-            Total: {total}%
+            {t("Total:")} {total}%
           </p>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={onReset}>Resetar Mês</Button>
-            <Button className="flex-1 font-semibold" disabled={total !== 100 || !isIncomeValid} onClick={handleSave}>Salvar</Button>
+            <Button variant="outline" className="flex-1" onClick={onReset}>{t("Resetar Mês")}</Button>
+            <Button className="flex-1 font-semibold" disabled={total !== 100 || !isIncomeValid} onClick={handleSave}>{t("Salvar")}</Button>
           </div>
         </div>
       </DialogContent>

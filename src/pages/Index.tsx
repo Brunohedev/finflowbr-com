@@ -19,8 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addMonths, subMonths } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es as esLocale } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const formatCurrency = (value: number) =>
 new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -30,6 +31,8 @@ type View = "dashboard" | "category" | "report" | "reserva_investimentos";
 const Index = () => {
   const { user, isAuthenticated, isLoading, logout, subscription } = useAuth();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? enUS : language === "es" ? esLocale : ptBR;
   const [displayMonth, setDisplayMonth] = useState(new Date());
   const selectedMonth = format(displayMonth, "yyyy-MM");
 
@@ -131,7 +134,7 @@ const Index = () => {
             <Button
               variant="ghost" size="icon" className="rounded-xl"
               onClick={() => window.open("https://wa.me/7722567978", "_blank")}
-              title="Suporte">
+              title={t("Suporte")}>
               <MessageCircle className="w-4 h-4" />
             </Button>
             <Button
@@ -202,7 +205,7 @@ const Index = () => {
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <span className="font-heading font-semibold capitalize text-sm">
-                {format(displayMonth, "MMMM yyyy", { locale: ptBR })}
+                {format(displayMonth, "MMMM yyyy", { locale: dateLocale })}
               </span>
               <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8" onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}>
                 <ChevronRight className="w-4 h-4" />
@@ -211,14 +214,14 @@ const Index = () => {
 
             {/* 1️⃣ Money Left This Month — PRIMARY METRIC */}
             <div className="finance-card text-center space-y-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest">Dinheiro Restante Este Mês</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">{t("Dinheiro Restante Este Mês")}</p>
               <p className={`text-4xl font-bold font-heading ${moneyLeft >= 0 ? "text-primary" : "text-destructive"}`}>
                 {formatCurrency(moneyLeft)}
               </p>
               <div className="flex items-center justify-center gap-1">
                 {moneyLeft >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-primary" /> : <TrendingDown className="w-3.5 h-3.5 text-destructive" />}
                 <p className="text-xs text-muted-foreground">
-                  Renda:{" "}
+                  {t("Renda:")}{" "}
                   {editingSalary ? (
                     <input
                       ref={salaryInputRef}
@@ -244,12 +247,12 @@ const Index = () => {
                       {formatCurrency(monthlyIncome)}
                     </span>
                   )}
-                  {" "}· Gastos: {formatCurrency(totalSpent)}
+                  {" "}· {t("Gastos:")} {formatCurrency(totalSpent)}
                 </p>
               </div>
               {pendingCount > 0 &&
             <p className="text-[10px] text-warning">
-                  {pendingCount} despesa{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""}
+                  {pendingCount} {pendingCount > 1 ? t("despesas pendentes") : t("despesa pendente")}
                 </p>
             }
             </div>
@@ -265,7 +268,7 @@ const Index = () => {
 
             {/* 2️⃣ Budget Allocation Overview */}
             <div className="finance-card">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Alocação do Orçamento</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("Alocação do Orçamento")}</h3>
               <div className="space-y-3">
                 {data.categories.map((cat) => {
                   const budget = getBudget(cat.id);
@@ -296,7 +299,7 @@ const Index = () => {
                   return (
                     <div key={cat.id} className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium">{cat.name} – {pcts[cat.id as keyof Percentages] ?? cat.percentage}% ({formatCurrency(budget)})</span>
+                        <span className="font-medium">{t(cat.name)} – {pcts[cat.id as keyof Percentages] ?? cat.percentage}% ({formatCurrency(budget)})</span>
                         <span className={`font-medium ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning" : "text-primary"}`}>
                           {formatCurrency(spent)}
                         </span>
@@ -399,7 +402,7 @@ const Index = () => {
             {/* Recent expenses */}
             {monthExpenses.length > 0 &&
           <div className="finance-card">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Últimas Despesas</h3>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("Últimas Despesas")}</h3>
                 <div className="space-y-2">
                   {monthExpenses.
               sort((a, b) => b.date.localeCompare(a.date)).
@@ -438,7 +441,7 @@ const Index = () => {
           className="rounded-full h-14 px-6 shadow-lg shadow-primary/25 font-semibold text-base"
           onClick={() => {setExpenseDefaultCategory(undefined);setExpenseOpen(true);}}>
           
-            <Plus className="w-5 h-5 mr-2" /> Nova Despesa
+            <Plus className="w-5 h-5 mr-2" /> {t("Nova Despesa")}
           </Button>
         </div>
       }

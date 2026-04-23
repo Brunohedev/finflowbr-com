@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Category } from "@/types/finance";
 import { format } from "date-fns";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ExpenseDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ interface ExpenseDialogProps {
 }
 
 const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, activeMonth, onAdd }: ExpenseDialogProps) => {
+  const { t } = useLanguage();
   const expenseCategories = categories.filter((c) => c.id !== "reserva_investimentos");
 
   const [name, setName] = useState("");
@@ -89,15 +91,15 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading">Nova Despesa</DialogTitle>
+          <DialogTitle className="font-heading">{t("Nova Despesa")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
-            <Input placeholder="Ex: Supermercado" value={name} onChange={(e) => setName(e.target.value)} />
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Nome")}</label>
+            <Input placeholder={t("Ex: Supermercado")} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Valor Total</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Valor Total")}</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
               <Input type="text" inputMode="decimal" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} className="pl-10" />
@@ -105,23 +107,23 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Categoria</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Categoria")}</label>
               <Select value={categoryId} onValueChange={(v) => { setCategoryId(v); setSubcategoryId(""); }}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("Selecione")} /></SelectTrigger>
                 <SelectContent>
                   {expenseCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{t(c.name)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Subcategoria</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Subcategoria")}</label>
               <Select value={subcategoryId} onValueChange={setSubcategoryId} disabled={!selectedCategory}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("Selecione")} /></SelectTrigger>
                 <SelectContent>
                   {selectedCategory?.subcategories.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>{t(s.name)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -131,13 +133,13 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
           {/* Installments toggle */}
           <div className="space-y-3 p-3 rounded-lg bg-secondary/50 border border-border">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">Parcelado?</Label>
+              <Label className="text-xs font-medium">{t("Parcelado?")}</Label>
               <Switch checked={hasInstallments} onCheckedChange={setHasInstallments} />
             </div>
             {hasInstallments && (
               <div className="space-y-2 animate-in fade-in duration-200">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Número de parcelas</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("Número de parcelas")}</label>
                   <Input
                     type="number" min="2" max="48" value={installments}
                     onChange={(e) => setInstallments(e.target.value)}
@@ -155,7 +157,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
 
           {/* Status */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border">
-            <Label className="text-xs font-medium">Status</Label>
+            <Label className="text-xs font-medium">{t("Status")}</Label>
             <div className="flex gap-2">
               <button
                 onClick={() => setStatus("pending")}
@@ -165,7 +167,7 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
                     : "bg-secondary text-muted-foreground border-border"
                 }`}
               >
-                Pendente
+                {t("Pendente")}
               </button>
               <button
                 onClick={() => setStatus("paid")}
@@ -175,21 +177,21 @@ const ExpenseDialog = ({ open, onOpenChange, categories, defaultCategoryId, acti
                     : "bg-secondary text-muted-foreground border-border"
                 }`}
               >
-                Pago
+                {t("Pago")}
               </button>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Data</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Data")}</label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Nota (opcional)</label>
-            <Textarea placeholder="Observação..." value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("Nota (opcional)")}</label>
+            <Textarea placeholder={t("Observação...")} value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
           </div>
           <Button className="w-full font-semibold" onClick={handleSubmit}>
-            Adicionar Despesa
+            {t("Adicionar Despesa")}
           </Button>
         </div>
       </DialogContent>

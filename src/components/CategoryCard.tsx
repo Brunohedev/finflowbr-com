@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SavingsTracker from "@/components/SavingsTracker";
 import { Plus, Target, PiggyBank, TrendingUp } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface CategoryCardProps {
   category: Category;
@@ -37,6 +38,7 @@ const CategoryCard = ({
   reserveTotal = 0, reserveTarget = 0, investmentTotal = 0, firstReserveId,
   monthlyIncome = 0, monthlySaved = 0, extraContributions = 0
 }: CategoryCardProps) => {
+  const { t } = useLanguage();
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [addAmount, setAddAmount] = useState("");
   const [addNote, setAddNote] = useState("");
@@ -46,10 +48,10 @@ const CategoryCard = ({
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
   const status = useMemo(() => {
-    if (percentage >= 100) return { color: "bg-destructive", textColor: "text-destructive", label: "Excedido" };
-    if (percentage >= 80) return { color: "bg-warning", textColor: "text-warning", label: "Atenção" };
-    return { color: "bg-primary", textColor: "text-primary", label: "No limite" };
-  }, [percentage]);
+    if (percentage >= 100) return { color: "bg-destructive", textColor: "text-destructive", label: t("Excedido") };
+    if (percentage >= 80) return { color: "bg-warning", textColor: "text-warning", label: t("Atenção") };
+    return { color: "bg-primary", textColor: "text-primary", label: t("No limite") };
+  }, [percentage, t]);
 
   const emojis: Record<string, string> = {
     essenciais: "🏠",
@@ -72,7 +74,7 @@ const CategoryCard = ({
   const handleAddInvestment = () => {
     const val = parseNum(addAmount);
     if (val > 0 && onAddInvestment) {
-      onAddInvestment("Investimento", val, addNote.trim() || undefined);
+      onAddInvestment(t("Investimento"), val, addNote.trim() || undefined);
       setAddAmount(""); setAddNote(""); setAddMode(null);
     }
   };
@@ -84,8 +86,8 @@ const CategoryCard = ({
           <div className="flex items-center gap-2.5">
             <span className="text-xl">{emojis[category.id] || "📊"}</span>
             <div>
-              <h3 className="font-semibold font-heading text-sm">{category.name}</h3>
-              <p className="text-xs text-muted-foreground">{category.percentage}% da renda</p>
+              <h3 className="font-semibold font-heading text-sm">{t(category.name)}</h3>
+              <p className="text-xs text-muted-foreground">{category.percentage}% {t("da renda")}</p>
             </div>
           </div>
           {!isReserva && percentage >= 80 && (
@@ -98,8 +100,8 @@ const CategoryCard = ({
         {!isReserva && (
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Usado: {formatCurrency(spent)}</span>
-              <span>Limite: {formatCurrency(budget)}</span>
+              <span>{t("Usado:")} {formatCurrency(spent)}</span>
+              <span>{t("Limite:")} {formatCurrency(budget)}</span>
             </div>
             <div className="h-2 rounded-full bg-secondary overflow-hidden">
               <div
@@ -108,7 +110,7 @@ const CategoryCard = ({
               />
             </div>
             <p className={`text-right text-xs font-medium ${remaining >= 0 ? "text-primary" : "text-destructive"}`}>
-              {remaining >= 0 ? `Restam ${formatCurrency(remaining)}` : `Excedido em ${formatCurrency(Math.abs(remaining))}`}
+              {remaining >= 0 ? `${t("Restam")} ${formatCurrency(remaining)}` : `${t("Excedido em")} ${formatCurrency(Math.abs(remaining))}`}
             </p>
           </div>
         )}
@@ -129,13 +131,13 @@ const CategoryCard = ({
               <div className="space-y-2 mt-1" onClick={(e) => e.stopPropagation()}>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
-                  <Input placeholder="Definir meta..." value={customTarget} onChange={(e) => setCustomTarget(e.target.value)}
+                  <Input placeholder={t("Definir meta...")} value={customTarget} onChange={(e) => setCustomTarget(e.target.value)}
                     className="h-7 text-xs pl-9" inputMode="decimal" />
                 </div>
                 {parseNum(customTarget) > 0 && (
                   <Button size="sm" className="w-full h-7 text-[10px] bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
                     onClick={() => { onUpdateReserveTarget(parseNum(customTarget)); setCustomTarget(""); }}>
-                    <Target className="w-3 h-3 mr-1" /> Definir meta
+                    <Target className="w-3 h-3 mr-1" /> {t("Definir meta")}
                   </Button>
                 )}
               </div>
@@ -148,7 +150,7 @@ const CategoryCard = ({
       {showAddExpense && (
         <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1"
           onClick={(e) => { e.stopPropagation(); onAddExpense(category.id); }}>
-          <Plus className="w-3 h-3" /> Nova despesa
+          <Plus className="w-3 h-3" /> {t("Nova despesa")}
         </Button>
       )}
 
@@ -159,14 +161,14 @@ const CategoryCard = ({
             <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-col py-1"
               onClick={() => setAddMode("reserve")}>
               <PiggyBank className="w-4 h-4 text-[hsl(217,91%,60%)]" />
-              <span>Adicionar à Reserva</span>
+              <span>{t("Adicionar à Reserva")}</span>
             </Button>
           )}
           {onAddInvestment && (
             <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-col py-1"
               onClick={() => setAddMode("investment")}>
               <TrendingUp className="w-4 h-4 text-accent-foreground" />
-              <span>Adicionar aos Investimentos</span>
+              <span>{t("Adicionar aos Investimentos")}</span>
             </Button>
           )}
         </div>
@@ -178,23 +180,23 @@ const CategoryCard = ({
           onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-2 mb-2">
             <PiggyBank className="w-4 h-4 text-[hsl(217,91%,60%)]" />
-            <span className="text-xs font-semibold">Adicionar à Reserva</span>
+            <span className="text-xs font-semibold">{t("Adicionar à Reserva")}</span>
           </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
             <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
               className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
           </div>
-          <Input placeholder="Nota (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)}
+          <Input placeholder={t("Nota (opcional)")} value={addNote} onChange={(e) => setAddNote(e.target.value)}
             className="h-8 text-xs" />
           <div className="flex gap-2">
             <Button size="sm" className="flex-1 h-8 text-xs bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,50%)]"
               disabled={parseNum(addAmount) <= 0} onClick={handleAddReserve}>
-              Confirmar
+              {t("Confirmar")}
             </Button>
             <Button size="sm" variant="ghost" className="h-8 text-xs"
               onClick={() => { setAddMode(null); setAddAmount(""); setAddNote(""); }}>
-              Cancelar
+              {t("Cancelar")}
             </Button>
           </div>
         </div>
@@ -206,23 +208,23 @@ const CategoryCard = ({
           onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-accent-foreground" />
-            <span className="text-xs font-semibold">Adicionar aos Investimentos</span>
+            <span className="text-xs font-semibold">{t("Adicionar aos Investimentos")}</span>
           </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
             <Input placeholder="0,00" value={addAmount} onChange={(e) => setAddAmount(e.target.value)}
               className="h-8 text-xs pl-9" inputMode="decimal" autoFocus />
           </div>
-          <Input placeholder="Nota (opcional)" value={addNote} onChange={(e) => setAddNote(e.target.value)}
+          <Input placeholder={t("Nota (opcional)")} value={addNote} onChange={(e) => setAddNote(e.target.value)}
             className="h-8 text-xs" />
           <div className="flex gap-2">
             <Button size="sm" className="flex-1 h-8 text-xs"
               disabled={parseNum(addAmount) <= 0} onClick={handleAddInvestment}>
-              Confirmar
+              {t("Confirmar")}
             </Button>
             <Button size="sm" variant="ghost" className="h-8 text-xs"
               onClick={() => { setAddMode(null); setAddAmount(""); setAddNote(""); }}>
-              Cancelar
+              {t("Cancelar")}
             </Button>
           </div>
         </div>
