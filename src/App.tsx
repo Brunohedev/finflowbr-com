@@ -12,11 +12,13 @@ import Login from "./pages/Login";
 import RootRedirect from "./pages/RootRedirect";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { LanguageProvider } from "./i18n/LanguageContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -39,6 +41,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
