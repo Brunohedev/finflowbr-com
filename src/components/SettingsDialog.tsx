@@ -6,6 +6,7 @@ import { Percentages, IncomeSource, IncomeFrequency, getTotalMonthlyIncome } fro
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import IncomeManager from "@/components/IncomeManager";
 import { RotateCcw } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -35,15 +36,17 @@ const MONTH_LABELS: Record<string, string> = {
   "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro",
 };
 
-const formatMonth = (monthKey: string) => {
-  const [year, month] = monthKey.split("-");
-  return `${MONTH_LABELS[month] || month}/${year}`;
-};
+// formatMonth moved into component to use translations
 
 const SettingsDialog = ({
   open, onOpenChange, income, incomeSources, percentages, activeMonth,
   onSave, onReset, onAddSource, onDeleteSource
 }: SettingsDialogProps) => {
+  const { t } = useLanguage();
+  const formatMonth = (monthKey: string) => {
+    const [year, month] = monthKey.split("-");
+    return `${t(MONTH_LABELS[month] || month)}/${year}`;
+  };
   const [pcts, setPcts] = useState(percentages);
   const [incomeInput, setIncomeInput] = useState(String(income));
   const total = pcts.essenciais + pcts.desejos + pcts.reserva_investimentos;
