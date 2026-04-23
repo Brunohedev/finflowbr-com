@@ -14,6 +14,7 @@ import MonthlyReportPage from "@/components/report/MonthlyReportPage";
 import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -126,6 +127,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <LanguageSwitcher />
             <Button
               variant="ghost" size="icon" className="rounded-xl"
               onClick={() => window.open("https://wa.me/7722567978", "_blank")}
