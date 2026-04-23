@@ -55,25 +55,47 @@ const VSL = () => {
     <div className="min-h-screen bg-background">
       {/* HERO with VSL background */}
       <section className="relative overflow-hidden">
-        {/* Background gradient (matches usfinflow hero) */}
+        {/* Strong green gradient base (matches usfinflow hero) */}
         <div
           className="absolute inset-0 -z-10"
           style={{
             background:
-              "radial-gradient(ellipse at top, hsl(var(--primary) / 0.18), transparent 60%), linear-gradient(to bottom, hsl(var(--primary) / 0.08), hsl(var(--background)))",
+              "linear-gradient(180deg, hsl(155 70% 88%) 0%, hsl(150 60% 92%) 40%, hsl(var(--background)) 100%)",
           }}
         />
-        {/* Subtle grid */}
+        {/* Soft green glow */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 opacity-[0.18]"
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.35), transparent 70%)",
+          }}
+        />
+        {/* Grid pattern */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 opacity-40"
           style={{
             backgroundImage:
-              "linear-gradient(hsl(var(--primary) / 0.25) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.25) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
+              "linear-gradient(hsl(var(--primary) / 0.35) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.35) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
             maskImage:
-              "radial-gradient(ellipse at center, black 40%, transparent 75%)",
+              "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at center, black 30%, transparent 80%)",
           }}
+        />
+        {/* Decorative blurred orbs */}
+        <div
+          aria-hidden
+          className="absolute -top-24 -left-24 h-72 w-72 rounded-full -z-10 blur-3xl opacity-50"
+          style={{ background: "hsl(var(--primary) / 0.4)" }}
+        />
+        <div
+          aria-hidden
+          className="absolute top-10 -right-20 h-80 w-80 rounded-full -z-10 blur-3xl opacity-40"
+          style={{ background: "hsl(155 80% 60% / 0.5)" }}
         />
 
         <div className="max-w-5xl mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-10 md:pb-16">
