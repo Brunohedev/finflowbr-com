@@ -166,16 +166,8 @@ const VSL = () => {
               {loading ? (
                 <Loader2 className="animate-spin mr-2 h-5 w-5" />
               ) : null}
-              {loading ? "Redirecionando..." : "Começar agora por R$29,90"}
+            {loading ? "Redirecionando..." : "Começar agora por R$29,90"}
               {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              className="rounded-full"
-              onClick={() => navigate("/login")}
-            >
-              Já tenho conta
             </Button>
           </div>
 
