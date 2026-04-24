@@ -210,7 +210,7 @@ const VSL = () => {
       <section className="max-w-5xl mx-auto px-4 md:px-8 pb-12 md:pb-16">
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
-            O que está incluso
+            Está incluso também
           </h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
