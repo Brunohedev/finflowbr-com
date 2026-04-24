@@ -148,7 +148,7 @@ const VSL = () => {
               <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
                 <iframe
                   className="absolute inset-0 w-full h-full"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
+                  src="https://www.youtube.com/embed/NjPl9G5i-qU?rel=0&modestbranding=1"
                   title="FinFlow — Apresentação"
                   frameBorder={0}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
