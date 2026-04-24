@@ -103,7 +103,7 @@ const VSL = () => {
           <div className="flex justify-center mb-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card/80 backdrop-blur px-4 py-1.5 text-xs md:text-sm text-foreground shadow-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              Sistema FinFlow 2.0 — agora disponível
+              Sistema FinFlow agora disponível
             </div>
           </div>
 
@@ -130,9 +130,8 @@ const VSL = () => {
           </h1>
 
           <p className="text-center text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8">
-            Um sistema simples para você finalmente controlar seu dinheiro e
-            saber <strong className="text-foreground">quanto sobra</strong> — em
-            segundos.
+            O sistema para você finalmente controlar seu dinheiro e <br />
+            <strong className="text-foreground">fazer sobrar</strong> em segundos.
           </p>
 
           {/* VSL VIDEO as visual centerpiece */}
@@ -166,7 +165,7 @@ const VSL = () => {
               {loading ? (
                 <Loader2 className="animate-spin mr-2 h-5 w-5" />
               ) : null}
-            {loading ? "Redirecionando..." : "Começar agora por R$29,90"}
+            {loading ? "Redirecionando..." : "Começar agora"}
               {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
             </Button>
           </div>
@@ -180,7 +179,7 @@ const VSL = () => {
               <Sparkles className="h-4 w-4 text-primary" /> Acesso imediato
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-primary" /> +10.000 brasileiros
+              <TrendingUp className="h-4 w-4 text-primary" /> Impulsionando brasileiros
             </span>
           </div>
         </div>
@@ -259,7 +258,7 @@ const VSL = () => {
             {loading ? (
               <Loader2 className="animate-spin mr-2 h-5 w-5" />
             ) : null}
-            {loading ? "Redirecionando..." : "Começar agora por R$29,90"}
+            {loading ? "Redirecionando..." : "Começar agora"}
             {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
           </Button>
           <p className="text-xs text-muted-foreground mt-3">
