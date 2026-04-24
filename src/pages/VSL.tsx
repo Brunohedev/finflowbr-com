@@ -109,9 +109,9 @@ const VSL = () => {
 
           {/* Headline */}
           <h1 className="font-heading text-center text-4xl md:text-6xl font-extrabold text-foreground leading-[1.05] tracking-tight mb-6">
-            Organize sua vida financeira em{" "}
+            O sistema que vai fazer{" "}
             <span className="relative inline-block text-primary">
-              poucos minutos
+              seu dinheiro sobrar
               <svg
                 aria-hidden
                 viewBox="0 0 300 12"
@@ -126,8 +126,7 @@ const VSL = () => {
                   fill="none"
                 />
               </svg>
-            </span>{" "}
-            por dia.
+            </span>
           </h1>
 
           <p className="text-center text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8">
