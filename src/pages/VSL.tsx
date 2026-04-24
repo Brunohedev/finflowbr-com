@@ -109,9 +109,9 @@ const VSL = () => {
 
           {/* Headline */}
           <h1 className="font-heading text-center text-4xl md:text-6xl font-extrabold text-foreground leading-[1.05] tracking-tight mb-6">
-            O sistema que vai fazer{" "}
+            Como fazer sobrar +2.000,00{" "}
             <span className="relative inline-block text-primary">
-              seu dinheiro sobrar
+              todo mês do seu salário
               <svg
                 aria-hidden
                 viewBox="0 0 300 12"
