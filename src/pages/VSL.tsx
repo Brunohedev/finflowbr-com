@@ -145,18 +145,13 @@ const VSL = () => {
               }}
             />
             <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10">
-              <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src="https://www.youtube-nocookie.com/embed/NjPl9G5i-qU?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&playsinline=1&controls=1&disablekb=1&fs=0&color=white"
-                  title="FinFlow"
-                  frameBorder={0}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-                <div aria-hidden className="absolute top-0 left-0 right-0 h-14 bg-card pointer-events-none" />
-                <div aria-hidden className="absolute bottom-0 right-0 w-24 h-10 bg-card pointer-events-none" />
-              </div>
+              <video
+                className="w-full h-auto block"
+                src="https://symkogknbjhdesgmvtvc.supabase.co/storage/v1/object/public/Video%20FinFlow%20VSL/Copy%20Fd005ca9-750B-495C-Bbcb-0251Cd7004de(1).mp4"
+                controls
+                playsInline
+                preload="metadata"
+              />
             </div>
           </div>
 
