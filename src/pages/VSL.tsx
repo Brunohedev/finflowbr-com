@@ -122,6 +122,9 @@ const VSL = () => {
           </p>
 
           {/* VSL VIDEO as visual centerpiece */}
+          <p className="text-center text-foreground text-base md:text-lg font-semibold max-w-2xl mx-auto mb-4">
+            Entenda como em 2 minutos:
+          </p>
           <div className="relative mx-auto max-w-sm mb-8">
             <div
               className="absolute -inset-4 rounded-[2rem] -z-10 blur-2xl opacity-60"
