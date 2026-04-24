@@ -117,7 +117,7 @@ const VSL = () => {
           </h1>
 
           <p className="text-center text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8">
-            O sistema para você finalmente controlar seu dinheiro e <br />
+            O sistema para você finalmente controlar seu dinheiro e{" "}
             <strong className="text-foreground">fazer sobrar</strong> em segundos.
           </p>
 
