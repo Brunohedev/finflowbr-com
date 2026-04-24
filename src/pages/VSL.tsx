@@ -136,7 +136,7 @@ const VSL = () => {
           </p>
 
           {/* VSL VIDEO as visual centerpiece */}
-          <div className="relative mx-auto max-w-4xl mb-8">
+          <div className="relative mx-auto max-w-sm mb-8">
             <div
               className="absolute -inset-4 rounded-[2rem] -z-10 blur-2xl opacity-60"
               style={{
@@ -144,7 +144,7 @@ const VSL = () => {
                   "radial-gradient(ellipse at center, hsl(var(--primary) / 0.35), transparent 70%)",
               }}
             />
-            <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10 aspect-video">
+            <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10" style={{ aspectRatio: "2160 / 3840" }}>
               <video
                 className="absolute inset-0 w-full h-full object-cover"
                 src="https://symkogknbjhdesgmvtvc.supabase.co/storage/v1/object/public/Video%20FinFlow%20VSL/Copy%20Fd005ca9-750B-495C-Bbcb-0251Cd7004de(1).mp4"
