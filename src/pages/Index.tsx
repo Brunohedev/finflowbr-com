@@ -16,7 +16,7 @@ import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR, enUS, es as esLocale } from "date-fns/locale";
@@ -133,9 +133,9 @@ const Index = () => {
             <LanguageSwitcher />
             <Button
               variant="ghost" size="icon" className="rounded-xl"
-              onClick={() => window.open("https://wa.me/7722567978", "_blank")}
+              onClick={() => window.open("https://t.me/finflow_suporte", "_blank")}
               title={t("Suporte")}>
-              <MessageCircle className="w-4 h-4" />
+              <Headphones className="w-4 h-4" />
             </Button>
             <Button
               variant={view === "report" ? "secondary" : "ghost"}
