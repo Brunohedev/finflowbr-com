@@ -148,12 +148,14 @@ const VSL = () => {
               <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
                 <iframe
                   className="absolute inset-0 w-full h-full"
-                  src="https://www.youtube.com/embed/NjPl9G5i-qU?rel=0&modestbranding=1"
-                  title="FinFlow — Apresentação"
+                  src="https://www.youtube-nocookie.com/embed/NjPl9G5i-qU?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&playsinline=1&controls=1&disablekb=1&fs=0&color=white"
+                  title="FinFlow"
                   frameBorder={0}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
+                <div aria-hidden className="absolute top-0 left-0 right-0 h-14 bg-card pointer-events-none" />
+                <div aria-hidden className="absolute bottom-0 right-0 w-24 h-10 bg-card pointer-events-none" />
               </div>
             </div>
           </div>
