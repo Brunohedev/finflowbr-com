@@ -125,7 +125,7 @@ const Index = () => {
               <Wallet className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
+              <span className="font-heading font-bold text-lg leading-none">Fin<span className="text-primary">Flow</span></span>
               {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
             </div>
           </div>
