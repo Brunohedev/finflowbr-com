@@ -22,6 +22,7 @@ import { format, addMonths, subMonths } from "date-fns";
 import { ptBR, enUS, es as esLocale } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
 import { useLanguage } from "@/i18n/LanguageContext";
+import finflowLogo from "@/assets/finflow-logo.png";
 
 const formatCurrency = (value: number) =>
 new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -120,14 +121,17 @@ const Index = () => {
     <div className="min-h-screen pb-24 bg-[#ecf3f0]">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <span className="font-heading font-bold text-lg leading-none">FinFlow</span>
-              {user && <p className="text-[10px] text-muted-foreground leading-none">{user.user_metadata?.name || user.email}</p>}
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <img
+              src={finflowLogo}
+              alt="FinFlow"
+              className="h-[60px] w-auto max-w-[180px] sm:max-w-none object-contain shrink-0"
+            />
+            {user && (
+              <p className="text-[10px] text-muted-foreground leading-none truncate hidden sm:block">
+                {user.user_metadata?.name || user.email}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <LanguageSwitcher />
