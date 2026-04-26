@@ -133,15 +133,21 @@ const SettingsDialog = ({
             )}
           </div>
 
-          {(Object.keys(LABELS) as (keyof Percentages)[]).map((key) => (
-            <div key={key} className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">{t(LABELS[key])}</span>
-                <span className="font-heading font-bold">{pcts[key]}%</span>
+          {(Object.keys(LABELS) as (keyof Percentages)[]).map((key) => {
+            const categoryAmount = isIncomeValid ? (parsedIncome * pcts[key]) / 100 : 0;
+            return (
+              <div key={key} className="space-y-2">
+                <div className="flex justify-between items-baseline text-sm">
+                  <span className="font-medium">{t(LABELS[key])}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-muted-foreground">{fmt(categoryAmount)}</span>
+                    <span className="font-heading font-bold">{pcts[key]}%</span>
+                  </div>
+                </div>
+                <Slider value={[pcts[key]]} onValueChange={([v]) => setPcts((p) => ({ ...p, [key]: v }))} max={100} min={0} step={1} />
               </div>
-              <Slider value={[pcts[key]]} onValueChange={([v]) => setPcts((p) => ({ ...p, [key]: v }))} max={100} min={0} step={1} />
-            </div>
-          ))}
+            );
+          })}
 
           <p className={`text-center text-sm font-medium ${total === 100 ? "text-primary" : "text-destructive"}`}>
             {t("Total:")} {total}%
