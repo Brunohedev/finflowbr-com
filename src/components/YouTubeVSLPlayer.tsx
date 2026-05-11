@@ -108,6 +108,15 @@ const YouTubeVSLPlayer = ({
               window.clearInterval(intervalRef.current);
               intervalRef.current = null;
             }
+            // Ended: reset so user can replay from the beginning
+            if (e.data === 0) {
+              maxWatchedRef.current = 0;
+              setCurrent(0);
+              try {
+                playerRef.current?.seekTo?.(0, true);
+                playerRef.current?.pauseVideo?.();
+              } catch {}
+            }
           },
         },
       });
