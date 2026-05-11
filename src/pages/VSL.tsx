@@ -254,15 +254,18 @@ const VSL = () => {
           </p>
           <Button
             size="lg"
-            className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20"
+            className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 disabled:opacity-60"
             onClick={handleCheckout}
-            disabled={loading}
+            disabled={loading || !unlocked}
           >
-            {loading ? (
-              <Loader2 className="animate-spin mr-2 h-5 w-5" />
-            ) : null}
-            {loading ? "Redirecionando..." : "Começar agora"}
-            {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
+            {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+            {!loading && !unlocked && <Lock className="mr-1 h-5 w-5" />}
+            {loading
+              ? "Redirecionando..."
+              : unlocked
+                ? "Começar agora"
+                : `Disponível em ${Math.max(0, Math.ceil(UNLOCK_AT_SEC - watchedSec))}s`}
+            {!loading && unlocked && <ArrowRight className="ml-1 h-5 w-5" />}
           </Button>
           <p className="text-xs text-muted-foreground mt-3">
             Pagamento seguro via Stripe • Cancele quando quiser
