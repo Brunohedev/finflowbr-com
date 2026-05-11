@@ -140,30 +140,37 @@ const VSL = () => {
               }}
             />
             <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10" style={{ aspectRatio: "2160 / 3840" }}>
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                src="https://symkogknbjhdesgmvtvc.supabase.co/storage/v1/object/public/Video%20FinFlow%20VSL/Copy%20Fd005ca9-750B-495C-Bbcb-0251Cd7004de(1).mp4"
-                controls
-                playsInline
-                preload="metadata"
+              <YouTubeVSLPlayer
+                videoId="Ih9MhXaANfg"
+                unlockAtSec={UNLOCK_AT_SEC}
+                onProgress={(t) => setWatchedSec(t)}
+                onUnlock={() => setUnlocked(true)}
               />
             </div>
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+          <div className="flex flex-col items-center justify-center gap-2 mb-6">
             <Button
               size="lg"
-              className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20"
+              className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 disabled:opacity-60"
               onClick={handleCheckout}
-              disabled={loading}
+              disabled={loading || !unlocked}
             >
-              {loading ? (
-                <Loader2 className="animate-spin mr-2 h-5 w-5" />
-              ) : null}
-            {loading ? "Redirecionando..." : "Começar agora"}
-              {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
+              {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+              {!loading && !unlocked && <Lock className="mr-1 h-5 w-5" />}
+              {loading
+                ? "Redirecionando..."
+                : unlocked
+                  ? "Começar agora"
+                  : `Disponível em ${Math.max(0, Math.ceil(UNLOCK_AT_SEC - watchedSec))}s`}
+              {!loading && unlocked && <ArrowRight className="ml-1 h-5 w-5" />}
             </Button>
+            {!unlocked && (
+              <p className="text-xs text-muted-foreground">
+                Assista o vídeo até o minuto 3 para liberar
+              </p>
+            )}
           </div>
 
           {/* Trust badges */}
