@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogIn, UserPlus, ArrowLeft, Loader2, CreditCard } from "lucide-react";
+import { LogIn, UserPlus, ArrowLeft, Loader2, CreditCard, PlayCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import DemoSimulation from "@/components/DemoSimulation";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
