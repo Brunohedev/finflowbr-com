@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-const UNLOCK_AT_SEC = 180; // 3 minutes
+const UNLOCK_AT_SEC = 160; // 2:40
 
 const VSL = () => {
   const navigate = useNavigate();
