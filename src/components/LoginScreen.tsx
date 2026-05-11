@@ -23,6 +23,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const handleSubmit = async () => {
     setError("");
