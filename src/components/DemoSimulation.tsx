@@ -154,30 +154,50 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             </div>
           )}
 
-          {/* Expenses */}
+          {/* Expenses grouped by category */}
           {showExpenses && (
-            <div className="rounded-lg border bg-card p-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-medium text-muted-foreground">Expenses</p>
-                <p className="text-xs font-bold text-destructive">- {fmt(TOTAL_EXPENSES)}</p>
-              </div>
-              <div className="space-y-1.5">
-                {EXPENSES.slice(0, visibleExpenses).map((e) => {
-                  const Icon = e.icon;
-                  return (
-                    <div
-                      key={e.name}
-                      className="flex items-center justify-between text-sm animate-in fade-in slide-in-from-left-2 duration-300"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${e.color}`} />
-                        <span>{e.name}</span>
-                      </div>
-                      <span className="font-medium">- {fmt(e.amount)}</span>
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+              {(["essentials", "wants"] as Category[]).map((cat) => {
+                const items = EXPENSES.filter((e) => e.category === cat).slice(
+                  0,
+                  Math.max(
+                    0,
+                    visibleExpenses -
+                      EXPENSES.filter((e, idx) => e.category !== cat && idx < EXPENSES.findIndex((x) => x.category === cat)).length
+                  )
+                );
+                const visibleInCat = EXPENSES.slice(0, visibleExpenses).filter((e) => e.category === cat);
+                const catTotal = cat === "essentials" ? ESSENTIALS_TOTAL : WANTS_TOTAL;
+                const catPct = cat === "essentials" ? ESSENTIALS_PCT : WANTS_PCT;
+                const catLabel = cat === "essentials" ? "Essentials" : "Wants";
+                const catColor = cat === "essentials" ? "text-blue-500" : "text-orange-500";
+                if (visibleInCat.length === 0) return null;
+                return (
+                  <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className={`text-xs font-bold ${catColor}`}>
+                        {catLabel} <span className="text-muted-foreground font-normal">· {catPct}%</span>
+                      </p>
+                      <p className="text-xs font-bold text-destructive">- {fmt(catTotal)}</p>
                     </div>
-                  );
-                })}
-              </div>
+                    {visibleInCat.map((e) => {
+                      const Icon = e.icon;
+                      return (
+                        <div
+                          key={e.name}
+                          className="flex items-center justify-between text-sm animate-in fade-in slide-in-from-left-2 duration-300"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon className={`w-4 h-4 ${catColor}`} />
+                            <span>{e.name}</span>
+                          </div>
+                          <span className="font-medium">- {fmt(e.amount)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           )}
 
