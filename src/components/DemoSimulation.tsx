@@ -201,10 +201,13 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             </div>
           )}
 
-          {/* Remaining */}
+          {/* Remaining = 20% Reserve */}
           {showRemaining && (
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
-              <p className="text-xs text-muted-foreground mb-1">Money Left This Month</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-muted-foreground">Money Left This Month</p>
+                <p className="text-xs font-bold text-primary">{RESERVE_PCT}% Reserve</p>
+              </div>
               <p className="font-heading font-bold text-3xl text-primary">{fmt(REMAINING)}</p>
             </div>
           )}
