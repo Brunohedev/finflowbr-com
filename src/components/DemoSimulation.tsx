@@ -4,10 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   Wallet,
-  TrendingUp,
+  Car,
   ShoppingCart,
   Home,
   Utensils,
+  ShoppingBag,
   PiggyBank,
   CheckCircle2,
   RotateCcw,
@@ -23,14 +24,25 @@ const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 
 const INCOME = 4000;
-const EXPENSES = [
-  { name: "Rent", amount: 1200, icon: Home, color: "text-blue-500" },
-  { name: "Groceries", amount: 450, icon: ShoppingCart, color: "text-orange-500" },
-  { name: "Restaurants", amount: 280, icon: Utensils, color: "text-pink-500" },
-  { name: "Transport", amount: 170, icon: TrendingUp, color: "text-purple-500" },
+const ESSENTIALS_PCT = 50;
+const WANTS_PCT = 30;
+const RESERVE_PCT = 20;
+
+type Category = "essentials" | "wants";
+
+const EXPENSES: { name: string; amount: number; icon: any; category: Category }[] = [
+  // Essentials = 50% of $4000 = $2000
+  { name: "Rent", amount: 1200, icon: Home, category: "essentials" },
+  { name: "Groceries", amount: 450, icon: ShoppingCart, category: "essentials" },
+  { name: "Transport", amount: 350, icon: Car, category: "essentials" },
+  // Wants = 30% of $4000 = $1200
+  { name: "Restaurants", amount: 700, icon: Utensils, category: "wants" },
+  { name: "Shopping", amount: 500, icon: ShoppingBag, category: "wants" },
 ];
 
 const TOTAL_EXPENSES = EXPENSES.reduce((s, e) => s + e.amount, 0);
+const ESSENTIALS_TOTAL = EXPENSES.filter((e) => e.category === "essentials").reduce((s, e) => s + e.amount, 0);
+const WANTS_TOTAL = EXPENSES.filter((e) => e.category === "wants").reduce((s, e) => s + e.amount, 0);
 const REMAINING = INCOME - TOTAL_EXPENSES;
 
 const STEPS = [
