@@ -132,19 +132,36 @@ const YouTubeVSLPlayer = ({
   };
 
   const pct = duration > 0 ? Math.min(100, (current / duration) * 100) : 0;
-  const fmt = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, "0")}`;
+
+  const togglePause = () => {
+    const p = playerRef.current;
+    if (!p) return;
+    try {
+      const state = p.getPlayerState?.();
+      if (state === 1) p.pauseVideo?.();
+      else p.playVideo?.();
+    } catch {}
   };
 
   return (
-    <div className="relative w-full h-full">
-      {/* YouTube iframe */}
-      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+    <div className="relative w-full h-full bg-black overflow-hidden">
+      {/* YouTube iframe — scaled up to crop YouTube watermark/title overlays */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+        <div
+          ref={containerRef}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[115%] h-[115%]"
+        />
+      </div>
 
-      {/* Block all pointer events on the iframe (no clicking the video) */}
-      <div className="absolute inset-0 z-10" aria-hidden />
+      {/* Click overlay: toggles play/pause only — blocks all YouTube interactions */}
+      {started && (
+        <button
+          type="button"
+          onClick={togglePause}
+          className="absolute inset-0 z-10 cursor-pointer focus:outline-none"
+          aria-label="Pausar ou reproduzir"
+        />
+      )}
 
       {/* Big play button overlay (before start) */}
       {!started && (
@@ -166,13 +183,9 @@ const YouTubeVSLPlayer = ({
         </button>
       )}
 
-      {/* Progress bar (read-only) */}
+      {/* Progress bar (read-only, no time labels) */}
       {started && (
-        <div className="absolute left-0 right-0 bottom-0 z-20 px-3 pb-3 pt-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
-          <div className="flex items-center justify-between text-[11px] font-medium text-white/90 mb-1.5">
-            <span>{fmt(current)}</span>
-            <span>{duration ? fmt(duration) : "--:--"}</span>
-          </div>
+        <div className="absolute left-0 right-0 bottom-0 z-20 px-3 pb-3 pt-6 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
           <div className="relative h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-primary rounded-full transition-[width] duration-200"
