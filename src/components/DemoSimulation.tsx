@@ -4,10 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   Wallet,
-  TrendingUp,
+  Car,
   ShoppingCart,
   Home,
   Utensils,
+  ShoppingBag,
   PiggyBank,
   CheckCircle2,
   RotateCcw,
@@ -23,14 +24,25 @@ const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 
 const INCOME = 4000;
-const EXPENSES = [
-  { name: "Rent", amount: 1200, icon: Home, color: "text-blue-500" },
-  { name: "Groceries", amount: 450, icon: ShoppingCart, color: "text-orange-500" },
-  { name: "Restaurants", amount: 280, icon: Utensils, color: "text-pink-500" },
-  { name: "Transport", amount: 170, icon: TrendingUp, color: "text-purple-500" },
+const ESSENTIALS_PCT = 50;
+const WANTS_PCT = 30;
+const RESERVE_PCT = 20;
+
+type Category = "essentials" | "wants";
+
+const EXPENSES: { name: string; amount: number; icon: any; category: Category }[] = [
+  // Essentials = 50% of $4000 = $2000
+  { name: "Rent", amount: 1200, icon: Home, category: "essentials" },
+  { name: "Groceries", amount: 450, icon: ShoppingCart, category: "essentials" },
+  { name: "Transport", amount: 350, icon: Car, category: "essentials" },
+  // Wants = 30% of $4000 = $1200
+  { name: "Restaurants", amount: 700, icon: Utensils, category: "wants" },
+  { name: "Shopping", amount: 500, icon: ShoppingBag, category: "wants" },
 ];
 
 const TOTAL_EXPENSES = EXPENSES.reduce((s, e) => s + e.amount, 0);
+const ESSENTIALS_TOTAL = EXPENSES.filter((e) => e.category === "essentials").reduce((s, e) => s + e.amount, 0);
+const WANTS_TOTAL = EXPENSES.filter((e) => e.category === "wants").reduce((s, e) => s + e.amount, 0);
 const REMAINING = INCOME - TOTAL_EXPENSES;
 
 const STEPS = [
@@ -142,37 +154,60 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             </div>
           )}
 
-          {/* Expenses */}
+          {/* Expenses grouped by category */}
           {showExpenses && (
-            <div className="rounded-lg border bg-card p-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-medium text-muted-foreground">Expenses</p>
-                <p className="text-xs font-bold text-destructive">- {fmt(TOTAL_EXPENSES)}</p>
-              </div>
-              <div className="space-y-1.5">
-                {EXPENSES.slice(0, visibleExpenses).map((e) => {
-                  const Icon = e.icon;
-                  return (
-                    <div
-                      key={e.name}
-                      className="flex items-center justify-between text-sm animate-in fade-in slide-in-from-left-2 duration-300"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${e.color}`} />
-                        <span>{e.name}</span>
-                      </div>
-                      <span className="font-medium">- {fmt(e.amount)}</span>
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+              {(["essentials", "wants"] as Category[]).map((cat) => {
+                const items = EXPENSES.filter((e) => e.category === cat).slice(
+                  0,
+                  Math.max(
+                    0,
+                    visibleExpenses -
+                      EXPENSES.filter((e, idx) => e.category !== cat && idx < EXPENSES.findIndex((x) => x.category === cat)).length
+                  )
+                );
+                const visibleInCat = EXPENSES.slice(0, visibleExpenses).filter((e) => e.category === cat);
+                const catTotal = cat === "essentials" ? ESSENTIALS_TOTAL : WANTS_TOTAL;
+                const catPct = cat === "essentials" ? ESSENTIALS_PCT : WANTS_PCT;
+                const catLabel = cat === "essentials" ? "Essentials" : "Wants";
+                const catColor = cat === "essentials" ? "text-blue-500" : "text-orange-500";
+                if (visibleInCat.length === 0) return null;
+                return (
+                  <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className={`text-xs font-bold ${catColor}`}>
+                        {catLabel} <span className="text-muted-foreground font-normal">· {catPct}%</span>
+                      </p>
+                      <p className="text-xs font-bold text-destructive">- {fmt(catTotal)}</p>
                     </div>
-                  );
-                })}
-              </div>
+                    {visibleInCat.map((e) => {
+                      const Icon = e.icon;
+                      return (
+                        <div
+                          key={e.name}
+                          className="flex items-center justify-between text-sm animate-in fade-in slide-in-from-left-2 duration-300"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon className={`w-4 h-4 ${catColor}`} />
+                            <span>{e.name}</span>
+                          </div>
+                          <span className="font-medium">- {fmt(e.amount)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* Remaining */}
+          {/* Remaining = 20% Reserve */}
           {showRemaining && (
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
-              <p className="text-xs text-muted-foreground mb-1">Money Left This Month</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-muted-foreground">Money Left This Month</p>
+                <p className="text-xs font-bold text-primary">{RESERVE_PCT}% Reserve</p>
+              </div>
               <p className="font-heading font-bold text-3xl text-primary">{fmt(REMAINING)}</p>
             </div>
           )}
