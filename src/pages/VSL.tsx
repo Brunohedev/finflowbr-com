@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-const UNLOCK_AT_SEC = 180; // 3 minutes
+const UNLOCK_AT_SEC = 160; // 2:40
 
 const VSL = () => {
   const navigate = useNavigate();
@@ -149,29 +149,21 @@ const VSL = () => {
             </div>
           </div>
 
-          {/* CTAs */}
-          <div className="flex flex-col items-center justify-center gap-2 mb-6">
-            <Button
-              size="lg"
-              className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 disabled:opacity-60"
-              onClick={handleCheckout}
-              disabled={loading || !unlocked}
-            >
-              {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
-              {!loading && !unlocked && <Lock className="mr-1 h-5 w-5" />}
-              {loading
-                ? "Redirecionando..."
-                : unlocked
-                  ? "Começar agora"
-                  : `Disponível em ${Math.max(0, Math.ceil(UNLOCK_AT_SEC - watchedSec))}s`}
-              {!loading && unlocked && <ArrowRight className="ml-1 h-5 w-5" />}
-            </Button>
-            {!unlocked && (
-              <p className="text-xs text-muted-foreground">
-                Assista o vídeo até o minuto 3 para liberar
-              </p>
-            )}
-          </div>
+          {/* CTAs — only visible after 2:40 of video */}
+          {unlocked && (
+            <div className="flex flex-col items-center justify-center gap-2 mb-6 animate-in fade-in zoom-in-95 duration-500">
+              <Button
+                size="lg"
+                className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20"
+                onClick={handleCheckout}
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+                {loading ? "Redirecionando..." : "Começar agora"}
+                {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
+              </Button>
+            </div>
+          )}
 
           {/* Trust badges */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm text-muted-foreground">
@@ -252,24 +244,23 @@ const VSL = () => {
           <p className="text-muted-foreground mb-6">
             Comece agora e tenha clareza total das suas finanças hoje mesmo.
           </p>
-          <Button
-            size="lg"
-            className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 disabled:opacity-60"
-            onClick={handleCheckout}
-            disabled={loading || !unlocked}
-          >
-            {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
-            {!loading && !unlocked && <Lock className="mr-1 h-5 w-5" />}
-            {loading
-              ? "Redirecionando..."
-              : unlocked
-                ? "Começar agora"
-                : `Disponível em ${Math.max(0, Math.ceil(UNLOCK_AT_SEC - watchedSec))}s`}
-            {!loading && unlocked && <ArrowRight className="ml-1 h-5 w-5" />}
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">
-            Pagamento seguro via Stripe • Cancele quando quiser
-          </p>
+          {unlocked ? (
+            <>
+              <Button
+                size="lg"
+                className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 animate-in fade-in zoom-in-95 duration-500"
+                onClick={handleCheckout}
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+                {loading ? "Redirecionando..." : "Começar agora"}
+                {!loading && <ArrowRight className="ml-1 h-5 w-5" />}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-3">
+                Pagamento seguro via Stripe • Cancele quando quiser
+              </p>
+            </>
+          ) : null}
         </div>
       </section>
     </div>
