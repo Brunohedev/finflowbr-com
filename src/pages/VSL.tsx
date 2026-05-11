@@ -2,19 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import YouTubeVSLPlayer from "@/components/YouTubeVSLPlayer";
 import {
   ArrowRight,
   Check,
   Loader2,
+  Lock,
   ShieldCheck,
   Sparkles,
   TrendingUp,
   Wallet,
 } from "lucide-react";
 
+const UNLOCK_AT_SEC = 180; // 3 minutes
+
 const VSL = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [watchedSec, setWatchedSec] = useState(0);
 
   const handleCheckout = () => {
     navigate("/planos");
