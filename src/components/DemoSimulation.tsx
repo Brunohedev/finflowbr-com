@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import {
   Wallet,
   Car,
@@ -13,6 +15,7 @@ import {
   CheckCircle2,
   RotateCcw,
   Sparkles,
+  Play,
 } from "lucide-react";
 
 interface DemoSimulationProps {
@@ -23,40 +26,41 @@ interface DemoSimulationProps {
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 
-const INCOME = 4000;
-const ESSENTIALS_PCT = 50;
-const WANTS_PCT = 30;
-const RESERVE_PCT = 20;
-
 type Category = "essentials" | "wants";
 
-const EXPENSES: { name: string; amount: number; icon: any; category: Category }[] = [
-  // Essentials = 50% of $4000 = $2000
-  { name: "Rent", amount: 1200, icon: Home, category: "essentials" },
-  { name: "Groceries", amount: 450, icon: ShoppingCart, category: "essentials" },
-  { name: "Transport", amount: 350, icon: Car, category: "essentials" },
-  // Wants = 30% of $4000 = $1200
-  { name: "Restaurants", amount: 700, icon: Utensils, category: "wants" },
-  { name: "Shopping", amount: 500, icon: ShoppingBag, category: "wants" },
+// Proportional weights inside each category (used to scale per-item amounts)
+const ITEMS: { name: string; icon: any; category: Category; weight: number }[] = [
+  { name: "Rent", icon: Home, category: "essentials", weight: 0.6 },
+  { name: "Groceries", icon: ShoppingCart, category: "essentials", weight: 0.225 },
+  { name: "Transport", icon: Car, category: "essentials", weight: 0.175 },
+  { name: "Restaurants", icon: Utensils, category: "wants", weight: 0.583 },
+  { name: "Shopping", icon: ShoppingBag, category: "wants", weight: 0.417 },
 ];
 
-const TOTAL_EXPENSES = EXPENSES.reduce((s, e) => s + e.amount, 0);
-const ESSENTIALS_TOTAL = EXPENSES.filter((e) => e.category === "essentials").reduce((s, e) => s + e.amount, 0);
-const WANTS_TOTAL = EXPENSES.filter((e) => e.category === "wants").reduce((s, e) => s + e.amount, 0);
-const REMAINING = INCOME - TOTAL_EXPENSES;
-
 const STEPS = [
-  { key: "income", label: "Adding monthly income", duration: 1400 },
-  { key: "expenses", label: "Tracking your expenses", duration: 3200 },
-  { key: "calc", label: "Calculating money left", duration: 1600 },
-  { key: "reserve", label: "Sending to your reserve", duration: 2000 },
-  { key: "done", label: "Done!", duration: 0 },
+  { key: "income", duration: 1200 },
+  { key: "expenses", duration: 3000 },
+  { key: "calc", duration: 1400 },
+  { key: "reserve", duration: 1800 },
+  { key: "done", duration: 0 },
 ];
 
 const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
+  // Setup state
+  const [income, setIncome] = useState(4000);
+  const [essentialsPct, setEssentialsPct] = useState(50);
+  const [wantsPct, setWantsPct] = useState(30);
+  const [started, setStarted] = useState(false);
+
+  // Simulation state
   const [stepIdx, setStepIdx] = useState(0);
   const [visibleExpenses, setVisibleExpenses] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  const reservePct = Math.max(0, 100 - essentialsPct - wantsPct);
+  const essentialsTotal = (income * essentialsPct) / 100;
+  const wantsTotal = (income * wantsPct) / 100;
+  const remaining = (income * reservePct) / 100;
 
   const reset = () => {
     setStepIdx(0);
@@ -67,26 +71,21 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
   useEffect(() => {
     if (!open) {
       reset();
+      setStarted(false);
       return;
     }
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !started) return;
     const step = STEPS[stepIdx];
     if (!step || step.key === "done") return;
 
     if (step.key === "expenses") {
       setVisibleExpenses(0);
-      const perItem = step.duration / EXPENSES.length;
+      const perItem = step.duration / ITEMS.length;
       const interval = setInterval(() => {
-        setVisibleExpenses((v) => {
-          if (v >= EXPENSES.length) {
-            clearInterval(interval);
-            return v;
-          }
-          return v + 1;
-        });
+        setVisibleExpenses((v) => (v >= ITEMS.length ? v : v + 1));
       }, perItem);
       const t = setTimeout(() => setStepIdx((i) => i + 1), step.duration + 200);
       return () => {
@@ -113,14 +112,28 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
 
     const t = setTimeout(() => setStepIdx((i) => i + 1), step.duration);
     return () => clearTimeout(t);
-  }, [stepIdx, open]);
+  }, [stepIdx, open, started]);
 
   const currentKey = STEPS[stepIdx]?.key;
-  const showIncome = stepIdx >= 0;
-  const showExpenses = stepIdx >= 1;
-  const showRemaining = stepIdx >= 2;
-  const showReserve = stepIdx >= 3;
+  const showIncome = started && stepIdx >= 0;
+  const showExpenses = started && stepIdx >= 1;
+  const showRemaining = started && stepIdx >= 2;
+  const showReserve = started && stepIdx >= 3;
   const isDone = currentKey === "done";
+
+  const handleEssentialsChange = (v: number) => {
+    const next = Math.min(v, 100 - wantsPct);
+    setEssentialsPct(next);
+  };
+  const handleWantsChange = (v: number) => {
+    const next = Math.min(v, 100 - essentialsPct);
+    setWantsPct(next);
+  };
+
+  const startSim = () => {
+    reset();
+    setStarted(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -131,11 +144,60 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             FinFlow Demo
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Watch how FinFlow turns your salary into real savings.
+            Set your salary and budget split, then watch the simulation.
           </p>
         </DialogHeader>
 
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Setup panel */}
+          {!started && (
+            <div className="space-y-5">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Monthly Income
+                </label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={income}
+                  onChange={(e) => setIncome(Math.max(0, Number(e.target.value) || 0))}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <SliderRow
+                  label="Essentials"
+                  color="text-blue-500"
+                  pct={essentialsPct}
+                  amount={essentialsTotal}
+                  onChange={handleEssentialsChange}
+                />
+                <SliderRow
+                  label="Wants"
+                  color="text-orange-500"
+                  pct={wantsPct}
+                  amount={wantsTotal}
+                  onChange={handleWantsChange}
+                />
+                <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-primary">Reserve (left over)</p>
+                    <p className="text-xs font-bold text-primary">
+                      {reservePct}% · {fmt(remaining)}
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Adjust the sliders above to change how much is left.
+                  </p>
+                </div>
+              </div>
+
+              <Button className="w-full" onClick={startSim} disabled={income <= 0}>
+                <Play className="w-4 h-4 mr-1.5" /> Run simulation
+              </Button>
+            </div>
+          )}
+
           {/* Income */}
           {showIncome && (
             <div className="rounded-lg border bg-card p-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -146,7 +208,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Monthly Income</p>
-                    <p className="font-heading font-bold text-lg leading-tight">{fmt(INCOME)}</p>
+                    <p className="font-heading font-bold text-lg leading-tight">{fmt(income)}</p>
                   </div>
                 </div>
                 <CheckCircle2 className="w-5 h-5 text-primary" />
@@ -158,20 +220,12 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
           {showExpenses && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
               {(["essentials", "wants"] as Category[]).map((cat) => {
-                const items = EXPENSES.filter((e) => e.category === cat).slice(
-                  0,
-                  Math.max(
-                    0,
-                    visibleExpenses -
-                      EXPENSES.filter((e, idx) => e.category !== cat && idx < EXPENSES.findIndex((x) => x.category === cat)).length
-                  )
-                );
-                const visibleInCat = EXPENSES.slice(0, visibleExpenses).filter((e) => e.category === cat);
-                const catTotal = cat === "essentials" ? ESSENTIALS_TOTAL : WANTS_TOTAL;
-                const catPct = cat === "essentials" ? ESSENTIALS_PCT : WANTS_PCT;
+                const visibleInCat = ITEMS.slice(0, visibleExpenses).filter((e) => e.category === cat);
+                if (visibleInCat.length === 0) return null;
+                const catTotal = cat === "essentials" ? essentialsTotal : wantsTotal;
+                const catPct = cat === "essentials" ? essentialsPct : wantsPct;
                 const catLabel = cat === "essentials" ? "Essentials" : "Wants";
                 const catColor = cat === "essentials" ? "text-blue-500" : "text-orange-500";
-                if (visibleInCat.length === 0) return null;
                 return (
                   <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
                     <div className="flex items-center justify-between mb-1">
@@ -182,6 +236,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                     </div>
                     {visibleInCat.map((e) => {
                       const Icon = e.icon;
+                      const amt = catTotal * e.weight;
                       return (
                         <div
                           key={e.name}
@@ -191,7 +246,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                             <Icon className={`w-4 h-4 ${catColor}`} />
                             <span>{e.name}</span>
                           </div>
-                          <span className="font-medium">- {fmt(e.amount)}</span>
+                          <span className="font-medium">- {fmt(amt)}</span>
                         </div>
                       );
                     })}
@@ -201,14 +256,14 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             </div>
           )}
 
-          {/* Remaining = 20% Reserve */}
+          {/* Remaining = Reserve */}
           {showRemaining && (
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground">Money Left This Month</p>
-                <p className="text-xs font-bold text-primary">{RESERVE_PCT}% Reserve</p>
+                <p className="text-xs font-bold text-primary">{reservePct}% Reserve</p>
               </div>
-              <p className="font-heading font-bold text-3xl text-primary">{fmt(REMAINING)}</p>
+              <p className="font-heading font-bold text-3xl text-primary">{fmt(remaining)}</p>
             </div>
           )}
 
@@ -221,19 +276,12 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground">Sending to Reserve</p>
-                  <p className="font-heading font-bold">{fmt((REMAINING * progress) / 100)}</p>
+                  <p className="font-heading font-bold">{fmt((remaining * progress) / 100)}</p>
                 </div>
                 {isDone && <CheckCircle2 className="w-5 h-5 text-primary" />}
               </div>
               <Progress value={progress} className="h-2" />
             </div>
-          )}
-
-          {/* Active step indicator */}
-          {!isDone && (
-            <p className="text-xs text-muted-foreground text-center pt-1">
-              {STEPS[stepIdx]?.label}…
-            </p>
           )}
 
           {isDone && (
@@ -242,8 +290,8 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 That's it. Clear, simple, and your money is finally working for you.
               </p>
               <div className="flex gap-2 justify-center">
-                <Button variant="outline" size="sm" onClick={reset}>
-                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Replay
+                <Button variant="outline" size="sm" onClick={() => { setStarted(false); reset(); }}>
+                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Adjust
                 </Button>
                 <Button size="sm" onClick={() => onOpenChange(false)}>
                   Get started
@@ -256,5 +304,30 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
     </Dialog>
   );
 };
+
+const SliderRow = ({
+  label,
+  color,
+  pct,
+  amount,
+  onChange,
+}: {
+  label: string;
+  color: string;
+  pct: number;
+  amount: number;
+  onChange: (v: number) => void;
+}) => (
+  <div>
+    <div className="flex items-center justify-between mb-1.5">
+      <p className={`text-xs font-bold ${color}`}>{label}</p>
+      <p className="text-xs font-medium">
+        <span className="text-muted-foreground mr-1.5">{fmt(amount)}</span>
+        <span className="font-bold">{pct}%</span>
+      </p>
+    </div>
+    <Slider value={[pct]} min={0} max={100} step={1} onValueChange={(v) => onChange(v[0])} />
+  </div>
+);
 
 export default DemoSimulation;
