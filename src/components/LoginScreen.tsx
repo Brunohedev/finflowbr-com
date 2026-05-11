@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogIn, UserPlus, ArrowLeft, Loader2, CreditCard } from "lucide-react";
+import { LogIn, UserPlus, ArrowLeft, Loader2, CreditCard, PlayCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import DemoSimulation from "@/components/DemoSimulation";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -22,6 +23,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const handleSubmit = async () => {
     setError("");
@@ -49,9 +51,17 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <button
+        onClick={() => setDemoOpen(true)}
+        className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+      >
+        <PlayCircle className="w-3.5 h-3.5" />
+        {t("Ver demonstração")}
+      </button>
       <div className="absolute top-3 right-3 z-10">
         <LanguageSwitcher />
       </div>
+      <DemoSimulation open={demoOpen} onOpenChange={setDemoOpen} />
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">
           <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto">
