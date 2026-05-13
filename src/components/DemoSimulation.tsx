@@ -242,7 +242,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
                     <div className="flex items-center justify-between mb-1">
                       <p className={`text-xs font-bold ${catColor}`}>
-                        {catLabel} <span className="text-muted-foreground font-normal">· {catPct}%</span>
+                        {catLabel} <span className="text-muted-foreground font-normal">· {Math.round(catPct)}%</span>
                       </p>
                       <p className="text-xs font-bold text-destructive">- {fmt(catTotal)}</p>
                     </div>
