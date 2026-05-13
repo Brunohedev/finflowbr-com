@@ -143,10 +143,10 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
         <DialogHeader className="px-6 pt-6 pb-3 border-b">
           <DialogTitle className="flex items-center gap-2 font-heading">
             <Sparkles className="w-4 h-4 text-primary" />
-            FinFlow Demo
+            {t("Demonstração FinFlow")}
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Set your salary and budget split, then watch the simulation.
+            {t("Defina seu salário e a divisão do orçamento, depois veja a simulação.")}
           </p>
         </DialogHeader>
 
