@@ -135,6 +135,7 @@ const en: Dict = {
 
   // Demo simulation
   "Demonstração FinFlow": "FinFlow Demo",
+  "Ver demonstração": "Watch demo",
   "Defina seu salário e a divisão do orçamento, depois veja a simulação.": "Set your salary and budget split, then watch the simulation.",
   "Renda mensal": "Monthly Income",
   "Reserva (sobra)": "Reserve (left over)",
