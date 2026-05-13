@@ -133,7 +133,7 @@ const Index = () => {
             <LanguageSwitcher />
             <Button
               variant="ghost" size="icon" className="rounded-xl"
-              onClick={() => window.open("https://t.me/finflow_suporte", "_blank")}
+              onClick={() => window.open("https://wa.me/17722567978", "_blank")}
               title={t("Suporte")}>
               <Headphones className="w-4 h-4" />
             </Button>
