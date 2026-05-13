@@ -209,7 +209,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                     <Wallet className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Monthly Income</p>
+                    <p className="text-xs text-muted-foreground">{t("Renda mensal")}</p>
                     <p className="font-heading font-bold text-lg leading-tight">{fmt(income)}</p>
                   </div>
                 </div>
