@@ -172,14 +172,24 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   color="text-blue-500"
                   pct={essentialsPct}
                   amount={essentialsTotal}
-                  onChange={handleEssentialsChange}
+                  max={income}
+                  onChangeAmount={(amt) => {
+                    const maxAmt = income - (income * wantsPct) / 100;
+                    const clamped = Math.min(amt, maxAmt);
+                    setEssentialsPct(income > 0 ? (clamped / income) * 100 : 0);
+                  }}
                 />
                 <SliderRow
                   label={t("Desejos")}
                   color="text-orange-500"
                   pct={wantsPct}
                   amount={wantsTotal}
-                  onChange={handleWantsChange}
+                  max={income}
+                  onChangeAmount={(amt) => {
+                    const maxAmt = income - (income * essentialsPct) / 100;
+                    const clamped = Math.min(amt, maxAmt);
+                    setWantsPct(income > 0 ? (clamped / income) * 100 : 0);
+                  }}
                 />
                 <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
                   <div className="flex items-center justify-between">
