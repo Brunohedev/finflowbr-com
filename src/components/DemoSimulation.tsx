@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -30,11 +31,11 @@ type Category = "essentials" | "wants";
 
 // Proportional weights inside each category (used to scale per-item amounts)
 const ITEMS: { name: string; icon: any; category: Category; weight: number }[] = [
-  { name: "Rent", icon: Home, category: "essentials", weight: 0.6 },
-  { name: "Groceries", icon: ShoppingCart, category: "essentials", weight: 0.225 },
-  { name: "Transport", icon: Car, category: "essentials", weight: 0.175 },
-  { name: "Restaurants", icon: Utensils, category: "wants", weight: 0.583 },
-  { name: "Shopping", icon: ShoppingBag, category: "wants", weight: 0.417 },
+  { name: "Aluguel", icon: Home, category: "essentials", weight: 0.6 },
+  { name: "Mercado", icon: ShoppingCart, category: "essentials", weight: 0.225 },
+  { name: "Transporte", icon: Car, category: "essentials", weight: 0.175 },
+  { name: "Restaurantes", icon: Utensils, category: "wants", weight: 0.583 },
+  { name: "Compras", icon: ShoppingBag, category: "wants", weight: 0.417 },
 ];
 
 const STEPS = [
@@ -46,6 +47,7 @@ const STEPS = [
 ];
 
 const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
+  const { t } = useLanguage();
   // Setup state
   const [income, setIncome] = useState(4000);
   const [essentialsPct, setEssentialsPct] = useState(50);
@@ -141,10 +143,10 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
         <DialogHeader className="px-6 pt-6 pb-3 border-b">
           <DialogTitle className="flex items-center gap-2 font-heading">
             <Sparkles className="w-4 h-4 text-primary" />
-            FinFlow Demo
+            {t("Demonstração FinFlow")}
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Set your salary and budget split, then watch the simulation.
+            {t("Defina seu salário e a divisão do orçamento, depois veja a simulação.")}
           </p>
         </DialogHeader>
 
@@ -154,7 +156,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             <div className="space-y-5">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                  Monthly Income
+                  {t("Renda mensal")}
                 </label>
                 <Input
                   type="number"
@@ -166,14 +168,14 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
 
               <div className="space-y-4">
                 <SliderRow
-                  label="Essentials"
+                  label={t("Essenciais")}
                   color="text-blue-500"
                   pct={essentialsPct}
                   amount={essentialsTotal}
                   onChange={handleEssentialsChange}
                 />
                 <SliderRow
-                  label="Wants"
+                  label={t("Desejos")}
                   color="text-orange-500"
                   pct={wantsPct}
                   amount={wantsTotal}
@@ -181,19 +183,19 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 />
                 <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-primary">Reserve (left over)</p>
+                    <p className="text-xs font-bold text-primary">{t("Reserva (sobra)")}</p>
                     <p className="text-xs font-bold text-primary">
                       {reservePct}% · {fmt(remaining)}
                     </p>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Adjust the sliders above to change how much is left.
+                    {t("Ajuste as barras acima para mudar quanto sobra.")}
                   </p>
                 </div>
               </div>
 
               <Button className="w-full" onClick={startSim} disabled={income <= 0}>
-                <Play className="w-4 h-4 mr-1.5" /> Run simulation
+                <Play className="w-4 h-4 mr-1.5" /> {t("Rodar simulação")}
               </Button>
             </div>
           )}
@@ -207,7 +209,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                     <Wallet className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Monthly Income</p>
+                    <p className="text-xs text-muted-foreground">{t("Renda mensal")}</p>
                     <p className="font-heading font-bold text-lg leading-tight">{fmt(income)}</p>
                   </div>
                 </div>
@@ -224,7 +226,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 if (visibleInCat.length === 0) return null;
                 const catTotal = cat === "essentials" ? essentialsTotal : wantsTotal;
                 const catPct = cat === "essentials" ? essentialsPct : wantsPct;
-                const catLabel = cat === "essentials" ? "Essentials" : "Wants";
+                const catLabel = cat === "essentials" ? t("Essenciais") : t("Desejos");
                 const catColor = cat === "essentials" ? "text-blue-500" : "text-orange-500";
                 return (
                   <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
@@ -244,7 +246,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                         >
                           <div className="flex items-center gap-2">
                             <Icon className={`w-4 h-4 ${catColor}`} />
-                            <span>{e.name}</span>
+                            <span>{t(e.name)}</span>
                           </div>
                           <span className="font-medium">- {fmt(amt)}</span>
                         </div>
@@ -260,8 +262,8 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
           {showRemaining && (
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-muted-foreground">Money Left This Month</p>
-                <p className="text-xs font-bold text-primary">{reservePct}% Reserve</p>
+                <p className="text-xs text-muted-foreground">{t("Dinheiro Restante Este Mês")}</p>
+                <p className="text-xs font-bold text-primary">{reservePct}% {t("Reserva")}</p>
               </div>
               <p className="font-heading font-bold text-3xl text-primary">{fmt(remaining)}</p>
             </div>
@@ -275,7 +277,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   <PiggyBank className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Sending to Reserve</p>
+                  <p className="text-xs text-muted-foreground">{t("Enviando para a Reserva")}</p>
                   <p className="font-heading font-bold">{fmt((remaining * progress) / 100)}</p>
                 </div>
                 {isDone && <CheckCircle2 className="w-5 h-5 text-primary" />}
@@ -287,14 +289,14 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
           {isDone && (
             <div className="text-center space-y-3 pt-2">
               <p className="text-sm font-medium">
-                That's it. Clear, simple, and your money is finally working for you.
+                {t("É isso. Claro, simples, e seu dinheiro finalmente trabalhando para você.")}
               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" size="sm" onClick={() => { setStarted(false); reset(); }}>
-                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Adjust
+                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> {t("Ajustar")}
                 </Button>
                 <Button size="sm" onClick={() => onOpenChange(false)}>
-                  Get started
+                  {t("Começar agora")}
                 </Button>
               </div>
             </div>

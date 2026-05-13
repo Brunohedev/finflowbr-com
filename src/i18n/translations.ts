@@ -132,6 +132,24 @@ const en: Dict = {
   "Janeiro": "January", "Fevereiro": "February", "Março": "March", "Abril": "April",
   "Maio": "May", "Junho": "June", "Julho": "July", "Agosto": "August",
   "Setembro": "September", "Outubro": "October", "Novembro": "November", "Dezembro": "December",
+
+  // Demo simulation
+  "Demonstração FinFlow": "FinFlow Demo",
+  "Defina seu salário e a divisão do orçamento, depois veja a simulação.": "Set your salary and budget split, then watch the simulation.",
+  "Renda mensal": "Monthly Income",
+  "Reserva (sobra)": "Reserve (left over)",
+  "Ajuste as barras acima para mudar quanto sobra.": "Adjust the sliders above to change how much is left.",
+  "Rodar simulação": "Run simulation",
+  "Reserva": "Reserve",
+  "Enviando para a Reserva": "Sending to Reserve",
+  "É isso. Claro, simples, e seu dinheiro finalmente trabalhando para você.": "That's it. Clear, simple, and your money is finally working for you.",
+  "Ajustar": "Adjust",
+  "Começar agora": "Get started",
+  "Aluguel": "Rent",
+  "Mercado": "Groceries",
+  "Transporte": "Transport",
+  "Restaurantes": "Restaurants",
+  "Compras": "Shopping",
 };
 
 const es: Dict = {
@@ -249,6 +267,24 @@ const es: Dict = {
   "Janeiro": "Enero", "Fevereiro": "Febrero", "Março": "Marzo", "Abril": "Abril",
   "Maio": "Mayo", "Junho": "Junio", "Julho": "Julio", "Agosto": "Agosto",
   "Setembro": "Septiembre", "Outubro": "Octubre", "Novembro": "Noviembre", "Dezembro": "Diciembre",
+
+  // Demo simulation
+  "Demonstração FinFlow": "Demostración FinFlow",
+  "Defina seu salário e a divisão do orçamento, depois veja a simulação.": "Define tu salario y la división del presupuesto, luego mira la simulación.",
+  "Renda mensal": "Ingreso mensual",
+  "Reserva (sobra)": "Reserva (lo que sobra)",
+  "Ajuste as barras acima para mudar quanto sobra.": "Ajusta las barras de arriba para cambiar cuánto sobra.",
+  "Rodar simulação": "Ejecutar simulación",
+  "Reserva": "Reserva",
+  "Enviando para a Reserva": "Enviando a la reserva",
+  "É isso. Claro, simples, e seu dinheiro finalmente trabalhando para você.": "Eso es todo. Claro, simple, y tu dinero por fin trabajando para ti.",
+  "Ajustar": "Ajustar",
+  "Começar agora": "Empezar ahora",
+  "Aluguel": "Alquiler",
+  "Mercado": "Supermercado",
+  "Transporte": "Transporte",
+  "Restaurantes": "Restaurantes",
+  "Compras": "Compras",
 };
 
 export const dictionaries: Record<Language, Dict> = { pt, en, es };
