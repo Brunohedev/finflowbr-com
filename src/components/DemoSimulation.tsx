@@ -31,11 +31,11 @@ type Category = "essentials" | "wants";
 
 // Proportional weights inside each category (used to scale per-item amounts)
 const ITEMS: { name: string; icon: any; category: Category; weight: number }[] = [
-  { name: "Rent", icon: Home, category: "essentials", weight: 0.6 },
-  { name: "Groceries", icon: ShoppingCart, category: "essentials", weight: 0.225 },
-  { name: "Transport", icon: Car, category: "essentials", weight: 0.175 },
-  { name: "Restaurants", icon: Utensils, category: "wants", weight: 0.583 },
-  { name: "Shopping", icon: ShoppingBag, category: "wants", weight: 0.417 },
+  { name: "Aluguel", icon: Home, category: "essentials", weight: 0.6 },
+  { name: "Mercado", icon: ShoppingCart, category: "essentials", weight: 0.225 },
+  { name: "Transporte", icon: Car, category: "essentials", weight: 0.175 },
+  { name: "Restaurantes", icon: Utensils, category: "wants", weight: 0.583 },
+  { name: "Compras", icon: ShoppingBag, category: "wants", weight: 0.417 },
 ];
 
 const STEPS = [
