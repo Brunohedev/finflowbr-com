@@ -289,14 +289,14 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
           {isDone && (
             <div className="text-center space-y-3 pt-2">
               <p className="text-sm font-medium">
-                That's it. Clear, simple, and your money is finally working for you.
+                {t("É isso. Claro, simples, e seu dinheiro finalmente trabalhando para você.")}
               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" size="sm" onClick={() => { setStarted(false); reset(); }}>
-                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Adjust
+                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> {t("Ajustar")}
                 </Button>
                 <Button size="sm" onClick={() => onOpenChange(false)}>
-                  Get started
+                  {t("Começar agora")}
                 </Button>
               </div>
             </div>
