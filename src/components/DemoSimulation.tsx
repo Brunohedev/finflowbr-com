@@ -322,23 +322,31 @@ const SliderRow = ({
   color,
   pct,
   amount,
-  onChange,
+  max,
+  onChangeAmount,
 }: {
   label: string;
   color: string;
   pct: number;
   amount: number;
-  onChange: (v: number) => void;
+  max: number;
+  onChangeAmount: (amt: number) => void;
 }) => (
   <div>
     <div className="flex items-center justify-between mb-1.5">
       <p className={`text-xs font-bold ${color}`}>{label}</p>
       <p className="text-xs font-medium">
         <span className="text-muted-foreground mr-1.5">{fmt(amount)}</span>
-        <span className="font-bold">{pct}%</span>
+        <span className="font-bold">{Math.round(pct)}%</span>
       </p>
     </div>
-    <Slider value={[pct]} min={0} max={100} step={1} onValueChange={(v) => onChange(v[0])} />
+    <Slider
+      value={[Math.round(amount)]}
+      min={0}
+      max={Math.max(0, Math.round(max))}
+      step={1}
+      onValueChange={(v) => onChangeAmount(v[0])}
+    />
   </div>
 );
 
