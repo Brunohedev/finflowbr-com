@@ -156,7 +156,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             <div className="space-y-5">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                  Monthly Income
+                  {t("Renda mensal")}
                 </label>
                 <Input
                   type="number"
@@ -168,14 +168,14 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
 
               <div className="space-y-4">
                 <SliderRow
-                  label="Essentials"
+                  label={t("Essenciais")}
                   color="text-blue-500"
                   pct={essentialsPct}
                   amount={essentialsTotal}
                   onChange={handleEssentialsChange}
                 />
                 <SliderRow
-                  label="Wants"
+                  label={t("Desejos")}
                   color="text-orange-500"
                   pct={wantsPct}
                   amount={wantsTotal}
@@ -183,19 +183,19 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 />
                 <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-primary">Reserve (left over)</p>
+                    <p className="text-xs font-bold text-primary">{t("Reserva (sobra)")}</p>
                     <p className="text-xs font-bold text-primary">
                       {reservePct}% · {fmt(remaining)}
                     </p>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Adjust the sliders above to change how much is left.
+                    {t("Ajuste as barras acima para mudar quanto sobra.")}
                   </p>
                 </div>
               </div>
 
               <Button className="w-full" onClick={startSim} disabled={income <= 0}>
-                <Play className="w-4 h-4 mr-1.5" /> Run simulation
+                <Play className="w-4 h-4 mr-1.5" /> {t("Rodar simulação")}
               </Button>
             </div>
           )}
