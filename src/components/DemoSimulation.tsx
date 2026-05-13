@@ -273,7 +273,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground">{t("Dinheiro Restante Este Mês")}</p>
-                <p className="text-xs font-bold text-primary">{reservePct}% {t("Reserva")}</p>
+                <p className="text-xs font-bold text-primary">{Math.round(reservePct)}% {t("Reserva")}</p>
               </div>
               <p className="font-heading font-bold text-3xl text-primary">{fmt(remaining)}</p>
             </div>
