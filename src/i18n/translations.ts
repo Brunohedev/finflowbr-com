@@ -132,6 +132,24 @@ const en: Dict = {
   "Janeiro": "January", "Fevereiro": "February", "Março": "March", "Abril": "April",
   "Maio": "May", "Junho": "June", "Julho": "July", "Agosto": "August",
   "Setembro": "September", "Outubro": "October", "Novembro": "November", "Dezembro": "December",
+
+  // Demo simulation
+  "Demonstração FinFlow": "FinFlow Demo",
+  "Defina seu salário e a divisão do orçamento, depois veja a simulação.": "Set your salary and budget split, then watch the simulation.",
+  "Renda mensal": "Monthly Income",
+  "Reserva (sobra)": "Reserve (left over)",
+  "Ajuste as barras acima para mudar quanto sobra.": "Adjust the sliders above to change how much is left.",
+  "Rodar simulação": "Run simulation",
+  "Reserva": "Reserve",
+  "Enviando para a Reserva": "Sending to Reserve",
+  "É isso. Claro, simples, e seu dinheiro finalmente trabalhando para você.": "That's it. Clear, simple, and your money is finally working for you.",
+  "Ajustar": "Adjust",
+  "Começar agora": "Get started",
+  "Aluguel": "Rent",
+  "Mercado": "Groceries",
+  "Transporte": "Transport",
+  "Restaurantes": "Restaurants",
+  "Compras": "Shopping",
 };
 
 const es: Dict = {
