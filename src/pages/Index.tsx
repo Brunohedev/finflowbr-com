@@ -133,7 +133,7 @@ const Index = () => {
             <LanguageSwitcher />
             <Button
               variant="ghost" size="icon" className="rounded-xl"
-              onClick={() => window.open("https://api.whatsapp.com/send?phone=17722567978", "_blank", "noopener,noreferrer")}
+              onClick={() => window.open("https://wa.link/dgzvmf", "_blank", "noopener,noreferrer")}
               title={t("Suporte")}>
               <Headphones className="w-4 h-4" />
             </Button>
