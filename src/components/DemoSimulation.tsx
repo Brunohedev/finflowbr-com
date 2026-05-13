@@ -277,7 +277,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   <PiggyBank className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Sending to Reserve</p>
+                  <p className="text-xs text-muted-foreground">{t("Enviando para a Reserva")}</p>
                   <p className="font-heading font-bold">{fmt((remaining * progress) / 100)}</p>
                 </div>
                 {isDone && <CheckCircle2 className="w-5 h-5 text-primary" />}
