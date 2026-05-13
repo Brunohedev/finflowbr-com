@@ -271,6 +271,7 @@ const es: Dict = {
 
   // Demo simulation
   "Demonstração FinFlow": "Demostración FinFlow",
+  "Ver demonstração": "Ver demostración",
   "Defina seu salário e a divisão do orçamento, depois veja a simulação.": "Define tu salario y la división del presupuesto, luego mira la simulación.",
   "Renda mensal": "Ingreso mensual",
   "Reserva (sobra)": "Reserva (lo que sobra)",
