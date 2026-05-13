@@ -226,7 +226,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 if (visibleInCat.length === 0) return null;
                 const catTotal = cat === "essentials" ? essentialsTotal : wantsTotal;
                 const catPct = cat === "essentials" ? essentialsPct : wantsPct;
-                const catLabel = cat === "essentials" ? "Essentials" : "Wants";
+                const catLabel = cat === "essentials" ? t("Essenciais") : t("Desejos");
                 const catColor = cat === "essentials" ? "text-blue-500" : "text-orange-500";
                 return (
                   <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
