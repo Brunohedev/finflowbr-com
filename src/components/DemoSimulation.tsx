@@ -246,7 +246,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                         >
                           <div className="flex items-center gap-2">
                             <Icon className={`w-4 h-4 ${catColor}`} />
-                            <span>{e.name}</span>
+                            <span>{t(e.name)}</span>
                           </div>
                           <span className="font-medium">- {fmt(amt)}</span>
                         </div>
