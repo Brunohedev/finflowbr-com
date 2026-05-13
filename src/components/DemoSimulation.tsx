@@ -47,6 +47,7 @@ const STEPS = [
 ];
 
 const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
+  const { t } = useLanguage();
   // Setup state
   const [income, setIncome] = useState(4000);
   const [essentialsPct, setEssentialsPct] = useState(50);
