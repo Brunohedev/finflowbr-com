@@ -195,7 +195,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-primary">{t("Reserva (sobra)")}</p>
                     <p className="text-xs font-bold text-primary">
-                      {reservePct}% · {fmt(remaining)}
+                      {Math.round(reservePct)}% · {fmt(remaining)}
                     </p>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
