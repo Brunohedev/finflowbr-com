@@ -172,20 +172,30 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   color="text-blue-500"
                   pct={essentialsPct}
                   amount={essentialsTotal}
-                  onChange={handleEssentialsChange}
+                  max={income}
+                  onChangeAmount={(amt) => {
+                    const maxAmt = income - (income * wantsPct) / 100;
+                    const clamped = Math.min(amt, maxAmt);
+                    setEssentialsPct(income > 0 ? (clamped / income) * 100 : 0);
+                  }}
                 />
                 <SliderRow
                   label={t("Desejos")}
                   color="text-orange-500"
                   pct={wantsPct}
                   amount={wantsTotal}
-                  onChange={handleWantsChange}
+                  max={income}
+                  onChangeAmount={(amt) => {
+                    const maxAmt = income - (income * essentialsPct) / 100;
+                    const clamped = Math.min(amt, maxAmt);
+                    setWantsPct(income > 0 ? (clamped / income) * 100 : 0);
+                  }}
                 />
                 <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-primary">{t("Reserva (sobra)")}</p>
                     <p className="text-xs font-bold text-primary">
-                      {reservePct}% · {fmt(remaining)}
+                      {Math.round(reservePct)}% · {fmt(remaining)}
                     </p>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
@@ -232,7 +242,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                   <div key={cat} className="rounded-lg border bg-card p-3 space-y-1.5">
                     <div className="flex items-center justify-between mb-1">
                       <p className={`text-xs font-bold ${catColor}`}>
-                        {catLabel} <span className="text-muted-foreground font-normal">· {catPct}%</span>
+                        {catLabel} <span className="text-muted-foreground font-normal">· {Math.round(catPct)}%</span>
                       </p>
                       <p className="text-xs font-bold text-destructive">- {fmt(catTotal)}</p>
                     </div>
@@ -263,7 +273,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
             <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground">{t("Dinheiro Restante Este Mês")}</p>
-                <p className="text-xs font-bold text-primary">{reservePct}% {t("Reserva")}</p>
+                <p className="text-xs font-bold text-primary">{Math.round(reservePct)}% {t("Reserva")}</p>
               </div>
               <p className="font-heading font-bold text-3xl text-primary">{fmt(remaining)}</p>
             </div>
@@ -312,23 +322,31 @@ const SliderRow = ({
   color,
   pct,
   amount,
-  onChange,
+  max,
+  onChangeAmount,
 }: {
   label: string;
   color: string;
   pct: number;
   amount: number;
-  onChange: (v: number) => void;
+  max: number;
+  onChangeAmount: (amt: number) => void;
 }) => (
   <div>
     <div className="flex items-center justify-between mb-1.5">
       <p className={`text-xs font-bold ${color}`}>{label}</p>
       <p className="text-xs font-medium">
         <span className="text-muted-foreground mr-1.5">{fmt(amount)}</span>
-        <span className="font-bold">{pct}%</span>
+        <span className="font-bold">{Math.round(pct)}%</span>
       </p>
     </div>
-    <Slider value={[pct]} min={0} max={100} step={1} onValueChange={(v) => onChange(v[0])} />
+    <Slider
+      value={[Math.round(amount)]}
+      min={0}
+      max={Math.max(0, Math.round(max))}
+      step={1}
+      onValueChange={(v) => onChangeAmount(v[0])}
+    />
   </div>
 );
 
