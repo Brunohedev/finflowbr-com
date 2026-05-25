@@ -3,8 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+
+const monthBounds = () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const first = `${y}-${pad(m + 1)}-01`;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const last = `${y}-${pad(m + 1)}-${pad(lastDay)}`;
+  return { first, last, ym: `${y}-${pad(m + 1)}` };
+};
+
+const clampToCurrentMonth = (d: string | null | undefined) => {
+  const { first, last, ym } = monthBounds();
+  if (!d) return new Date().toISOString().slice(0, 10);
+  if (d.slice(0, 7) !== ym) return new Date().toISOString().slice(0, 10);
+  if (d < first) return first;
+  if (d > last) return last;
+  return d;
+};
 
 declare global {
   interface Window {
@@ -37,6 +58,7 @@ const BankConnect = () => {
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
+  const [dates, setDates] = useState<Record<string, string>>({});
   const [loadingTx, setLoadingTx] = useState(false);
 
   useEffect(() => {
@@ -53,7 +75,13 @@ const BankConnect = () => {
       .is("category", null)
       .order("date", { ascending: false });
     if (error) toast.error("Erro ao carregar transações");
-    else setPending((data as PendingTx[]) || []);
+    else {
+      const list = (data as PendingTx[]) || [];
+      setPending(list);
+      const map: Record<string, string> = {};
+      list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
+      setDates(map);
+    }
     setLoadingTx(false);
   }, [user]);
 
@@ -103,10 +131,14 @@ const BankConnect = () => {
   const categorize = async (id: string, category: string) => {
     if (!user) return;
     const tx = pending.find((t) => t.id === id);
+    const chosenDate = clampToCurrentMonth(dates[id] || tx?.date || null);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
 
-    const { error } = await supabase.from("transactions").update({ category }).eq("id", id);
+    const { error } = await supabase
+      .from("transactions")
+      .update({ category, date: chosenDate })
+      .eq("id", id);
     if (error) {
       toast.error("Erro ao categorizar");
       setPending(prev);
@@ -130,7 +162,7 @@ const BankConnect = () => {
             name: tx?.name || "Transação bancária",
             amount,
             categoryId: category,
-            date: tx?.date || todayStr(),
+            date: chosenDate,
             status: "paid" as const,
             note: "Importada via Plaid",
           };
@@ -196,6 +228,19 @@ const BankConnect = () => {
                   <div className="flex justify-between items-start gap-2">
                     <p className="text-sm font-medium truncate">{t.name || "—"}</p>
                     <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground shrink-0">Data:</label>
+                    <Input
+                      type="date"
+                      min={monthBounds().first}
+                      max={monthBounds().last}
+                      value={dates[t.id] || ""}
+                      onChange={(e) =>
+                        setDates((d) => ({ ...d, [t.id]: clampToCurrentMonth(e.target.value) }))
+                      }
+                      className="h-8 text-xs"
+                    />
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {CATS.map((c) => (
