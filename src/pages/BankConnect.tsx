@@ -229,6 +229,19 @@ const BankConnect = () => {
                     <p className="text-sm font-medium truncate">{t.name || "—"}</p>
                     <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground shrink-0">Data:</label>
+                    <Input
+                      type="date"
+                      min={monthBounds().first}
+                      max={monthBounds().last}
+                      value={dates[t.id] || ""}
+                      onChange={(e) =>
+                        setDates((d) => ({ ...d, [t.id]: clampToCurrentMonth(e.target.value) }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     {CATS.map((c) => (
                       <Button
