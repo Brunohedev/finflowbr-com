@@ -101,13 +101,47 @@ const BankConnect = () => {
   };
 
   const categorize = async (id: string, category: string) => {
+    if (!user) return;
+    const tx = pending.find((t) => t.id === id);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
+
     const { error } = await supabase.from("transactions").update({ category }).eq("id", id);
     if (error) {
       toast.error("Erro ao categorizar");
       setPending(prev);
       return;
+    }
+
+    // Desconta no saldo da categoria adicionando como expense em finance_data
+    try {
+      const amount = Math.abs(Number(tx?.amount ?? 0));
+      if (amount > 0) {
+        const { data: row } = await supabase
+          .from("finance_data")
+          .select("data")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        const fd: any = row?.data || null;
+        if (fd && Array.isArray(fd.expenses)) {
+          const newExpense = {
+            id: crypto.randomUUID(),
+            name: tx?.name || "Transação bancária",
+            amount,
+            categoryId: category,
+            date: tx?.date || todayStr(),
+            status: "paid" as const,
+            note: "Importada via Plaid",
+          };
+          const nextData = { ...fd, expenses: [...fd.expenses, newExpense] };
+          await supabase
+            .from("finance_data")
+            .upsert([{ user_id: user.id, data: nextData }], { onConflict: "user_id" });
+        }
+      }
+    } catch (e) {
+      console.error("Falha ao descontar saldo da categoria", e);
     }
 
     const { error: budgetErr } = await supabase.functions.invoke("update-budget", {
@@ -116,7 +150,7 @@ const BankConnect = () => {
     if (budgetErr) {
       toast.error("Categorizada, mas falha ao atualizar orçamento");
     } else {
-      toast.success("Categorizada!");
+      toast.success("Categorizada! Saldo atualizado.");
     }
   };
 
