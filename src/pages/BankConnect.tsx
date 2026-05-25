@@ -75,7 +75,13 @@ const BankConnect = () => {
       .is("category", null)
       .order("date", { ascending: false });
     if (error) toast.error("Erro ao carregar transações");
-    else setPending((data as PendingTx[]) || []);
+    else {
+      const list = (data as PendingTx[]) || [];
+      setPending(list);
+      const map: Record<string, string> = {};
+      list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
+      setDates(map);
+    }
     setLoadingTx(false);
   }, [user]);
 
