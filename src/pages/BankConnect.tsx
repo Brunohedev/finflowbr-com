@@ -131,10 +131,14 @@ const BankConnect = () => {
   const categorize = async (id: string, category: string) => {
     if (!user) return;
     const tx = pending.find((t) => t.id === id);
+    const chosenDate = clampToCurrentMonth(dates[id] || tx?.date || null);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
 
-    const { error } = await supabase.from("transactions").update({ category }).eq("id", id);
+    const { error } = await supabase
+      .from("transactions")
+      .update({ category, date: chosenDate })
+      .eq("id", id);
     if (error) {
       toast.error("Erro ao categorizar");
       setPending(prev);
@@ -158,7 +162,7 @@ const BankConnect = () => {
             name: tx?.name || "Transação bancária",
             amount,
             categoryId: category,
-            date: tx?.date || todayStr(),
+            date: chosenDate,
             status: "paid" as const,
             note: "Importada via Plaid",
           };
