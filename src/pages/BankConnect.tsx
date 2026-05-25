@@ -3,8 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+
+const monthBounds = () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const first = `${y}-${pad(m + 1)}-01`;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const last = `${y}-${pad(m + 1)}-${pad(lastDay)}`;
+  return { first, last, ym: `${y}-${pad(m + 1)}` };
+};
+
+const clampToCurrentMonth = (d: string | null | undefined) => {
+  const { first, last, ym } = monthBounds();
+  if (!d) return new Date().toISOString().slice(0, 10);
+  if (d.slice(0, 7) !== ym) return new Date().toISOString().slice(0, 10);
+  if (d < first) return first;
+  if (d > last) return last;
+  return d;
+};
 
 declare global {
   interface Window {
