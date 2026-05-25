@@ -48,7 +48,7 @@ const BankConnect = () => {
     setLoadingTx(true);
     const { data, error } = await supabase
       .from("transactions")
-      .select("id, name, amount")
+      .select("id, name, amount, date")
       .eq("user_id", user.id)
       .is("category", null)
       .order("date", { ascending: false });
