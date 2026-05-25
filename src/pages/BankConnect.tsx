@@ -18,6 +18,7 @@ type PendingTx = {
   id: string;
   name: string | null;
   amount: number | null;
+  date: string | null;
 };
 
 const CATS = [
@@ -25,6 +26,8 @@ const CATS = [
   { id: "desejos", label: "Desejos" },
   { id: "reserva_investimentos", label: "Reserva" },
 ];
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
