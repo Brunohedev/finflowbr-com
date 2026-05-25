@@ -58,6 +58,7 @@ const BankConnect = () => {
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
+  const [dates, setDates] = useState<Record<string, string>>({});
   const [loadingTx, setLoadingTx] = useState(false);
 
   useEffect(() => {
