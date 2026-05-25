@@ -104,6 +104,14 @@ const BankConnect = () => {
     if (error) {
       toast.error("Erro ao categorizar");
       setPending(prev);
+      return;
+    }
+
+    const { error: budgetErr } = await supabase.functions.invoke("update-budget", {
+      body: { transaction_id: id, category },
+    });
+    if (budgetErr) {
+      toast.error("Categorizada, mas falha ao atualizar orçamento");
     } else {
       toast.success("Categorizada!");
     }
