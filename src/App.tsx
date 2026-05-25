@@ -11,6 +11,7 @@ import Cancelado from "./pages/Cancelado";
 import Login from "./pages/Login";
 import RootRedirect from "./pages/RootRedirect";
 import VSL from "./pages/VSL";
+import BankConnect from "./pages/BankConnect";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             {/* Protected: requires auth + active plan */}
             <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/banco" element={<ProtectedRoute><BankConnect /></ProtectedRoute>} />
             {/* Public routes: no auth required */}
             <Route path="/planos" element={<Pricing />} />
             <Route path="/sucesso" element={<Sucesso />} />
