@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      budgets: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          month: string | null
+          spent: number | null
+          total: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          month?: string | null
+          spent?: number | null
+          total?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          month?: string | null
+          spent?: number | null
+          total?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       finance_data: {
         Row: {
           created_at: string
@@ -70,6 +100,24 @@ export type Database = {
           data?: Json
           id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plaid_connections: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -98,6 +146,39 @@ export type Database = {
           name?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number | null
+          category: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          name: string | null
+          plaid_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          name?: string | null
+          plaid_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          name?: string | null
+          plaid_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
