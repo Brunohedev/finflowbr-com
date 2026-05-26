@@ -364,6 +364,16 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     });
   }, []);
 
+  const updateExpense = useCallback((id: string, updates: Partial<Expense>) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        expenses: prev.expenses.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+      };
+    });
+  }, []);
+
   const toggleExpenseStatus = useCallback((id: string) => {
     setData((prev) => {
       if (!prev) return prev;
