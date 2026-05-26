@@ -45,7 +45,6 @@ type PendingTx = {
 const CATS = [
   { id: "essenciais", label: "Essenciais" },
   { id: "desejos", label: "Desejos" },
-  { id: "reserva_investimentos", label: "Reserva" },
 ];
 
 const formatCurrency = (v: number | null) =>
