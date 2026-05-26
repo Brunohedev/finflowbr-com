@@ -308,12 +308,4 @@ const BankConnect = () => {
 };
 
 export default BankConnect;
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-};
 
-export default BankConnect;
