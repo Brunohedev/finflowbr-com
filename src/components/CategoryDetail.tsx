@@ -3,7 +3,10 @@ import { Category, Expense } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2, Plus, X, Check, Clock } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { ArrowLeft, Trash2, Plus, X, Check, Clock, Pencil } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -14,6 +17,7 @@ interface CategoryDetailProps {
   getSpentBySubcategory: (id: string) => number;
   onBack: () => void;
   onDeleteExpense: (id: string) => void;
+  onUpdateExpense: (id: string, updates: Partial<Expense>) => void;
   onToggleExpenseStatus: (id: string) => void;
   onAddSubcategory: (categoryId: string, name: string) => void;
   onDeleteSubcategory: (categoryId: string, subcategoryId: string) => void;
@@ -22,12 +26,41 @@ interface CategoryDetailProps {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
-const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onToggleExpenseStatus, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
+const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onBack, onDeleteExpense, onUpdateExpense, onToggleExpenseStatus, onAddSubcategory, onDeleteSubcategory }: CategoryDetailProps) => {
   const categoryExpenses = expenses.filter((e) => e.categoryId === category.id);
   const totalSpent = categoryExpenses.reduce((s, e) => s + e.amount, 0);
   const pendingTotal = categoryExpenses.filter(e => e.status === "pending").reduce((s, e) => s + e.amount, 0);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
+
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editSubId, setEditSubId] = useState("");
+
+  const startEdit = (expense: Expense) => {
+    setEditingId(expense.id);
+    setEditName(expense.name);
+    setEditAmount(String(expense.amount));
+    setEditDate(expense.date);
+    setEditSubId(expense.subcategoryId);
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = (id: string) => {
+    const amt = parseFloat(editAmount.replace(",", "."));
+    if (!editName.trim() || !amt || amt <= 0 || !editDate || !editSubId) return;
+    onUpdateExpense(id, {
+      name: editName.trim(),
+      amount: amt,
+      date: editDate,
+      subcategoryId: editSubId,
+    });
+    setEditingId(null);
+  };
 
   const handleAdd = () => {
     if (newName.trim()) {
@@ -114,6 +147,55 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
               .sort((a, b) => b.date.localeCompare(a.date))
               .map((expense) => {
                 const sub = category.subcategories.find((s) => s.id === expense.subcategoryId);
+                const isEditing = editingId === expense.id;
+
+                if (isEditing) {
+                  return (
+                    <div key={expense.id} className="py-3 border-b border-border last:border-0 space-y-2 bg-secondary/30 -mx-2 px-2 rounded-lg">
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="h-8 text-sm"
+                        placeholder="Nome"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
+                          <Input
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            className="h-8 text-sm pl-6"
+                            inputMode="decimal"
+                            placeholder="0,00"
+                          />
+                        </div>
+                        <Input
+                          type="date"
+                          value={editDate}
+                          onChange={(e) => setEditDate(e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <Select value={editSubId} onValueChange={setEditSubId}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Subcategoria" /></SelectTrigger>
+                        <SelectContent>
+                          {category.subcategories.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2 justify-end">
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={cancelEdit}>
+                          Cancelar
+                        </Button>
+                        <Button size="sm" className="h-7 px-3 text-xs" onClick={() => saveEdit(expense.id)}>
+                          Salvar
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={expense.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="min-w-0 flex-1">
@@ -130,8 +212,8 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
                       </p>
                       {expense.note && <p className="text-xs text-muted-foreground italic mt-0.5">{expense.note}</p>}
                     </div>
-                    <div className="flex items-center gap-2 ml-3">
-                      <span className="text-sm font-semibold font-heading">{formatCurrency(expense.amount)}</span>
+                    <div className="flex items-center gap-1 ml-3">
+                      <span className="text-sm font-semibold font-heading mr-1">{formatCurrency(expense.amount)}</span>
                       <button
                         onClick={() => onToggleExpenseStatus(expense.id)}
                         className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
@@ -143,6 +225,9 @@ const CategoryDetail = ({ category, budget, expenses, getSpentBySubcategory, onB
                       >
                         {expense.status === "paid" ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       </button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => startEdit(expense)} title="Editar">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onDeleteExpense(expense.id)}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>

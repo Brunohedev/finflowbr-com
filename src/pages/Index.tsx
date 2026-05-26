@@ -38,7 +38,7 @@ const Index = () => {
 
   const {
     data, isSetup, isSyncLoading, monthlyIncome, remainingToday, remainingMonth, activeMonth, monthPercentages,
-    setupBudget, addExpense, deleteExpense, toggleExpenseStatus,
+    setupBudget, addExpense, deleteExpense, updateExpense, toggleExpenseStatus,
     updatePercentages, updateIncome, resetMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal,
     addSubcategory, deleteSubcategory,
     getSpentByCategory, getSpentBySubcategory, getBudget,
@@ -199,6 +199,7 @@ const Index = () => {
           getSpentBySubcategory={getSpentBySubcategory}
           onBack={goBack}
           onDeleteExpense={deleteExpense}
+          onUpdateExpense={updateExpense}
           onToggleExpenseStatus={toggleExpenseStatus}
           onAddSubcategory={addSubcategory}
           onDeleteSubcategory={deleteSubcategory} /> :
