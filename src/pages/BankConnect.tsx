@@ -48,10 +48,10 @@ const CATS = [
   { id: "reserva_investimentos", label: "Reserva" },
 ];
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
-
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
+
+type Subcat = { id: string; name: string };
 
 const BankConnect = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -59,6 +59,8 @@ const BankConnect = () => {
   const [connecting, setConnecting] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
   const [dates, setDates] = useState<Record<string, string>>({});
+  const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
+  const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
 
   useEffect(() => {
@@ -68,12 +70,15 @@ const BankConnect = () => {
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
-    const { data, error } = await supabase
-      .from("transactions")
-      .select("id, name, amount, date")
-      .eq("user_id", user.id)
-      .is("category", null)
-      .order("date", { ascending: false });
+    const [{ data, error }, { data: fdRow }] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("id, name, amount, date")
+        .eq("user_id", user.id)
+        .is("category", null)
+        .order("date", { ascending: false }),
+      supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle(),
+    ]);
     if (error) toast.error("Erro ao carregar transações");
     else {
       const list = (data as PendingTx[]) || [];
@@ -81,6 +86,14 @@ const BankConnect = () => {
       const map: Record<string, string> = {};
       list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
       setDates(map);
+    }
+    const fd: any = fdRow?.data || null;
+    if (fd && Array.isArray(fd.categories)) {
+      const sub: Record<string, Subcat[]> = {};
+      fd.categories.forEach((c: any) => {
+        sub[c.id] = (c.subcategories || []).map((s: any) => ({ id: s.id, name: s.name }));
+      });
+      setSubcatsByCat(sub);
     }
     setLoadingTx(false);
   }, [user]);
@@ -128,12 +141,13 @@ const BankConnect = () => {
     }
   };
 
-  const categorize = async (id: string, category: string) => {
+  const categorize = async (id: string, category: string, subcategoryId?: string) => {
     if (!user) return;
     const tx = pending.find((t) => t.id === id);
     const chosenDate = clampToCurrentMonth(dates[id] || tx?.date || null);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
+    setChosenCat((c) => { const n = { ...c }; delete n[id]; return n; });
 
     const { error } = await supabase
       .from("transactions")
@@ -162,6 +176,7 @@ const BankConnect = () => {
             name: tx?.name || "Transação bancária",
             amount,
             categoryId: category,
+            subcategoryId: subcategoryId || "",
             date: chosenDate,
             status: "paid" as const,
             note: "Importada via Plaid",
@@ -183,6 +198,15 @@ const BankConnect = () => {
       toast.error("Categorizada, mas falha ao atualizar orçamento");
     } else {
       toast.success("Categorizada! Saldo atualizado.");
+    }
+  };
+
+  const handleCategoryClick = (id: string, catId: string) => {
+    const subs = subcatsByCat[catId] || [];
+    if (subs.length === 0) {
+      categorize(id, catId);
+    } else {
+      setChosenCat((c) => ({ ...c, [id]: catId }));
     }
   };
 
@@ -247,14 +271,32 @@ const BankConnect = () => {
                       <Button
                         key={c.id}
                         size="sm"
-                        variant="secondary"
+                        variant={chosenCat[t.id] === c.id ? "default" : "secondary"}
                         className="text-xs"
-                        onClick={() => categorize(t.id, c.id)}
+                        onClick={() => handleCategoryClick(t.id, c.id)}
                       >
                         {c.label}
                       </Button>
                     ))}
                   </div>
+                  {chosenCat[t.id] && (subcatsByCat[chosenCat[t.id]] || []).length > 0 && (
+                    <div className="pt-1 space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Subcategoria:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(subcatsByCat[chosenCat[t.id]] || []).map((s) => (
+                          <Button
+                            key={s.id}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7"
+                            onClick={() => categorize(t.id, chosenCat[t.id], s.id)}
+                          >
+                            {s.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -266,3 +308,4 @@ const BankConnect = () => {
 };
 
 export default BankConnect;
+
