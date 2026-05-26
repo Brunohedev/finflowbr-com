@@ -48,10 +48,10 @@ const CATS = [
   { id: "reserva_investimentos", label: "Reserva" },
 ];
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
-
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
+
+type Subcat = { id: string; name: string };
 
 const BankConnect = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -59,6 +59,8 @@ const BankConnect = () => {
   const [connecting, setConnecting] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
   const [dates, setDates] = useState<Record<string, string>>({});
+  const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
+  const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
 
   useEffect(() => {
@@ -68,12 +70,15 @@ const BankConnect = () => {
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
-    const { data, error } = await supabase
-      .from("transactions")
-      .select("id, name, amount, date")
-      .eq("user_id", user.id)
-      .is("category", null)
-      .order("date", { ascending: false });
+    const [{ data, error }, { data: fdRow }] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("id, name, amount, date")
+        .eq("user_id", user.id)
+        .is("category", null)
+        .order("date", { ascending: false }),
+      supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle(),
+    ]);
     if (error) toast.error("Erro ao carregar transações");
     else {
       const list = (data as PendingTx[]) || [];
@@ -81,6 +86,14 @@ const BankConnect = () => {
       const map: Record<string, string> = {};
       list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
       setDates(map);
+    }
+    const fd: any = fdRow?.data || null;
+    if (fd && Array.isArray(fd.categories)) {
+      const sub: Record<string, Subcat[]> = {};
+      fd.categories.forEach((c: any) => {
+        sub[c.id] = (c.subcategories || []).map((s: any) => ({ id: s.id, name: s.name }));
+      });
+      setSubcatsByCat(sub);
     }
     setLoadingTx(false);
   }, [user]);
