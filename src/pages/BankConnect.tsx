@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Pencil } from "lucide-react";
 
 const monthBounds = () => {
   const now = new Date();
@@ -42,10 +42,14 @@ type PendingTx = {
   date: string | null;
 };
 
+type CategorizedTx = PendingTx & { category: string };
+
 const CATS = [
   { id: "essenciais", label: "Essenciais" },
   { id: "desejos", label: "Desejos" },
 ];
+
+const catLabel = (id: string) => CATS.find((c) => c.id === id)?.label || id;
 
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
@@ -57,6 +61,7 @@ const BankConnect = () => {
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
+  const [categorized, setCategorized] = useState<CategorizedTx[]>([]);
   const [dates, setDates] = useState<Record<string, string>>({});
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
@@ -69,12 +74,18 @@ const BankConnect = () => {
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
-    const [{ data, error }, { data: fdRow }] = await Promise.all([
+    const [{ data, error }, { data: catData }, { data: fdRow }] = await Promise.all([
       supabase
         .from("transactions")
         .select("id, name, amount, date")
         .eq("user_id", user.id)
         .is("category", null)
+        .order("date", { ascending: false }),
+      supabase
+        .from("transactions")
+        .select("id, name, amount, date, category")
+        .eq("user_id", user.id)
+        .not("category", "is", null)
         .order("date", { ascending: false }),
       supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle(),
     ]);
@@ -86,6 +97,7 @@ const BankConnect = () => {
       list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
       setDates(map);
     }
+    setCategorized((catData as CategorizedTx[]) || []);
     const fd: any = fdRow?.data || null;
     if (fd && Array.isArray(fd.categories)) {
       const sub: Record<string, Subcat[]> = {};
@@ -179,6 +191,7 @@ const BankConnect = () => {
             date: chosenDate,
             status: "paid" as const,
             note: "Importada via Plaid",
+            transactionId: id,
           };
           const nextData = { ...fd, expenses: [...fd.expenses, newExpense] };
           await supabase
@@ -198,6 +211,7 @@ const BankConnect = () => {
     } else {
       toast.success("Categorizada! Saldo atualizado.");
     }
+    await loadPending();
   };
 
   const handleCategoryClick = (id: string, catId: string) => {
@@ -207,6 +221,53 @@ const BankConnect = () => {
     } else {
       setChosenCat((c) => ({ ...c, [id]: catId }));
     }
+  };
+
+  const editCategorized = async (tx: CategorizedTx) => {
+    if (!user) return;
+    // Remove category from DB and matching expense from finance_data
+    const { error } = await supabase
+      .from("transactions")
+      .update({ category: null })
+      .eq("id", tx.id);
+    if (error) {
+      toast.error("Erro ao editar categoria");
+      return;
+    }
+
+    try {
+      const { data: row } = await supabase
+        .from("finance_data")
+        .select("data")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const fd: any = row?.data || null;
+      if (fd && Array.isArray(fd.expenses)) {
+        const amount = Math.abs(Number(tx.amount ?? 0));
+        const idx = fd.expenses.findIndex(
+          (e: any) =>
+            e.transactionId === tx.id ||
+            (e.name === (tx.name || "Transação bancária") &&
+              Math.abs(Number(e.amount)) === amount &&
+              e.date === tx.date &&
+              e.categoryId === tx.category)
+        );
+        if (idx >= 0) {
+          const nextExpenses = [...fd.expenses];
+          nextExpenses.splice(idx, 1);
+          await supabase
+            .from("finance_data")
+            .upsert([{ user_id: user.id, data: { ...fd, expenses: nextExpenses } }], {
+              onConflict: "user_id",
+            });
+        }
+      }
+    } catch (e) {
+      console.error("Falha ao remover expense", e);
+    }
+
+    toast.success("Escolha a nova categoria");
+    await loadPending();
   };
 
   return (
@@ -301,10 +362,39 @@ const BankConnect = () => {
             </div>
           )}
         </div>
+
+        {categorized.length > 0 && (
+          <div className="finance-card">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              Transações Categorizadas
+            </h2>
+            <div className="space-y-2">
+              {categorized.map((t) => (
+                <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{t.name || "—"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {catLabel(t.category)} · {t.date || ""}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 shrink-0"
+                    onClick={() => editCategorized(t)}
+                    aria-label="Editar categoria"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
 export default BankConnect;
-
