@@ -141,12 +141,13 @@ const BankConnect = () => {
     }
   };
 
-  const categorize = async (id: string, category: string) => {
+  const categorize = async (id: string, category: string, subcategoryId?: string) => {
     if (!user) return;
     const tx = pending.find((t) => t.id === id);
     const chosenDate = clampToCurrentMonth(dates[id] || tx?.date || null);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
+    setChosenCat((c) => { const n = { ...c }; delete n[id]; return n; });
 
     const { error } = await supabase
       .from("transactions")
@@ -175,6 +176,7 @@ const BankConnect = () => {
             name: tx?.name || "Transação bancária",
             amount,
             categoryId: category,
+            subcategoryId: subcategoryId || "",
             date: chosenDate,
             status: "paid" as const,
             note: "Importada via Plaid",
@@ -196,6 +198,15 @@ const BankConnect = () => {
       toast.error("Categorizada, mas falha ao atualizar orçamento");
     } else {
       toast.success("Categorizada! Saldo atualizado.");
+    }
+  };
+
+  const handleCategoryClick = (id: string, catId: string) => {
+    const subs = subcatsByCat[catId] || [];
+    if (subs.length === 0) {
+      categorize(id, catId);
+    } else {
+      setChosenCat((c) => ({ ...c, [id]: catId }));
     }
   };
 
