@@ -271,16 +271,43 @@ const BankConnect = () => {
                       <Button
                         key={c.id}
                         size="sm"
-                        variant="secondary"
+                        variant={chosenCat[t.id] === c.id ? "default" : "secondary"}
                         className="text-xs"
-                        onClick={() => categorize(t.id, c.id)}
+                        onClick={() => handleCategoryClick(t.id, c.id)}
                       >
                         {c.label}
                       </Button>
                     ))}
                   </div>
+                  {chosenCat[t.id] && (subcatsByCat[chosenCat[t.id]] || []).length > 0 && (
+                    <div className="pt-1 space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Subcategoria:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(subcatsByCat[chosenCat[t.id]] || []).map((s) => (
+                          <Button
+                            key={s.id}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7"
+                            onClick={() => categorize(t.id, chosenCat[t.id], s.id)}
+                          >
+                            {s.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default BankConnect;
             </div>
           )}
         </div>
