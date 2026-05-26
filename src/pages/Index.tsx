@@ -199,6 +199,7 @@ const Index = () => {
           getSpentBySubcategory={getSpentBySubcategory}
           onBack={goBack}
           onDeleteExpense={deleteExpense}
+          onUpdateExpense={updateExpense}
           onToggleExpenseStatus={toggleExpenseStatus}
           onAddSubcategory={addSubcategory}
           onDeleteSubcategory={deleteSubcategory} /> :
