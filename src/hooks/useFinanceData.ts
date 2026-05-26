@@ -611,7 +611,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
   return {
     data, isSetup: !!data, isSyncLoading, monthlyIncome, dailyIncome, remainingToday, remainingMonth, activeMonth, setMonthSalary, monthSavingsExtra, monthSavingsTotal, monthSavingsUsed, savingsBudget, monthPercentages,
-    setupBudget, addExpense, deleteExpense, toggleExpenseStatus, updatePercentages, updateIncome,
+    setupBudget, addExpense, deleteExpense, updateExpense, toggleExpenseStatus, updatePercentages, updateIncome,
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource, updateIncomeSource,
