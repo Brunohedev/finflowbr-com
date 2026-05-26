@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import RootRedirect from "./pages/RootRedirect";
 import VSL from "./pages/VSL";
 import BankConnect from "./pages/BankConnect";
+import Privacy from "./pages/Privacy";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/sucesso" element={<Sucesso />} />
             <Route path="/cancelado" element={<Cancelado />} />
             <Route path="/vsl" element={<VSL />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
