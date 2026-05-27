@@ -223,52 +223,6 @@ const BankConnect = () => {
     }
   };
 
-  const editCategorized = async (tx: CategorizedTx) => {
-    if (!user) return;
-    // Remove category from DB and matching expense from finance_data
-    const { error } = await supabase
-      .from("transactions")
-      .update({ category: null })
-      .eq("id", tx.id);
-    if (error) {
-      toast.error("Erro ao editar categoria");
-      return;
-    }
-
-    try {
-      const { data: row } = await supabase
-        .from("finance_data")
-        .select("data")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      const fd: any = row?.data || null;
-      if (fd && Array.isArray(fd.expenses)) {
-        const amount = Math.abs(Number(tx.amount ?? 0));
-        const idx = fd.expenses.findIndex(
-          (e: any) =>
-            e.transactionId === tx.id ||
-            (e.name === (tx.name || "Transação bancária") &&
-              Math.abs(Number(e.amount)) === amount &&
-              e.date === tx.date &&
-              e.categoryId === tx.category)
-        );
-        if (idx >= 0) {
-          const nextExpenses = [...fd.expenses];
-          nextExpenses.splice(idx, 1);
-          await supabase
-            .from("finance_data")
-            .upsert([{ user_id: user.id, data: { ...fd, expenses: nextExpenses } }], {
-              onConflict: "user_id",
-            });
-        }
-      }
-    } catch (e) {
-      console.error("Falha ao remover expense", e);
-    }
-
-    toast.success("Escolha a nova categoria");
-    await loadPending();
-  };
 
   return (
     <div className="min-h-screen bg-[#ecf3f0] pb-16">
