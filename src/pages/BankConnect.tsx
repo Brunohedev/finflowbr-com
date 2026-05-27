@@ -355,9 +355,15 @@ const BankConnect = () => {
               <p className="text-xs text-muted-foreground">Importe transações dos seus bancos no Brasil via Pluggy</p>
             </div>
           </div>
-          <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
-            {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar via Pluggy"}
-          </Button>
+          {pluggyReady ? (
+            <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
+              {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar via Pluggy"}
+            </Button>
+          ) : (
+            <Button disabled className="w-full">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Carregando Pluggy…
+            </Button>
+          )}
         </div>
 
 
