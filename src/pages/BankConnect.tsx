@@ -32,6 +32,7 @@ declare global {
     Plaid?: {
       create: (config: any) => { open: () => void; exit: () => void; destroy: () => void };
     };
+    PluggyConnect?: new (config: any) => { init: () => void; destroy?: () => void };
   }
 }
 
