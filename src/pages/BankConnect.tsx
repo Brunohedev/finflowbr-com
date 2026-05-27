@@ -68,10 +68,51 @@ const BankConnect = () => {
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
+  const [pluggyReady, setPluggyReady] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) navigate("/login");
   }, [isLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.PluggyConnect) { setPluggyReady(true); return; }
+
+    const SRC = "https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js";
+    let cancelled = false;
+    let interval: number | undefined;
+
+    const startPolling = () => {
+      interval = window.setInterval(() => {
+        if (window.PluggyConnect) {
+          setPluggyReady(true);
+          if (interval) window.clearInterval(interval);
+        }
+      }, 200);
+    };
+
+    let script = document.querySelector<HTMLScriptElement>(`script[src="${SRC}"]`);
+    if (!script) {
+      script = document.createElement("script");
+      script.src = SRC;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+    script.addEventListener("load", () => { if (!cancelled) setPluggyReady(true); });
+    startPolling();
+
+    // Safety timeout (15s)
+    const timeout = window.setTimeout(() => {
+      if (interval) window.clearInterval(interval);
+    }, 15000);
+
+    return () => {
+      cancelled = true;
+      if (interval) window.clearInterval(interval);
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
 
   const loadPending = useCallback(async () => {
     if (!user) return;
@@ -314,9 +355,15 @@ const BankConnect = () => {
               <p className="text-xs text-muted-foreground">Importe transações dos seus bancos no Brasil via Pluggy</p>
             </div>
           </div>
-          <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
-            {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar via Pluggy"}
-          </Button>
+          {pluggyReady ? (
+            <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
+              {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar via Pluggy"}
+            </Button>
+          ) : (
+            <Button disabled className="w-full">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Carregando Pluggy…
+            </Button>
+          )}
         </div>
 
 
