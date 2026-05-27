@@ -296,7 +296,7 @@ const BankConnect = () => {
             </div>
             <div>
               <p className="font-semibold">Conecte sua conta bancária</p>
-              <p className="text-xs text-muted-foreground">Importe transações automaticamente via Plaid</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações automaticamente via Plaid{"\n"}Uso exclusivo de usuarios presentes nos Estados Unidos.</p>
             </div>
           </div>
           <Button onClick={startPlaid} disabled={connecting} className="w-full">
@@ -311,11 +311,11 @@ const BankConnect = () => {
             </div>
             <div>
               <p className="font-semibold">Conectar banco brasileiro</p>
-              <p className="text-xs text-muted-foreground">Importe transações dos seus bancos no Brasil via Pluggy</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações dos seus bancos no Brasil via Pluggy.{"\n"}Uso exclusivo de usuarios presentes no Brasil.</p>
             </div>
           </div>
           <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
-            {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar via Pluggy"}
+            {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco\n"}
           </Button>
         </div>
 
