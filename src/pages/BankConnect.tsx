@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, Building2, Loader2 } from "lucide-react";
 
 const monthBounds = () => {
   const now = new Date();
@@ -223,52 +223,6 @@ const BankConnect = () => {
     }
   };
 
-  const editCategorized = async (tx: CategorizedTx) => {
-    if (!user) return;
-    // Remove category from DB and matching expense from finance_data
-    const { error } = await supabase
-      .from("transactions")
-      .update({ category: null })
-      .eq("id", tx.id);
-    if (error) {
-      toast.error("Erro ao editar categoria");
-      return;
-    }
-
-    try {
-      const { data: row } = await supabase
-        .from("finance_data")
-        .select("data")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      const fd: any = row?.data || null;
-      if (fd && Array.isArray(fd.expenses)) {
-        const amount = Math.abs(Number(tx.amount ?? 0));
-        const idx = fd.expenses.findIndex(
-          (e: any) =>
-            e.transactionId === tx.id ||
-            (e.name === (tx.name || "Transação bancária") &&
-              Math.abs(Number(e.amount)) === amount &&
-              e.date === tx.date &&
-              e.categoryId === tx.category)
-        );
-        if (idx >= 0) {
-          const nextExpenses = [...fd.expenses];
-          nextExpenses.splice(idx, 1);
-          await supabase
-            .from("finance_data")
-            .upsert([{ user_id: user.id, data: { ...fd, expenses: nextExpenses } }], {
-              onConflict: "user_id",
-            });
-        }
-      }
-    } catch (e) {
-      console.error("Falha ao remover expense", e);
-    }
-
-    toast.success("Escolha a nova categoria");
-    await loadPending();
-  };
 
   return (
     <div className="min-h-screen bg-[#ecf3f0] pb-16">
@@ -381,15 +335,6 @@ const BankConnect = () => {
                     </p>
                   </div>
                   <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 shrink-0"
-                    onClick={() => editCategorized(t)}
-                    aria-label="Editar categoria"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>
