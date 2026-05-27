@@ -225,6 +225,54 @@ const BankConnect = () => {
     }
   };
 
+  const startPluggy = async () => {
+    if (!user) return;
+    if (!window.PluggyConnect) {
+      toast.error("Pluggy ainda está carregando, tente novamente em instantes.");
+      return;
+    }
+    setConnectingPluggy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pluggy-create-token");
+      if (error || !data?.accessToken) throw new Error(error?.message || "Falha ao gerar token Pluggy");
+
+      const pluggy = new window.PluggyConnect({
+        connectToken: data.accessToken,
+        includeSandbox: true,
+        onSuccess: async (itemData: any) => {
+          try {
+            const itemId = itemData?.item?.id || itemData?.itemId;
+            if (!itemId) throw new Error("itemId não retornado pelo Pluggy");
+            const { error: insErr } = await supabase
+              .from("pluggy_connections")
+              .upsert([{ user_id: user.id, item_id: itemId }], { onConflict: "user_id" });
+            if (insErr) throw insErr;
+
+            toast.success("Banco brasileiro conectado! Importando transações…");
+            const { error: txErr } = await supabase.functions.invoke("pluggy-get-transactions", {
+              body: { user_id: user.id, item_id: itemId },
+            });
+            if (txErr) throw txErr;
+            toast.success("Transações importadas!");
+            await loadPending();
+          } catch (e: any) {
+            toast.error(e?.message || "Erro ao importar transações");
+          }
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || "Erro na conexão Pluggy");
+        },
+      });
+      pluggy.init();
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao iniciar Pluggy");
+    } finally {
+      setConnectingPluggy(false);
+    }
+  };
+
+
+
 
   return (
     <div className="min-h-screen bg-[#ecf3f0] pb-16">
