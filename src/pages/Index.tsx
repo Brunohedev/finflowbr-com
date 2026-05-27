@@ -122,6 +122,35 @@ const Index = () => {
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-xl" title={t("Menu")}>
+                  <Menu className="w-4 h-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetHeader>
+                  <SheetTitle>{t("Menu")}</SheetTitle>
+                </SheetHeader>
+                <nav className="mt-6 flex flex-col gap-1">
+                  <div className="px-2 py-1.5">
+                    <LanguageSwitcher />
+                  </div>
+                  <Button variant="ghost" className="justify-start rounded-xl" onClick={() => navigate("/banco")}>
+                    <Building2 className="w-4 h-4 mr-2" /> {t("Conectar meu banco")}
+                  </Button>
+                  <Button variant="ghost" className="justify-start rounded-xl" onClick={() => window.open("https://wa.link/dgzvmf", "_blank", "noopener,noreferrer")}>
+                    <Headphones className="w-4 h-4 mr-2" /> {t("Suporte")}
+                  </Button>
+                  <Button variant="ghost" className="justify-start rounded-xl" onClick={() => setView(view === "report" ? "dashboard" : "report")}>
+                    <CalendarDays className="w-4 h-4 mr-2" /> {t("Relatório Mensal")}
+                  </Button>
+                  <Button variant="ghost" className="justify-start rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
+                    <LogOut className="w-4 h-4 mr-2" /> {t("Sair")}
+                  </Button>
+                </nav>
+              </SheetContent>
+            </Sheet>
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Wallet className="w-4 h-4 text-primary" />
             </div>
@@ -131,30 +160,8 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <LanguageSwitcher />
-            <Button
-              variant="ghost" size="icon" className="rounded-xl"
-              onClick={() => navigate("/banco")}
-              title="Conectar meu banco">
-              <Building2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost" size="icon" className="rounded-xl"
-              onClick={() => window.open("https://wa.link/dgzvmf", "_blank", "noopener,noreferrer")}
-              title={t("Suporte")}>
-              <Headphones className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === "report" ? "secondary" : "ghost"}
-              size="icon" className="rounded-xl"
-              onClick={() => setView(view === "report" ? "dashboard" : "report")}>
-              <CalendarDays className="w-4 h-4" />
-            </Button>
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
-              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
