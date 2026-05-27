@@ -61,6 +61,7 @@ const BankConnect = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
+  const [connectingPluggy, setConnectingPluggy] = useState(false);
   const [pending, setPending] = useState<PendingTx[]>([]);
   const [categorized, setCategorized] = useState<CategorizedTx[]>([]);
   const [dates, setDates] = useState<Record<string, string>>({});
