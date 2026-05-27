@@ -231,16 +231,12 @@ const BankConnect = () => {
 
   const startPluggy = async () => {
     if (!user) return;
-    if (!window.PluggyConnect) {
-      toast.error("Pluggy ainda está carregando, tente novamente em instantes.");
-      return;
-    }
     setConnectingPluggy(true);
     try {
       const { data, error } = await supabase.functions.invoke("pluggy-create-token");
       if (error || !data?.accessToken) throw new Error(error?.message || "Falha ao gerar token Pluggy");
 
-      const pluggy = new window.PluggyConnect({
+      const pluggy = new PluggyConnect({
         connectToken: data.accessToken,
         includeSandbox: true,
         onSuccess: async (itemData: any) => {
