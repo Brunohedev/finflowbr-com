@@ -282,6 +282,9 @@ const BankConnect = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          A conexão com banco será liberada automaticamente no seu 7º dia de uso do FinFlow.
+        </div>
         <div className="finance-card space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
