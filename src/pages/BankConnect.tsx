@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+import { PluggyConnect } from "pluggy-connect-sdk";
 
 const monthBounds = () => {
   const now = new Date();
