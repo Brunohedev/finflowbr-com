@@ -197,7 +197,7 @@ const BankConnect = () => {
             subcategoryId: subcategoryId || "",
             date: chosenDate,
             status: "paid" as const,
-            note: "Importada via Plaid",
+            note: tx?.plaid_id?.startsWith("pluggy_") ? "Importada via Pluggy" : "Importada via Plaid",
             transactionId: id,
           };
           const nextData = { ...fd, expenses: [...fd.expenses, newExpense] };
