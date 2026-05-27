@@ -84,7 +84,7 @@ const BankConnect = () => {
     const [{ data, error }, { data: catData }, { data: fdRow }] = await Promise.all([
       supabase
         .from("transactions")
-        .select("id, name, amount, date")
+        .select("id, name, amount, date, plaid_id")
         .eq("user_id", user.id)
         .is("category", null)
         .order("date", { ascending: false }),
