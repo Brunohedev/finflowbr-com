@@ -335,15 +335,6 @@ const BankConnect = () => {
                     </p>
                   </div>
                   <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 shrink-0"
-                    onClick={() => editCategorized(t)}
-                    aria-label="Editar categoria"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>
