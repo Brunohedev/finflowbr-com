@@ -54,12 +54,18 @@ const Onboarding = () => {
   const [income, setIncome] = useState(4000);
   const [split, setSplit] = useState({ ess: 50, want: 30, save: 20 });
   const [targetValue, setTargetValue] = useState(50000);
+  // % do limite efetivamente gasto em cada categoria (default 100%)
+  const [essUsedPct, setEssUsedPct]   = useState(100);
+  const [wantUsedPct, setWantUsedPct] = useState(100);
 
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
-  const totalSpent = essLimit + wantLimit;
-  const moneyLeft = income - totalSpent; // equals saveLimit by definition
+  const essUsed  = (essLimit  * essUsedPct)  / 100;
+  const wantUsed = (wantLimit * wantUsedPct) / 100;
+  const totalSpent = essUsed + wantUsed;
+  const extraSaved = (essLimit - essUsed) + (wantLimit - wantUsed);
+  const moneyLeft = income - totalSpent; // = saveLimit + extraSaved
 
   // Auto-normalize so ess+want+save always = 100
   const updateSplit = (key: "ess" | "want" | "save", v: number) => {
