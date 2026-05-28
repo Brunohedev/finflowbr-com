@@ -136,6 +136,9 @@ const Index = () => {
                   <div className="px-2 py-1.5">
                     <LanguageSwitcher />
                   </div>
+                  <Button variant="ghost" className="justify-start rounded-xl" onClick={() => navigate("/onboarding")}>
+                    <BookOpen className="w-4 h-4 mr-2" /> {t("Como funciona")}
+                  </Button>
                   <Button variant="ghost" className="justify-start rounded-xl" onClick={() => navigate("/banco")}>
                     <Building2 className="w-4 h-4 mr-2" /> {t("Conectar meu banco")}
                   </Button>
