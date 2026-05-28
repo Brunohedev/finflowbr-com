@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, ArrowRight, ArrowLeft, Check, Plus, PiggyBank,
   TrendingUp, ShoppingBag, Home, Sparkles, Target, BarChart3,
+  Trophy, LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen w-full bg-gradient-to-b from-emerald-50/60 via-white to-white flex items-center justify-center p-4">
