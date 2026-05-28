@@ -53,18 +53,13 @@ const Onboarding = () => {
   const [step, setStep] = useState(0);
   const [income, setIncome] = useState(4000);
   const [split, setSplit] = useState({ ess: 50, want: 30, save: 20 });
-  const [expenseName, setExpenseName] = useState("");
-  const [expenseAmt, setExpenseAmt] = useState(0);
-  const [expenses, setExpenses] = useState<{ name: string; amount: number }[]>([
-    { name: t("Aluguel"), amount: 1200 },
-  ]);
-  const [years, setYears] = useState(5);
+  const [targetValue, setTargetValue] = useState(50000);
 
-  const totalExpenses = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
-  const moneyLeft = income - totalExpenses;
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
+  const totalSpent = essLimit + wantLimit;
+  const moneyLeft = income - totalSpent; // equals saveLimit by definition
 
   // Auto-normalize so ess+want+save always = 100
   const updateSplit = (key: "ess" | "want" | "save", v: number) => {
@@ -82,23 +77,21 @@ const Onboarding = () => {
     });
   };
 
-  // Projection: monthly savings compounded at modest 0.6%/mo (~7.4% a.a.)
-  const projection = useMemo(() => {
-    const r = 0.006;
-    const n = years * 12;
-    if (saveLimit <= 0) return 0;
-    return saveLimit * ((Math.pow(1 + r, n) - 1) / r);
-  }, [saveLimit, years]);
+  // Auto-increasing reserve goal milestones
+  const GOAL_MILESTONES = [1000, 3000, 5000, 10000, 20000, 50000, 100000];
+
+  // Inverted projection: given a target value, how many years to reach it?
+  const yearsToTarget = useMemo(() => {
+    const r = 0.006; // ~7.4% a.a.
+    if (saveLimit <= 0 || targetValue <= 0) return Infinity;
+    const ratio = 1 + (targetValue * r) / saveLimit;
+    const months = Math.log(ratio) / Math.log(1 + r);
+    return months / 12;
+  }, [saveLimit, targetValue]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
   const finish = () => navigate("/app");
-
-  const addExpense = () => {
-    if (!expenseName.trim() || expenseAmt <= 0) return;
-    setExpenses((prev) => [...prev, { name: expenseName.trim(), amount: expenseAmt }]);
-    setExpenseName(""); setExpenseAmt(0);
-  };
 
   return (
     <Shell>
