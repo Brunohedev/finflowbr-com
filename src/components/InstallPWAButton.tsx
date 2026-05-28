@@ -47,6 +47,28 @@ const InstallPWAButton = ({ variant = "floating" }: InstallPWAButtonProps) => {
   const [iosEligible, setIosEligible] = useState(false);
 
   useEffect(() => {
+    // Menu variant is always visible (user-triggered entry point)
+    if (variant === "menu") {
+      if (isInStandaloneMode()) return; // already installed
+      setVisible(true);
+      if (isIOS()) setIosEligible(true);
+
+      const handler = (e: Event) => {
+        e.preventDefault();
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
+      };
+      window.addEventListener("beforeinstallprompt", handler);
+      const installed = () => {
+        setVisible(false);
+        setDeferredPrompt(null);
+      };
+      window.addEventListener("appinstalled", installed);
+      return () => {
+        window.removeEventListener("beforeinstallprompt", handler);
+        window.removeEventListener("appinstalled", installed);
+      };
+    }
+
     if (isInIframe() || isInStandaloneMode()) return;
 
     const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) || 0);
@@ -75,21 +97,20 @@ const InstallPWAButton = ({ variant = "floating" }: InstallPWAButtonProps) => {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installed);
     };
-  }, []);
+  }, [variant]);
 
   const handleClick = async () => {
-    if (iosEligible) {
-      setIosModalOpen(true);
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") setVisible(false);
+      setDeferredPrompt(null);
       return;
     }
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === "accepted") {
-      setVisible(false);
-    }
-    setDeferredPrompt(null);
+    // No native prompt available → show instructions modal (works for iOS and as fallback)
+    setIosModalOpen(true);
   };
+
 
   const dismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
