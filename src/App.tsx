@@ -14,7 +14,6 @@ import VSL from "./pages/VSL";
 import BankConnect from "./pages/BankConnect";
 import Onboarding from "./pages/Onboarding";
 import Privacy from "./pages/Privacy";
-import InstallPWAButton from "./components/InstallPWAButton";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
@@ -28,7 +27,6 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <InstallPWAButton />
         <BrowserRouter>
           <Routes>
             {/* Root: redirect to /login or /app based on auth */}
