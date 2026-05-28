@@ -314,4 +314,29 @@ const es: Dict = {
   "Compras": "Compras",
 };
 
+// Onboarding (ES)
+Object.assign(es, {
+  "Bem-vindo ao FinFlow": "Bienvenido a FinFlow",
+  "Em poucos passos você aprende como acompanhar o quanto sobra no seu mês.": "En pocos pasos aprenderás a seguir cuánto te queda en el mes.",
+  "Cadastre sua renda": "Registra tu ingreso",
+  "Defina seu orçamento": "Define tu presupuesto",
+  "Acompanhe o que sobra": "Sigue lo que te queda",
+  "Qual é sua renda mensal?": "¿Cuál es tu ingreso mensual?",
+  "Some todas as suas fontes de renda do mês.": "Suma todas tus fuentes de ingreso del mes.",
+  "No app você pode cadastrar várias fontes (salário, freelas, etc.) com frequências diferentes.": "En la app puedes registrar varias fuentes (salario, freelance, etc.) con frecuencias distintas.",
+  "Divida seu orçamento": "Divide tu presupuesto",
+  "FinFlow usa a regra 50-30-20. Você pode ajustar quando quiser.": "FinFlow usa la regla 50-30-20. Puedes ajustarla cuando quieras.",
+  "Adicione uma despesa": "Añade un gasto",
+  "Cada gasto que você lança é descontado do seu mês automaticamente.": "Cada gasto que registras se descuenta automáticamente del mes.",
+  "Seu painel ao vivo": "Tu panel en vivo",
+  "Esse é o coração do FinFlow: o quanto realmente sobra no seu mês.": "Este es el corazón de FinFlow: cuánto realmente te queda en el mes.",
+  "Tudo pronto!": "¡Todo listo!",
+  "Você já entendeu o essencial. Agora é só usar o FinFlow no seu dia a dia.": "Ya entendiste lo esencial. Ahora solo usa FinFlow en tu día a día.",
+  "Painel principal com seu saldo do mês": "Panel principal con tu saldo del mes",
+  "Reserva e investimentos com metas": "Reserva e inversiones con metas",
+  "Relatório mensal para ajustar sua rota": "Informe mensual para ajustar tu rumbo",
+  "Começar": "Empezar",
+  "Ir para o app": "Ir a la app",
+});
+
 export const dictionaries: Record<Language, Dict> = { pt, en, es };
