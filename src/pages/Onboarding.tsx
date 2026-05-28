@@ -54,12 +54,18 @@ const Onboarding = () => {
   const [income, setIncome] = useState(4000);
   const [split, setSplit] = useState({ ess: 50, want: 30, save: 20 });
   const [targetValue, setTargetValue] = useState(50000);
+  // % do limite efetivamente gasto em cada categoria (default 100%)
+  const [essUsedPct, setEssUsedPct]   = useState(100);
+  const [wantUsedPct, setWantUsedPct] = useState(100);
 
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
-  const totalSpent = essLimit + wantLimit;
-  const moneyLeft = income - totalSpent; // equals saveLimit by definition
+  const essUsed  = (essLimit  * essUsedPct)  / 100;
+  const wantUsed = (wantLimit * wantUsedPct) / 100;
+  const totalSpent = essUsed + wantUsed;
+  const extraSaved = (essLimit - essUsed) + (wantLimit - wantUsed);
+  const moneyLeft = income - totalSpent; // = saveLimit + extraSaved
 
   // Auto-normalize so ess+want+save always = 100
   const updateSplit = (key: "ess" | "want" | "save", v: number) => {
@@ -177,15 +183,21 @@ const Onboarding = () => {
                   >
                     {fmt(income)}
                   </motion.p>
-                  <Slider
-                    className="mt-5"
-                    value={[income]}
-                    onValueChange={([v]) => setIncome(v)}
-                    min={500} max={20000} step={100}
+                  <Input
+                    type="number"
+                    min={0}
+                    inputMode="decimal"
+                    value={income}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setIncome(isNaN(v) || v < 0 ? 0 : v);
+                    }}
+                    className="mt-4 text-lg font-semibold h-12 bg-white border-emerald-200 focus-visible:ring-emerald-400"
+                    placeholder="0"
                   />
-                  <div className="flex justify-between text-[11px] text-emerald-700/60 mt-2">
-                    <span>$500</span><span>$20.000</span>
-                  </div>
+                  <p className="text-[11px] text-emerald-700/60 mt-2">
+                    {t("Digite qualquer valor — sem limite.")}
+                  </p>
                 </div>
 
                 <p className="text-xs text-emerald-900/50 mt-5 leading-relaxed">
@@ -247,29 +259,34 @@ const Onboarding = () => {
 
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-950">{t("Suponha que você gastou conforme planejou")}</h2>
+                <h2 className="text-xl font-bold text-emerald-950">{t("E se você gastar menos?")}</h2>
                 <p className="text-sm text-emerald-900/60 mt-2">
-                  {t("Cada categoria foi usada exatamente até o limite. Veja o que acontece.")}
+                  {t("Cheio = você gastou o limite. Diminua e veja a sobra ir direto pra reserva.")}
                 </p>
 
-                <div className="mt-5 space-y-2.5">
+                <div className="mt-5 space-y-3">
                   {[
-                    { label: t("Essenciais"), used: essLimit,  limit: essLimit,  color: "bg-emerald-500" },
-                    { label: t("Desejos"),    used: wantLimit, limit: wantLimit, color: "bg-amber-400" },
-                  ].map((c, idx) => (
-                    <div key={c.label} className="p-3 rounded-xl bg-white border border-emerald-100">
+                    { key: "ess",  label: t("Essenciais"), used: essUsed,  limit: essLimit,  pct: essUsedPct,  setPct: setEssUsedPct,  color: "bg-emerald-500" },
+                    { key: "want", label: t("Desejos"),    used: wantUsed, limit: wantLimit, pct: wantUsedPct, setPct: setWantUsedPct, color: "bg-amber-400" },
+                  ].map((c) => (
+                    <div key={c.key} className="p-3 rounded-xl bg-white border border-emerald-100">
                       <div className="flex justify-between text-xs text-emerald-900 mb-1.5">
                         <span className="font-medium">{c.label}</span>
                         <span className="text-emerald-700/70">{fmt(c.used)} / {fmt(c.limit)}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-emerald-50 overflow-hidden">
                         <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: "100%" }}
-                          transition={{ duration: 0.7, ease: "easeOut", delay: idx * 0.2 }}
+                          animate={{ width: `${c.pct}%` }}
+                          transition={{ duration: 0.3 }}
                           className={`h-full ${c.color}`}
                         />
                       </div>
+                      <Slider
+                        className="mt-3"
+                        value={[c.pct]}
+                        onValueChange={([v]) => c.setPct(v)}
+                        min={0} max={100} step={1}
+                      />
                     </div>
                   ))}
                 </div>
@@ -277,24 +294,46 @@ const Onboarding = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
                 >
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
-                    {t("Sobrou no fim do mês")}
+                    {t("Vai pra reserva neste mês")}
                   </p>
                   <p className="text-4xl font-bold mt-1">{fmt(moneyLeft)}</p>
-                  <div className="flex justify-between mt-3 text-xs opacity-90">
-                    <span>{t("Renda:")} {fmt(income)}</span>
-                    <span>{t("Gastos:")} {fmt(totalSpent)}</span>
+
+                  {/* Barra visual: base (saveLimit) + bônus (extraSaved) */}
+                  <div className="mt-3 h-2 rounded-full overflow-hidden flex bg-white/20">
+                    <motion.div
+                      animate={{ width: `${(saveLimit / Math.max(moneyLeft, 1)) * 100}%` }}
+                      className="bg-white"
+                    />
+                    <motion.div
+                      animate={{ width: `${(extraSaved / Math.max(moneyLeft, 1)) * 100}%` }}
+                      className="bg-amber-300"
+                    />
+                  </div>
+                  <div className="flex justify-between mt-2 text-[11px] opacity-90">
+                    <span>{t("Reserva planejada:")} {fmt(saveLimit)}</span>
+                    <span className="font-semibold">+ {fmt(extraSaved)} {t("bônus")}</span>
                   </div>
                 </motion.div>
 
-                <p className="text-xs text-emerald-900/60 mt-4 leading-relaxed">
-                  {t("Esse valor que sobra vai direto para sua reserva e investimentos.")}
-                </p>
+                <AnimatePresence>
+                  {extraSaved > 0 && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-xs text-emerald-700 mt-3 leading-relaxed font-medium"
+                    >
+                      {t("Gastando menos do que o planejado, a diferença vira reserva extra automaticamente.")}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
             )}
+
+
 
             {step === 4 && (
               <div>
