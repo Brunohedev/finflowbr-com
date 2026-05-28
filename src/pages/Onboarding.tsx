@@ -89,11 +89,11 @@ const Onboarding = () => {
   // Inverted projection: given a target value, how many years to reach it?
   const yearsToTarget = useMemo(() => {
     const r = 0.006; // ~7.4% a.a.
-    if (saveLimit <= 0 || targetValue <= 0) return Infinity;
-    const ratio = 1 + (targetValue * r) / saveLimit;
+    if (moneyLeft <= 0 || targetValue <= 0) return Infinity;
+    const ratio = 1 + (targetValue * r) / moneyLeft;
     const months = Math.log(ratio) / Math.log(1 + r);
     return months / 12;
-  }, [saveLimit, targetValue]);
+  }, [moneyLeft, targetValue]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
@@ -355,7 +355,7 @@ const Onboarding = () => {
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
                     {t("Aporte deste mês")}
                   </p>
-                  <p className="text-4xl font-bold mt-1">+{fmt(saveLimit)}</p>
+                  <p className="text-4xl font-bold mt-1">+{fmt(moneyLeft)}</p>
                   <p className="text-xs opacity-90 mt-2">{t("Vai direto pra sua reserva")}</p>
                 </motion.div>
 
@@ -364,7 +364,7 @@ const Onboarding = () => {
                     {t("Próximas metas (aumentam sozinhas)")}
                   </p>
                   {GOAL_MILESTONES.slice(0, 5).map((g, i) => {
-                    const monthsNeeded = saveLimit > 0 ? Math.ceil(g / saveLimit) : 0;
+                    const monthsNeeded = moneyLeft > 0 ? Math.ceil(g / moneyLeft) : 0;
                     return (
                       <motion.div
                         key={g}
@@ -380,7 +380,7 @@ const Onboarding = () => {
                           <span className="text-sm font-medium text-emerald-950">{fmt(g)}</span>
                         </div>
                         <span className="text-[11px] text-emerald-700/70">
-                          {saveLimit > 0 ? `~${monthsNeeded} ${t("meses")}` : "—"}
+                          {moneyLeft > 0 ? `~${monthsNeeded} ${t("meses")}` : "—"}
                         </span>
                       </motion.div>
                     );
@@ -467,7 +467,7 @@ const Onboarding = () => {
                     {isFinite(yearsToTarget) ? `${yearsToTarget.toFixed(1)} ${t("anos")}` : "—"}
                   </p>
                   <p className="text-xs opacity-90 mt-2">
-                    {t("Guardando")} {fmt(saveLimit)} {t("por mês")}
+                    {t("Guardando")} {fmt(moneyLeft)} {t("por mês")}
                   </p>
                 </motion.div>
 
