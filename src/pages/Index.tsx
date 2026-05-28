@@ -17,8 +17,9 @@ import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu, BookOpen } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu, BookOpen, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import InstallPWAButton from "@/components/InstallPWAButton";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR, enUS, es as esLocale } from "date-fns/locale";
 import { Percentages } from "@/types/finance";
@@ -151,6 +152,7 @@ const Index = () => {
                   <Button variant="ghost" className="justify-start rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
                     <LogOut className="w-4 h-4 mr-2" /> {t("Sair")}
                   </Button>
+                  <InstallPWAButton variant="menu" />
                 </nav>
               </SheetContent>
             </Sheet>
