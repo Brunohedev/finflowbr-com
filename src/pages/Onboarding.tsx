@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, ArrowRight, ArrowLeft, Check, Plus, PiggyBank,
   TrendingUp, ShoppingBag, Home, Sparkles, Target, BarChart3,
+  Trophy, LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen w-full bg-gradient-to-b from-emerald-50/60 via-white to-white flex items-center justify-center p-4">
@@ -57,12 +58,37 @@ const Onboarding = () => {
   const [expenses, setExpenses] = useState<{ name: string; amount: number }[]>([
     { name: t("Aluguel"), amount: 1200 },
   ]);
+  const [years, setYears] = useState(5);
 
   const totalExpenses = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
   const moneyLeft = income - totalExpenses;
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
+
+  // Auto-normalize so ess+want+save always = 100
+  const updateSplit = (key: "ess" | "want" | "save", v: number) => {
+    setSplit((p) => {
+      const others = (["ess", "want", "save"] as const).filter((k) => k !== key);
+      const remaining = 100 - v;
+      const otherSum = p[others[0]] + p[others[1]];
+      let a: number, b: number;
+      if (otherSum === 0) { a = Math.round(remaining / 2); b = remaining - a; }
+      else {
+        a = Math.round((p[others[0]] / otherSum) * remaining);
+        b = remaining - a;
+      }
+      return { ...p, [key]: v, [others[0]]: a, [others[1]]: b } as typeof p;
+    });
+  };
+
+  // Projection: monthly savings compounded at modest 0.6%/mo (~7.4% a.a.)
+  const projection = useMemo(() => {
+    const r = 0.006;
+    const n = years * 12;
+    if (saveLimit <= 0) return 0;
+    return saveLimit * ((Math.pow(1 + r, n) - 1) / r);
+  }, [saveLimit, years]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
@@ -203,12 +229,19 @@ const Onboarding = () => {
                         className="mt-3"
                         value={[row.value]}
                         onValueChange={([v]) =>
-                          setSplit((p) => ({ ...p, [row.key]: v } as typeof split))
+                          updateSplit(row.key as "ess" | "want" | "save", v)
                         }
                         min={0} max={100} step={1}
                       />
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-xs">
+                  <span className="text-emerald-700/70 font-medium">
+                    {t("Total:")} <span className="text-emerald-950 font-bold">{split.ess + split.want + split.save}%</span>
+                  </span>
+                  <span className="text-emerald-700/60">{t("Sempre 100%")}</span>
                 </div>
 
                 <div className="mt-4 h-2 rounded-full overflow-hidden flex bg-emerald-50">
@@ -328,6 +361,105 @@ const Onboarding = () => {
             )}
 
             {step === 5 && (
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-200">
+                    <Trophy className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-xl font-bold text-emerald-950">{t("Metas que nunca acabam")}</h2>
+                </div>
+                <p className="text-sm text-emerald-900/60 mt-3">
+                  {t("Cada meta batida vira uma nova, maior. Você nunca para de evoluir.")}
+                </p>
+
+                <div className="mt-6 space-y-2.5">
+                  {[
+                    { label: t("Meta 1: Reserva de emergência"), value: 1000, done: true },
+                    { label: t("Meta 2: Viagem"), value: 3000, done: true },
+                    { label: t("Meta 3: Investimento inicial"), value: 8000, done: false },
+                    { label: t("Próxima meta..."), value: null as number | null, done: false },
+                  ].map((g, i) => (
+                    <motion.div
+                      key={g.label}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className={`flex items-center justify-between p-3 rounded-xl border ${
+                        g.done ? "bg-emerald-50 border-emerald-200" : "bg-white border-emerald-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                          g.done ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-400 border border-dashed border-emerald-200"
+                        }`}>
+                          {g.done ? <Check className="w-4 h-4" /> : <Target className="w-3.5 h-3.5" />}
+                        </div>
+                        <span className="text-sm font-medium text-emerald-950">{g.label}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-emerald-700">
+                        {g.value ? fmt(g.value) : "∞"}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100">
+                  <p className="text-xs leading-relaxed text-emerald-900/80">
+                    {t("O FinFlow mantém você motivado: a cada conquista, uma nova meta aparece automaticamente e seu dinheiro continua crescendo.")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md shadow-sky-200">
+                    <LineChart className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-xl font-bold text-emerald-950">{t("Projeção dos seus ganhos")}</h2>
+                </div>
+                <p className="text-sm text-emerald-900/60 mt-3">
+                  {t("Veja para onde seu dinheiro pode te levar mantendo o ritmo.")}
+                </p>
+
+                <motion.div
+                  key={projection}
+                  initial={{ opacity: 0.6, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
+                >
+                  <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
+                    {t("Em")} {years} {t("anos você terá")}
+                  </p>
+                  <p className="text-4xl font-bold mt-1">{fmt(projection)}</p>
+                  <p className="text-xs opacity-90 mt-2">
+                    {t("Guardando")} {fmt(saveLimit)} {t("por mês")}
+                  </p>
+                </motion.div>
+
+                <div className="mt-5 p-4 rounded-2xl bg-white border border-emerald-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-medium text-emerald-900">{t("Período")}</span>
+                    <span className="text-sm font-bold text-emerald-950">{years} {t("anos")}</span>
+                  </div>
+                  <Slider
+                    value={[years]}
+                    onValueChange={([v]) => setYears(v)}
+                    min={1} max={30} step={1}
+                  />
+                  <div className="flex justify-between text-[11px] text-emerald-700/60 mt-2">
+                    <span>1</span><span>30</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-emerald-900/60 mt-4 leading-relaxed">
+                  {t("Com consistência, você conquista objetivos maiores: casa própria, liberdade financeira, aposentadoria tranquila.")}
+                </p>
+              </div>
+            )}
+
+            {step === 7 && (
               <div className="flex flex-col items-center text-center pt-8">
                 <motion.div
                   initial={{ scale: 0.6, opacity: 0 }}
