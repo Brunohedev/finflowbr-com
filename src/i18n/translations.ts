@@ -354,6 +354,23 @@ Object.assign(es, {
   "Relatório mensal para ajustar sua rota": "Informe mensual para ajustar tu rumbo",
   "Começar": "Empezar",
   "Ir para o app": "Ir a la app",
+  "Sempre 100%": "Siempre 100%",
+  "Metas que nunca acabam": "Metas que nunca terminan",
+  "Cada meta batida vira uma nova, maior. Você nunca para de evoluir.": "Cada meta alcanzada se convierte en una nueva, mayor. Nunca dejas de crecer.",
+  "Meta 1: Reserva de emergência": "Meta 1: Fondo de emergencia",
+  "Meta 2: Viagem": "Meta 2: Viaje",
+  "Meta 3: Investimento inicial": "Meta 3: Primera inversión",
+  "Próxima meta...": "Próxima meta...",
+  "O FinFlow mantém você motivado: a cada conquista, uma nova meta aparece automaticamente e seu dinheiro continua crescendo.": "FinFlow te mantiene motivado: con cada logro, una nueva meta aparece automáticamente y tu dinero sigue creciendo.",
+  "Projeção dos seus ganhos": "Proyección de tus ganancias",
+  "Veja para onde seu dinheiro pode te levar mantendo o ritmo.": "Mira a dónde puede llevarte tu dinero manteniendo el ritmo.",
+  "Em": "En",
+  "anos você terá": "años tendrás",
+  "Guardando": "Ahorrando",
+  "por mês": "por mes",
+  "Período": "Período",
+  "anos": "años",
+  "Com consistência, você conquista objetivos maiores: casa própria, liberdade financeira, aposentadoria tranquila.": "Con constancia, logras objetivos mayores: casa propia, libertad financiera, jubilación tranquila.",
 });
 
 export const dictionaries: Record<Language, Dict> = { pt, en, es };
