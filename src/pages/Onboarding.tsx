@@ -350,9 +350,7 @@ const Onboarding = () => {
               </div>
             )}
 
-                </div>
-              </div>
-            )}
+
 
             {step === 5 && (
               <div>
