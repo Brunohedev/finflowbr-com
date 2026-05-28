@@ -176,6 +176,23 @@ Object.assign(en, {
   "Relatório mensal para ajustar sua rota": "Monthly report to fine-tune your course",
   "Começar": "Get started",
   "Ir para o app": "Go to the app",
+  "Sempre 100%": "Always 100%",
+  "Metas que nunca acabam": "Goals that never end",
+  "Cada meta batida vira uma nova, maior. Você nunca para de evoluir.": "Each goal reached becomes a new, bigger one. You never stop growing.",
+  "Meta 1: Reserva de emergência": "Goal 1: Emergency fund",
+  "Meta 2: Viagem": "Goal 2: Travel",
+  "Meta 3: Investimento inicial": "Goal 3: First investment",
+  "Próxima meta...": "Next goal...",
+  "O FinFlow mantém você motivado: a cada conquista, uma nova meta aparece automaticamente e seu dinheiro continua crescendo.": "FinFlow keeps you motivated: with every achievement, a new goal appears automatically and your money keeps growing.",
+  "Projeção dos seus ganhos": "Your earnings projection",
+  "Veja para onde seu dinheiro pode te levar mantendo o ritmo.": "See where your money can take you by keeping the pace.",
+  "Em": "In",
+  "anos você terá": "years you'll have",
+  "Guardando": "Saving",
+  "por mês": "per month",
+  "Período": "Period",
+  "anos": "years",
+  "Com consistência, você conquista objetivos maiores: casa própria, liberdade financeira, aposentadoria tranquila.": "With consistency, you achieve bigger objectives: your own home, financial freedom, peaceful retirement.",
 });
 
 const es: Dict = {
