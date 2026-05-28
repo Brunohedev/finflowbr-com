@@ -38,6 +38,15 @@ const en: Dict = {
 
   // Common
   "Configurações": "Settings",
+  "Instalar app": "Install app",
+  "Instalar o FinFlow": "Install FinFlow",
+  "Adicione o app à sua tela inicial em 2 passos": "Add the app to your home screen in 2 steps",
+  "Toque em Compartilhar": "Tap Share",
+  "Na barra inferior do Safari": "In the Safari bottom bar",
+  "Toque em 'Adicionar à Tela de Início'": "Tap 'Add to Home Screen'",
+  "Confirme para instalar": "Confirm to install",
+  "Entendi": "Got it",
+  "Fechar": "Close",
   "Sair": "Sign out",
   "Salvar": "Save",
   "Cancelar": "Cancel",
@@ -216,6 +225,15 @@ const es: Dict = {
 
   // Common
   "Configurações": "Configuración",
+  "Instalar app": "Instalar app",
+  "Instalar o FinFlow": "Instalar FinFlow",
+  "Adicione o app à sua tela inicial em 2 passos": "Añade la app a tu pantalla de inicio en 2 pasos",
+  "Toque em Compartilhar": "Toca Compartir",
+  "Na barra inferior do Safari": "En la barra inferior de Safari",
+  "Toque em 'Adicionar à Tela de Início'": "Toca 'Añadir a pantalla de inicio'",
+  "Confirme para instalar": "Confirma para instalar",
+  "Entendi": "Entendido",
+  "Fechar": "Cerrar",
   "Sair": "Salir",
   "Salvar": "Guardar",
   "Cancelar": "Cancelar",
