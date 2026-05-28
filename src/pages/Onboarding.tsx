@@ -53,18 +53,13 @@ const Onboarding = () => {
   const [step, setStep] = useState(0);
   const [income, setIncome] = useState(4000);
   const [split, setSplit] = useState({ ess: 50, want: 30, save: 20 });
-  const [expenseName, setExpenseName] = useState("");
-  const [expenseAmt, setExpenseAmt] = useState(0);
-  const [expenses, setExpenses] = useState<{ name: string; amount: number }[]>([
-    { name: t("Aluguel"), amount: 1200 },
-  ]);
-  const [years, setYears] = useState(5);
+  const [targetValue, setTargetValue] = useState(50000);
 
-  const totalExpenses = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
-  const moneyLeft = income - totalExpenses;
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
+  const totalSpent = essLimit + wantLimit;
+  const moneyLeft = income - totalSpent; // equals saveLimit by definition
 
   // Auto-normalize so ess+want+save always = 100
   const updateSplit = (key: "ess" | "want" | "save", v: number) => {
@@ -82,23 +77,21 @@ const Onboarding = () => {
     });
   };
 
-  // Projection: monthly savings compounded at modest 0.6%/mo (~7.4% a.a.)
-  const projection = useMemo(() => {
-    const r = 0.006;
-    const n = years * 12;
-    if (saveLimit <= 0) return 0;
-    return saveLimit * ((Math.pow(1 + r, n) - 1) / r);
-  }, [saveLimit, years]);
+  // Auto-increasing reserve goal milestones
+  const GOAL_MILESTONES = [1000, 3000, 5000, 10000, 20000, 50000, 100000];
+
+  // Inverted projection: given a target value, how many years to reach it?
+  const yearsToTarget = useMemo(() => {
+    const r = 0.006; // ~7.4% a.a.
+    if (saveLimit <= 0 || targetValue <= 0) return Infinity;
+    const ratio = 1 + (targetValue * r) / saveLimit;
+    const months = Math.log(ratio) / Math.log(1 + r);
+    return months / 12;
+  }, [saveLimit, targetValue]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
   const finish = () => navigate("/app");
-
-  const addExpense = () => {
-    if (!expenseName.trim() || expenseAmt <= 0) return;
-    setExpenses((prev) => [...prev, { name: expenseName.trim(), amount: expenseAmt }]);
-    setExpenseName(""); setExpenseAmt(0);
-  };
 
   return (
     <Shell>
@@ -254,111 +247,110 @@ const Onboarding = () => {
 
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-950">{t("Adicione uma despesa")}</h2>
+                <h2 className="text-xl font-bold text-emerald-950">{t("Suponha que você gastou conforme planejou")}</h2>
                 <p className="text-sm text-emerald-900/60 mt-2">
-                  {t("Cada gasto que você lança é descontado do seu mês automaticamente.")}
+                  {t("Cada categoria foi usada exatamente até o limite. Veja o que acontece.")}
                 </p>
 
-                <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-3">
-                  <Input
-                    placeholder={t("Ex: Supermercado")}
-                    value={expenseName}
-                    onChange={(e) => setExpenseName(e.target.value)}
-                    className="bg-white"
-                  />
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700/60 text-sm">$</span>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="0"
-                      value={expenseAmt || ""}
-                      onChange={(e) => setExpenseAmt(parseFloat(e.target.value) || 0)}
-                      className="pl-7 bg-white"
-                    />
-                  </div>
-                  <Button
-                    onClick={addExpense}
-                    disabled={!expenseName.trim() || expenseAmt <= 0}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> {t("Adicionar Despesa")}
-                  </Button>
+                <div className="mt-5 space-y-2.5">
+                  {[
+                    { label: t("Essenciais"), used: essLimit,  limit: essLimit,  color: "bg-emerald-500" },
+                    { label: t("Desejos"),    used: wantLimit, limit: wantLimit, color: "bg-amber-400" },
+                  ].map((c, idx) => (
+                    <div key={c.label} className="p-3 rounded-xl bg-white border border-emerald-100">
+                      <div className="flex justify-between text-xs text-emerald-900 mb-1.5">
+                        <span className="font-medium">{c.label}</span>
+                        <span className="text-emerald-700/70">{fmt(c.used)} / {fmt(c.limit)}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-emerald-50 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 0.7, ease: "easeOut", delay: idx * 0.2 }}
+                          className={`h-full ${c.color}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="mt-5 space-y-2">
-                  <AnimatePresence initial={false}>
-                    {expenses.map((e, i) => (
-                      <motion.div
-                        key={`${e.name}-${i}`}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white border border-emerald-100"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                            <ShoppingBag className="w-4 h-4" />
-                          </div>
-                          <span className="text-sm font-medium text-emerald-950">{e.name}</span>
-                        </div>
-                        <span className="text-sm font-semibold text-emerald-900">{fmt(e.amount)}</span>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                >
+                  <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
+                    {t("Sobrou no fim do mês")}
+                  </p>
+                  <p className="text-4xl font-bold mt-1">{fmt(moneyLeft)}</p>
+                  <div className="flex justify-between mt-3 text-xs opacity-90">
+                    <span>{t("Renda:")} {fmt(income)}</span>
+                    <span>{t("Gastos:")} {fmt(totalSpent)}</span>
+                  </div>
+                </motion.div>
+
+                <p className="text-xs text-emerald-900/60 mt-4 leading-relaxed">
+                  {t("Esse valor que sobra vai direto para sua reserva e investimentos.")}
+                </p>
               </div>
             )}
 
             {step === 4 && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-950">{t("Seu painel ao vivo")}</h2>
-                <p className="text-sm text-emerald-900/60 mt-2">
-                  {t("Esse é o coração do FinFlow: o quanto realmente sobra no seu mês.")}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md shadow-sky-200">
+                    <PiggyBank className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-xl font-bold text-emerald-950">{t("Sua reserva cresce todo mês")}</h2>
+                </div>
+                <p className="text-sm text-emerald-900/60 mt-3">
+                  {t("O que sobra vai para sua reserva. A meta começa pequena e aumenta sozinha a cada conquista.")}
                 </p>
 
                 <motion.div
                   initial={{ scale: 0.96, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
                 >
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
-                    {t("Dinheiro Restante Este Mês")}
+                    {t("Aporte deste mês")}
                   </p>
-                  <p className="text-4xl font-bold mt-1">{fmt(moneyLeft)}</p>
-                  <div className="flex justify-between mt-3 text-xs opacity-90">
-                    <span>{t("Renda:")} {fmt(income)}</span>
-                    <span>{t("Gastos:")} {fmt(totalExpenses)}</span>
-                  </div>
+                  <p className="text-4xl font-bold mt-1">+{fmt(saveLimit)}</p>
+                  <p className="text-xs opacity-90 mt-2">{t("Vai direto pra sua reserva")}</p>
                 </motion.div>
 
-                <div className="mt-5 space-y-2.5">
-                  {[
-                    { label: t("Essenciais"), used: Math.min(totalExpenses, essLimit), limit: essLimit, color: "bg-emerald-500" },
-                    { label: t("Desejos"), used: 0, limit: wantLimit, color: "bg-amber-400" },
-                    { label: t("Reserva / Investimentos"), used: 0, limit: saveLimit, color: "bg-sky-500" },
-                  ].map((c) => {
-                    const pct = c.limit > 0 ? Math.min(100, (c.used / c.limit) * 100) : 0;
+                <div className="mt-5 space-y-2">
+                  <p className="text-xs font-semibold text-emerald-900/80 uppercase tracking-wide">
+                    {t("Próximas metas (aumentam sozinhas)")}
+                  </p>
+                  {GOAL_MILESTONES.slice(0, 5).map((g, i) => {
+                    const monthsNeeded = saveLimit > 0 ? Math.ceil(g / saveLimit) : 0;
                     return (
-                      <div key={c.label} className="p-3 rounded-xl bg-white border border-emerald-100">
-                        <div className="flex justify-between text-xs text-emerald-900 mb-1.5">
-                          <span className="font-medium">{c.label}</span>
-                          <span className="text-emerald-700/70">{fmt(c.used)} / {fmt(c.limit)}</span>
+                      <motion.div
+                        key={g}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        className="flex items-center justify-between p-3 rounded-xl bg-white border border-emerald-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <Target className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-sm font-medium text-emerald-950">{fmt(g)}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-emerald-50 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            className={`h-full ${c.color}`}
-                          />
-                        </div>
-                      </div>
+                        <span className="text-[11px] text-emerald-700/70">
+                          {saveLimit > 0 ? `~${monthsNeeded} ${t("meses")}` : "—"}
+                        </span>
+                      </motion.div>
                     );
                   })}
                 </div>
               </div>
             )}
+
+
 
             {step === 5 && (
               <div>
@@ -420,19 +412,21 @@ const Onboarding = () => {
                   <h2 className="text-xl font-bold text-emerald-950">{t("Projeção dos seus ganhos")}</h2>
                 </div>
                 <p className="text-sm text-emerald-900/60 mt-3">
-                  {t("Veja para onde seu dinheiro pode te levar mantendo o ritmo.")}
+                  {t("Defina um valor que você quer alcançar e veja em quanto tempo chega lá.")}
                 </p>
 
                 <motion.div
-                  key={projection}
+                  key={targetValue}
                   initial={{ opacity: 0.6, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
                 >
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
-                    {t("Em")} {years} {t("anos você terá")}
+                    {t("Para juntar")} {fmt(targetValue)}
                   </p>
-                  <p className="text-4xl font-bold mt-1">{fmt(projection)}</p>
+                  <p className="text-4xl font-bold mt-1">
+                    {isFinite(yearsToTarget) ? `${yearsToTarget.toFixed(1)} ${t("anos")}` : "—"}
+                  </p>
                   <p className="text-xs opacity-90 mt-2">
                     {t("Guardando")} {fmt(saveLimit)} {t("por mês")}
                   </p>
@@ -440,16 +434,16 @@ const Onboarding = () => {
 
                 <div className="mt-5 p-4 rounded-2xl bg-white border border-emerald-100">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-medium text-emerald-900">{t("Período")}</span>
-                    <span className="text-sm font-bold text-emerald-950">{years} {t("anos")}</span>
+                    <span className="text-xs font-medium text-emerald-900">{t("Meta financeira")}</span>
+                    <span className="text-sm font-bold text-emerald-950">{fmt(targetValue)}</span>
                   </div>
                   <Slider
-                    value={[years]}
-                    onValueChange={([v]) => setYears(v)}
-                    min={1} max={30} step={1}
+                    value={[targetValue]}
+                    onValueChange={([v]) => setTargetValue(v)}
+                    min={1000} max={500000} step={1000}
                   />
                   <div className="flex justify-between text-[11px] text-emerald-700/60 mt-2">
-                    <span>1</span><span>30</span>
+                    <span>$1k</span><span>$500k</span>
                   </div>
                 </div>
 
