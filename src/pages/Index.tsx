@@ -17,7 +17,7 @@ import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR, enUS, es as esLocale } from "date-fns/locale";
@@ -136,6 +136,9 @@ const Index = () => {
                   <div className="px-2 py-1.5">
                     <LanguageSwitcher />
                   </div>
+                  <Button variant="ghost" className="justify-start rounded-xl" onClick={() => navigate("/onboarding")}>
+                    <BookOpen className="w-4 h-4 mr-2" /> {t("Como funciona")}
+                  </Button>
                   <Button variant="ghost" className="justify-start rounded-xl" onClick={() => navigate("/banco")}>
                     <Building2 className="w-4 h-4 mr-2" /> {t("Conectar meu banco")}
                   </Button>
