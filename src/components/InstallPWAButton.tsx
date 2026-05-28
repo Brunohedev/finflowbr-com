@@ -97,6 +97,134 @@ const InstallPWAButton = ({ variant = "floating" }: InstallPWAButtonProps) => {
     setVisible(false);
   };
 
+  if (!visible) {
+    return (
+      <Dialog open={iosModalOpen} onOpenChange={setIosModalOpen}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">
+              {t("Instalar o FinFlow")}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {t("Adicione o app à sua tela inicial em 2 passos")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-2 space-y-3">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.05 }}
+              className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-4"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                1
+              </div>
+              <div className="flex-1 text-sm">
+                <p className="font-medium">{t("Toque em Compartilhar")}</p>
+                <p className="text-muted-foreground">
+                  {t("Na barra inferior do Safari")}
+                </p>
+              </div>
+              <Share className="h-5 w-5 text-primary" />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 }}
+              className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-4"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                2
+              </div>
+              <div className="flex-1 text-sm">
+                <p className="font-medium">
+                  {t("Toque em 'Adicionar à Tela de Início'")}
+                </p>
+                <p className="text-muted-foreground">
+                  {t("Confirme para instalar")}
+                </p>
+              </div>
+              <Plus className="h-5 w-5 text-primary" />
+            </motion.div>
+          </div>
+
+          <Button onClick={() => setIosModalOpen(false)} className="mt-4 w-full rounded-full">
+            {t("Entendi")}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (variant === "menu") {
+    return (
+      <>
+        <Button variant="ghost" className="justify-start rounded-xl w-full" onClick={handleClick}>
+          <Download className="w-4 h-4 mr-2" /> {t("Instalar app")}
+        </Button>
+
+        <Dialog open={iosModalOpen} onOpenChange={setIosModalOpen}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl">
+                {t("Instalar o FinFlow")}
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                {t("Adicione o app à sua tela inicial em 2 passos")}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-2 space-y-3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 }}
+                className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-4"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                  1
+                </div>
+                <div className="flex-1 text-sm">
+                  <p className="font-medium">{t("Toque em Compartilhar")}</p>
+                  <p className="text-muted-foreground">
+                    {t("Na barra inferior do Safari")}
+                  </p>
+                </div>
+                <Share className="h-5 w-5 text-primary" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+                className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-4"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                  2
+                </div>
+                <div className="flex-1 text-sm">
+                  <p className="font-medium">
+                    {t("Toque em 'Adicionar à Tela de Início'")}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {t("Confirme para instalar")}
+                  </p>
+                </div>
+                <Plus className="h-5 w-5 text-primary" />
+              </motion.div>
+            </div>
+
+            <Button onClick={() => setIosModalOpen(false)} className="mt-4 w-full rounded-full">
+              {t("Entendi")}
+            </Button>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
   return (
     <>
       <AnimatePresence>
