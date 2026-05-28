@@ -183,15 +183,21 @@ const Onboarding = () => {
                   >
                     {fmt(income)}
                   </motion.p>
-                  <Slider
-                    className="mt-5"
-                    value={[income]}
-                    onValueChange={([v]) => setIncome(v)}
-                    min={500} max={20000} step={100}
+                  <Input
+                    type="number"
+                    min={0}
+                    inputMode="decimal"
+                    value={income}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setIncome(isNaN(v) || v < 0 ? 0 : v);
+                    }}
+                    className="mt-4 text-lg font-semibold h-12 bg-white border-emerald-200 focus-visible:ring-emerald-400"
+                    placeholder="0"
                   />
-                  <div className="flex justify-between text-[11px] text-emerald-700/60 mt-2">
-                    <span>$500</span><span>$20.000</span>
-                  </div>
+                  <p className="text-[11px] text-emerald-700/60 mt-2">
+                    {t("Digite qualquer valor — sem limite.")}
+                  </p>
                 </div>
 
                 <p className="text-xs text-emerald-900/50 mt-5 leading-relaxed">
