@@ -412,19 +412,21 @@ const Onboarding = () => {
                   <h2 className="text-xl font-bold text-emerald-950">{t("Projeção dos seus ganhos")}</h2>
                 </div>
                 <p className="text-sm text-emerald-900/60 mt-3">
-                  {t("Veja para onde seu dinheiro pode te levar mantendo o ritmo.")}
+                  {t("Defina um valor que você quer alcançar e veja em quanto tempo chega lá.")}
                 </p>
 
                 <motion.div
-                  key={projection}
+                  key={targetValue}
                   initial={{ opacity: 0.6, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
                 >
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
-                    {t("Em")} {years} {t("anos você terá")}
+                    {t("Para juntar")} {fmt(targetValue)}
                   </p>
-                  <p className="text-4xl font-bold mt-1">{fmt(projection)}</p>
+                  <p className="text-4xl font-bold mt-1">
+                    {isFinite(yearsToTarget) ? `${yearsToTarget.toFixed(1)} ${t("anos")}` : "—"}
+                  </p>
                   <p className="text-xs opacity-90 mt-2">
                     {t("Guardando")} {fmt(saveLimit)} {t("por mês")}
                   </p>
@@ -432,16 +434,16 @@ const Onboarding = () => {
 
                 <div className="mt-5 p-4 rounded-2xl bg-white border border-emerald-100">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-medium text-emerald-900">{t("Período")}</span>
-                    <span className="text-sm font-bold text-emerald-950">{years} {t("anos")}</span>
+                    <span className="text-xs font-medium text-emerald-900">{t("Meta financeira")}</span>
+                    <span className="text-sm font-bold text-emerald-950">{fmt(targetValue)}</span>
                   </div>
                   <Slider
-                    value={[years]}
-                    onValueChange={([v]) => setYears(v)}
-                    min={1} max={30} step={1}
+                    value={[targetValue]}
+                    onValueChange={([v]) => setTargetValue(v)}
+                    min={1000} max={500000} step={1000}
                   />
                   <div className="flex justify-between text-[11px] text-emerald-700/60 mt-2">
-                    <span>1</span><span>30</span>
+                    <span>$1k</span><span>$500k</span>
                   </div>
                 </div>
 
