@@ -247,108 +247,109 @@ const Onboarding = () => {
 
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-950">{t("Adicione uma despesa")}</h2>
+                <h2 className="text-xl font-bold text-emerald-950">{t("Suponha que você gastou conforme planejou")}</h2>
                 <p className="text-sm text-emerald-900/60 mt-2">
-                  {t("Cada gasto que você lança é descontado do seu mês automaticamente.")}
+                  {t("Cada categoria foi usada exatamente até o limite. Veja o que acontece.")}
                 </p>
 
-                <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-3">
-                  <Input
-                    placeholder={t("Ex: Supermercado")}
-                    value={expenseName}
-                    onChange={(e) => setExpenseName(e.target.value)}
-                    className="bg-white"
-                  />
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700/60 text-sm">$</span>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="0"
-                      value={expenseAmt || ""}
-                      onChange={(e) => setExpenseAmt(parseFloat(e.target.value) || 0)}
-                      className="pl-7 bg-white"
-                    />
-                  </div>
-                  <Button
-                    onClick={addExpense}
-                    disabled={!expenseName.trim() || expenseAmt <= 0}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> {t("Adicionar Despesa")}
-                  </Button>
+                <div className="mt-5 space-y-2.5">
+                  {[
+                    { label: t("Essenciais"), used: essLimit,  limit: essLimit,  color: "bg-emerald-500" },
+                    { label: t("Desejos"),    used: wantLimit, limit: wantLimit, color: "bg-amber-400" },
+                  ].map((c, idx) => (
+                    <div key={c.label} className="p-3 rounded-xl bg-white border border-emerald-100">
+                      <div className="flex justify-between text-xs text-emerald-900 mb-1.5">
+                        <span className="font-medium">{c.label}</span>
+                        <span className="text-emerald-700/70">{fmt(c.used)} / {fmt(c.limit)}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-emerald-50 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 0.7, ease: "easeOut", delay: idx * 0.2 }}
+                          className={`h-full ${c.color}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="mt-5 space-y-2">
-                  <AnimatePresence initial={false}>
-                    {expenses.map((e, i) => (
-                      <motion.div
-                        key={`${e.name}-${i}`}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white border border-emerald-100"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                            <ShoppingBag className="w-4 h-4" />
-                          </div>
-                          <span className="text-sm font-medium text-emerald-950">{e.name}</span>
-                        </div>
-                        <span className="text-sm font-semibold text-emerald-900">{fmt(e.amount)}</span>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                >
+                  <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
+                    {t("Sobrou no fim do mês")}
+                  </p>
+                  <p className="text-4xl font-bold mt-1">{fmt(moneyLeft)}</p>
+                  <div className="flex justify-between mt-3 text-xs opacity-90">
+                    <span>{t("Renda:")} {fmt(income)}</span>
+                    <span>{t("Gastos:")} {fmt(totalSpent)}</span>
+                  </div>
+                </motion.div>
+
+                <p className="text-xs text-emerald-900/60 mt-4 leading-relaxed">
+                  {t("Esse valor que sobra vai direto para sua reserva e investimentos.")}
+                </p>
               </div>
             )}
 
             {step === 4 && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-950">{t("Seu painel ao vivo")}</h2>
-                <p className="text-sm text-emerald-900/60 mt-2">
-                  {t("Esse é o coração do FinFlow: o quanto realmente sobra no seu mês.")}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md shadow-sky-200">
+                    <PiggyBank className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-xl font-bold text-emerald-950">{t("Sua reserva cresce todo mês")}</h2>
+                </div>
+                <p className="text-sm text-emerald-900/60 mt-3">
+                  {t("O que sobra vai para sua reserva. A meta começa pequena e aumenta sozinha a cada conquista.")}
                 </p>
 
                 <motion.div
                   initial={{ scale: 0.96, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                  className="mt-5 p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
                 >
                   <p className="text-[11px] uppercase tracking-wider opacity-80 font-semibold">
-                    {t("Dinheiro Restante Este Mês")}
+                    {t("Aporte deste mês")}
                   </p>
-                  <p className="text-4xl font-bold mt-1">{fmt(moneyLeft)}</p>
-                  <div className="flex justify-between mt-3 text-xs opacity-90">
-                    <span>{t("Renda:")} {fmt(income)}</span>
-                    <span>{t("Gastos:")} {fmt(totalExpenses)}</span>
-                  </div>
+                  <p className="text-4xl font-bold mt-1">+{fmt(saveLimit)}</p>
+                  <p className="text-xs opacity-90 mt-2">{t("Vai direto pra sua reserva")}</p>
                 </motion.div>
 
-                <div className="mt-5 space-y-2.5">
-                  {[
-                    { label: t("Essenciais"), used: Math.min(totalExpenses, essLimit), limit: essLimit, color: "bg-emerald-500" },
-                    { label: t("Desejos"), used: 0, limit: wantLimit, color: "bg-amber-400" },
-                    { label: t("Reserva / Investimentos"), used: 0, limit: saveLimit, color: "bg-sky-500" },
-                  ].map((c) => {
-                    const pct = c.limit > 0 ? Math.min(100, (c.used / c.limit) * 100) : 0;
+                <div className="mt-5 space-y-2">
+                  <p className="text-xs font-semibold text-emerald-900/80 uppercase tracking-wide">
+                    {t("Próximas metas (aumentam sozinhas)")}
+                  </p>
+                  {GOAL_MILESTONES.slice(0, 5).map((g, i) => {
+                    const monthsNeeded = saveLimit > 0 ? Math.ceil(g / saveLimit) : 0;
                     return (
-                      <div key={c.label} className="p-3 rounded-xl bg-white border border-emerald-100">
-                        <div className="flex justify-between text-xs text-emerald-900 mb-1.5">
-                          <span className="font-medium">{c.label}</span>
-                          <span className="text-emerald-700/70">{fmt(c.used)} / {fmt(c.limit)}</span>
+                      <motion.div
+                        key={g}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        className="flex items-center justify-between p-3 rounded-xl bg-white border border-emerald-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <Target className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-sm font-medium text-emerald-950">{fmt(g)}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-emerald-50 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            className={`h-full ${c.color}`}
-                          />
-                        </div>
-                      </div>
+                        <span className="text-[11px] text-emerald-700/70">
+                          {saveLimit > 0 ? `~${monthsNeeded} ${t("meses")}` : "—"}
+                        </span>
+                      </motion.div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
                 </div>
               </div>
             )}
