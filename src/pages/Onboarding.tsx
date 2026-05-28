@@ -58,12 +58,37 @@ const Onboarding = () => {
   const [expenses, setExpenses] = useState<{ name: string; amount: number }[]>([
     { name: t("Aluguel"), amount: 1200 },
   ]);
+  const [years, setYears] = useState(5);
 
   const totalExpenses = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
   const moneyLeft = income - totalExpenses;
   const essLimit  = (income * split.ess) / 100;
   const wantLimit = (income * split.want) / 100;
   const saveLimit = (income * split.save) / 100;
+
+  // Auto-normalize so ess+want+save always = 100
+  const updateSplit = (key: "ess" | "want" | "save", v: number) => {
+    setSplit((p) => {
+      const others = (["ess", "want", "save"] as const).filter((k) => k !== key);
+      const remaining = 100 - v;
+      const otherSum = p[others[0]] + p[others[1]];
+      let a: number, b: number;
+      if (otherSum === 0) { a = Math.round(remaining / 2); b = remaining - a; }
+      else {
+        a = Math.round((p[others[0]] / otherSum) * remaining);
+        b = remaining - a;
+      }
+      return { ...p, [key]: v, [others[0]]: a, [others[1]]: b } as typeof p;
+    });
+  };
+
+  // Projection: monthly savings compounded at modest 0.6%/mo (~7.4% a.a.)
+  const projection = useMemo(() => {
+    const r = 0.006;
+    const n = years * 12;
+    if (saveLimit <= 0) return 0;
+    return saveLimit * ((Math.pow(1 + r, n) - 1) / r);
+  }, [saveLimit, years]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
