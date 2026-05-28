@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 
+interface InstallPWAButtonProps {
+  variant?: "floating" | "menu";
+}
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -35,7 +39,7 @@ const isInIframe = () => {
 const DISMISS_KEY = "finflow_install_dismissed_at";
 const DISMISS_HOURS = 24;
 
-const InstallPWAButton = () => {
+const InstallPWAButton = ({ variant = "floating" }: InstallPWAButtonProps) => {
   const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
