@@ -229,12 +229,19 @@ const Onboarding = () => {
                         className="mt-3"
                         value={[row.value]}
                         onValueChange={([v]) =>
-                          setSplit((p) => ({ ...p, [row.key]: v } as typeof split))
+                          updateSplit(row.key as "ess" | "want" | "save", v)
                         }
                         min={0} max={100} step={1}
                       />
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-xs">
+                  <span className="text-emerald-700/70 font-medium">
+                    {t("Total:")} <span className="text-emerald-950 font-bold">{split.ess + split.want + split.save}%</span>
+                  </span>
+                  <span className="text-emerald-700/60">{t("Sempre 100%")}</span>
                 </div>
 
                 <div className="mt-4 h-2 rounded-full overflow-hidden flex bg-emerald-50">
