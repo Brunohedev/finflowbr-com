@@ -149,10 +149,10 @@ const Index = () => {
                   <Button variant="ghost" className="justify-start rounded-xl" onClick={() => setView(view === "report" ? "dashboard" : "report")}>
                     <CalendarDays className="w-4 h-4 mr-2" /> {t("Relatório Mensal")}
                   </Button>
+                  <InstallPWAButton variant="menu" />
                   <Button variant="ghost" className="justify-start rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
                     <LogOut className="w-4 h-4 mr-2" /> {t("Sair")}
                   </Button>
-                  <InstallPWAButton variant="menu" />
                 </nav>
               </SheetContent>
             </Sheet>
