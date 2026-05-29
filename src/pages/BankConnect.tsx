@@ -57,6 +57,11 @@ const catLabel = (id: string) => CATS.find((c) => c.id === id)?.label || id;
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
 
+const maskPlaidToken = (token: string | null | undefined) => {
+  if (!token) return null;
+  return `${token.slice(0, 18)}…${token.slice(-6)}`;
+};
+
 type Subcat = { id: string; name: string };
 
 const BankConnect = () => {
@@ -126,21 +131,38 @@ const BankConnect = () => {
   const openPlaidHandler = useCallback(
     (linkToken: string, receivedRedirectUri?: string) => {
       if (!user || !window.Plaid) return;
-      console.log("[Plaid] Opening Link", { linkToken, receivedRedirectUri: receivedRedirectUri ?? null });
+      console.log("[Plaid] Opening Link", {
+        linkToken: maskPlaidToken(linkToken),
+        linkTokenPrefix: linkToken.split("-").slice(0, 2).join("-"),
+        receivedRedirectUri: receivedRedirectUri ?? null,
+        frontendUrl: window.location.href,
+      });
       const handler = window.Plaid.create({
         token: linkToken,
         ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
-        onSuccess: async (public_token: string) => {
+        onSuccess: async (public_token: string, metadata: any) => {
+          console.log("[Plaid] Link onSuccess", {
+            hasPublicToken: Boolean(public_token),
+            publicToken: maskPlaidToken(public_token),
+            publicTokenPrefix: public_token?.split("-").slice(0, 2).join("-") ?? null,
+            publicTokenLength: public_token?.length ?? 0,
+            metadata,
+          });
           try {
-            const { error: exErr } = await supabase.functions.invoke("exchange-public-token", {
+            const { data: exchangeData, error: exErr } = await supabase.functions.invoke("exchange-public-token", {
               body: { public_token, user_id: user.id },
             });
-            if (exErr) throw exErr;
+            console.log("[Plaid] exchange-public-token result", { exchangeData, error: exErr });
+            if (exErr) {
+              console.error("[Plaid] exchange-public-token error", exErr);
+              throw exErr;
+            }
             toast.success("Banco conectado com sucesso!");
             sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
             localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
             await loadPending();
           } catch (e: any) {
+            console.error("[Plaid] onSuccess exchange failed", e);
             toast.error(e?.message || "Erro ao trocar token");
           }
         },
@@ -168,7 +190,12 @@ const BankConnect = () => {
         body: { user_id: user.id },
       });
       if (error || !data?.link_token) throw new Error(error?.message || "Falha ao gerar link_token");
-      console.log("[Plaid] link_token created", data.link_token);
+      console.log("[Plaid] create-link-token result", {
+        hasLinkToken: Boolean(data.link_token),
+        linkToken: maskPlaidToken(data.link_token),
+        linkTokenPrefix: data.link_token.split("-").slice(0, 2).join("-"),
+        rawData: data,
+      });
       sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
       localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
       const params = new URLSearchParams(window.location.search);
