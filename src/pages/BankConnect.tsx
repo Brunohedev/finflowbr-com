@@ -295,10 +295,15 @@ const BankConnect = () => {
         hasLinkToken: Boolean(data.link_token),
         linkToken: maskPlaidToken(data.link_token),
         linkTokenPrefix: data.link_token.split("-").slice(0, 2).join("-"),
-        rawData: data,
+        plaidEnv: data.plaid_env ?? null,
+        countryCodes: data.country_codes ?? null,
+        language: data.language ?? null,
+        expiration: data.expiration ?? null,
+        rawData: sanitizePlaidPayload(data),
       });
-      sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
-      localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
+      const storedToken = encodeStoredPlaidLinkToken(data.link_token, data.expiration);
+      sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, storedToken);
+      localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, storedToken);
       const params = new URLSearchParams(window.location.search);
       const hasOAuth = params.get("oauth_state_id");
       openPlaidHandler(data.link_token, hasOAuth ? window.location.href : undefined);
@@ -314,9 +319,7 @@ const BankConnect = () => {
     const params = new URLSearchParams(window.location.search);
     const oauthStateId = params.get("oauth_state_id");
     if (!oauthStateId) return;
-    const storedToken =
-      sessionStorage.getItem(PLAID_TOKEN_STORAGE_KEY) ||
-      localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
+    const storedToken = readStoredPlaidLinkToken(PLAID_TOKEN_STORAGE_KEY);
     if (!storedToken) return;
 
     const tryOpen = () => {
