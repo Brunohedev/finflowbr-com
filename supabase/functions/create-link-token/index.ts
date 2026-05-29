@@ -29,15 +29,16 @@ Deno.serve(async (req) => {
 
     const body: any = {
       client_id: clientId,
+    const body: any = {
+      client_id: clientId,
       secret,
       client_name: 'FinFlow',
       language: 'pt',
       country_codes: ['US'],
       user: { client_user_id: userId },
       products: ['transactions'],
+      redirect_uri: 'https://finflowbr.com/banco',
     };
-    const webhook = Deno.env.get('PLAID_WEBHOOK_URL');
-    if (webhook) body.webhook = webhook;
 
     const res = await fetch(`${baseUrl}/link/token/create`, {
       method: 'POST',
