@@ -121,10 +121,12 @@ const BankConnect = () => {
   }, [loadPending]);
 
   const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
+  const PLAID_REDIRECT_URI = "https://finflowbr.com/banco";
 
   const openPlaidHandler = useCallback(
     (linkToken: string, receivedRedirectUri?: string) => {
       if (!user || !window.Plaid) return;
+      console.log("[Plaid] Opening Link", { linkToken, receivedRedirectUri: receivedRedirectUri ?? null });
       const handler = window.Plaid.create({
         token: linkToken,
         ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
@@ -135,6 +137,7 @@ const BankConnect = () => {
             });
             if (exErr) throw exErr;
             toast.success("Banco conectado com sucesso!");
+            sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
             localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
             await loadPending();
           } catch (e: any) {
@@ -143,6 +146,7 @@ const BankConnect = () => {
         },
         onExit: (err: any) => {
           if (err) toast.error(err.display_message || "Conexão cancelada");
+          sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
           localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
         },
       });
@@ -163,8 +167,12 @@ const BankConnect = () => {
         body: { user_id: user.id },
       });
       if (error || !data?.link_token) throw new Error(error?.message || "Falha ao gerar link_token");
+      console.log("[Plaid] link_token created", data.link_token);
+      sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
       localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
-      openPlaidHandler(data.link_token);
+      const params = new URLSearchParams(window.location.search);
+      const hasOAuth = params.get("oauth_state_id");
+      openPlaidHandler(data.link_token, hasOAuth ? window.location.href : undefined);
     } catch (e: any) {
       toast.error(e?.message || "Erro ao iniciar Plaid");
     } finally {
@@ -177,7 +185,9 @@ const BankConnect = () => {
     const params = new URLSearchParams(window.location.search);
     const oauthStateId = params.get("oauth_state_id");
     if (!oauthStateId) return;
-    const storedToken = localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
+    const storedToken =
+      sessionStorage.getItem(PLAID_TOKEN_STORAGE_KEY) ||
+      localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
     if (!storedToken) return;
 
     const tryOpen = () => {
