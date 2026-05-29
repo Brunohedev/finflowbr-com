@@ -77,7 +77,13 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       return new Response(JSON.stringify({ error: data }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    return new Response(JSON.stringify({ link_token: data.link_token }), {
+    return new Response(JSON.stringify({
+      link_token: data.link_token,
+      plaid_env: PLAID_EFFECTIVE_ENV,
+      plaid_base_url: PLAID_BASE_URL,
+      redirect_uri: PLAID_REDIRECT_URI,
+      webhook_configured: Boolean(webhookUrl),
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
