@@ -215,23 +215,33 @@ const BankConnect = () => {
         linkTokenPrefix: linkToken.split("-").slice(0, 2).join("-"),
         receivedRedirectUri: receivedRedirectUri ?? null,
         frontendUrl: window.location.href,
+        usingStoredOAuthToken: Boolean(receivedRedirectUri),
       });
       const handler = window.Plaid.create({
         token: linkToken,
         ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
         onSuccess: async (public_token: string, metadata: any) => {
           console.log("[Plaid] Link onSuccess", {
+            ...plaidDiagnostics(null, metadata),
             hasPublicToken: Boolean(public_token),
             publicToken: maskPlaidToken(public_token),
             publicTokenPrefix: public_token?.split("-").slice(0, 2).join("-") ?? null,
             publicTokenLength: public_token?.length ?? 0,
-            metadata,
+            metadata: sanitizePlaidPayload(metadata),
           });
           try {
             const { data: exchangeData, error: exErr } = await supabase.functions.invoke("exchange-public-token", {
               body: { public_token, user_id: user.id },
             });
-            console.log("[Plaid] exchange-public-token result", { exchangeData, error: exErr });
+            console.log("[Plaid] exchange-public-token result", {
+              exchangeData: sanitizePlaidPayload(exchangeData),
+              error: exErr,
+              hasAccessToken: Boolean(exchangeData?.has_access_token),
+              itemId: exchangeData?.item_id ?? null,
+              transactionsOk: exchangeData?.transactions_ok ?? null,
+              transactionsErrorCode: exchangeData?.transactions_error_code ?? null,
+              transactionsErrorMessage: exchangeData?.transactions_error_message ?? null,
+            });
             if (exErr) {
               console.error("[Plaid] exchange-public-token error", exErr);
               throw exErr;
@@ -246,7 +256,19 @@ const BankConnect = () => {
           }
         },
         onExit: (err: any, metadata: any) => {
-          console.log("[Plaid] Link onExit", { err, metadata });
+          const diagnostics = plaidDiagnostics(err, metadata);
+          console.log("[Plaid] Link onExit", {
+            ...diagnostics,
+            err: sanitizePlaidPayload(err),
+            metadata: sanitizePlaidPayload(metadata),
+          });
+          console.table({
+            institution_name: diagnostics.institutionName,
+            status: diagnostics.status,
+            request_id: diagnostics.requestId,
+            error_code: diagnostics.errorCode,
+            error_message: diagnostics.errorMessage,
+          });
           if (err) toast.error(err.display_message || "Conexão cancelada");
           sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
           localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
