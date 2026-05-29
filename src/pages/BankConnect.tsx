@@ -121,11 +121,6 @@ const BankConnect = () => {
   }, [loadPending]);
 
   const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
-
-  const openPlaidHandler = useCallback(
-    (linkToken: string, receivedRedirectUri?: string) => {
-      if (!user || !window.Plaid) return;
-  const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
   const PLAID_REDIRECT_URI = "https://finflowbr.com/banco";
 
   const openPlaidHandler = useCallback(
