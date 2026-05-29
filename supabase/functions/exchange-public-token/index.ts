@@ -128,7 +128,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, imported: txData?.transactions?.length || 0 }), {
+    return new Response(JSON.stringify({
+      success: true,
+      imported: txData?.transactions?.length || 0,
+      plaid_env: PLAID_EFFECTIVE_ENV,
+      item_id: exchangeData?.item_id ?? null,
+      transactions_ok: txRes.ok,
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
