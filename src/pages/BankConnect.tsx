@@ -62,6 +62,85 @@ const maskPlaidToken = (token: string | null | undefined) => {
   return `${token.slice(0, 18)}…${token.slice(-6)}`;
 };
 
+const PLAID_ERROR_CODES_TO_WATCH = [
+  "PRODUCTS_NOT_READY",
+  "INVALID_PRODUCTS",
+  "OAUTH",
+  "ITEM_LOGIN_REQUIRED",
+  "INVALID_CREDENTIALS",
+  "INVALID_REDIRECT_URI",
+  "INVALID_ENVIRONMENT",
+];
+
+const sanitizePlaidPayload = (value: any): any => {
+  if (Array.isArray(value)) return value.map(sanitizePlaidPayload);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes("secret")) return [key, "[redacted]"];
+      if (lowerKey.includes("token")) return [key, maskPlaidToken(String(entry))];
+      return [key, sanitizePlaidPayload(entry)];
+    })
+  );
+};
+
+const plaidDiagnostics = (err: any, metadata?: any) => {
+  const errorCode = err?.error_code ?? err?.errorCode ?? null;
+  const errorMessage = err?.error_message ?? err?.errorMessage ?? err?.display_message ?? null;
+  return {
+    institutionName: metadata?.institution?.name ?? metadata?.institution_name ?? null,
+    institutionId: metadata?.institution?.institution_id ?? metadata?.institution_id ?? null,
+    status: metadata?.status ?? metadata?.exit_status ?? null,
+    requestId: metadata?.request_id ?? err?.request_id ?? null,
+    linkSessionId: metadata?.link_session_id ?? null,
+    errorType: err?.error_type ?? err?.errorType ?? null,
+    errorCode,
+    errorMessage,
+    displayMessage: err?.display_message ?? null,
+    matchedWatchedError: PLAID_ERROR_CODES_TO_WATCH.find((code) =>
+      String(errorCode ?? "").includes(code) || String(errorMessage ?? "").includes(code)
+    ) ?? null,
+    manuallyCancelled: !err,
+    automaticallyExitedByPlaid: Boolean(err),
+  };
+};
+
+type StoredPlaidLinkToken = {
+  linkToken: string;
+  expiration?: string | null;
+  createdAt: number;
+};
+
+const encodeStoredPlaidLinkToken = (linkToken: string, expiration?: string | null) =>
+  JSON.stringify({ linkToken, expiration: expiration ?? null, createdAt: Date.now() } satisfies StoredPlaidLinkToken);
+
+const readStoredPlaidLinkToken = (key: string) => {
+  const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as StoredPlaidLinkToken;
+    const expiresAt = parsed.expiration ? new Date(parsed.expiration).getTime() : null;
+    const isExpired = expiresAt ? expiresAt <= Date.now() + 30_000 : true;
+    if (!parsed.linkToken || isExpired) {
+      console.warn("[Plaid] Stored link_token expired or invalid", {
+        hasLinkToken: Boolean(parsed.linkToken),
+        expiration: parsed.expiration ?? null,
+        now: new Date().toISOString(),
+      });
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+      return null;
+    }
+    return parsed.linkToken;
+  } catch {
+    console.warn("[Plaid] Ignoring legacy/unknown stored link_token format to avoid expired token reuse");
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+    return null;
+  }
+};
+
 type Subcat = { id: string; name: string };
 
 const BankConnect = () => {
