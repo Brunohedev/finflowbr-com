@@ -144,7 +144,8 @@ const BankConnect = () => {
             toast.error(e?.message || "Erro ao trocar token");
           }
         },
-        onExit: (err: any) => {
+        onExit: (err: any, metadata: any) => {
+          console.log("[Plaid] Link onExit", { err, metadata });
           if (err) toast.error(err.display_message || "Conexão cancelada");
           sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
           localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
