@@ -29,8 +29,6 @@ Deno.serve(async (req) => {
 
     const body: any = {
       client_id: clientId,
-    const body: any = {
-      client_id: clientId,
       secret,
       client_name: 'FinFlow',
       language: 'pt',
