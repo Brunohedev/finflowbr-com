@@ -10,6 +10,40 @@ const maskToken = (value: string | null | undefined) => {
   return `${value.slice(0, 12)}…${value.slice(-6)}`;
 };
 
+const PLAID_ERROR_CODES_TO_WATCH = [
+  'PRODUCTS_NOT_READY',
+  'INVALID_PRODUCTS',
+  'OAUTH',
+  'ITEM_LOGIN_REQUIRED',
+  'INVALID_CREDENTIALS',
+  'INVALID_REDIRECT_URI',
+  'INVALID_ENVIRONMENT',
+];
+
+const sanitizePlaidPayload = (value: any): any => {
+  if (Array.isArray(value)) return value.map(sanitizePlaidPayload);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('secret')) return [key, '[redacted]'];
+      if (lowerKey.includes('token')) return [key, maskToken(String(entry))];
+      return [key, sanitizePlaidPayload(entry)];
+    })
+  );
+};
+
+const plaidDiagnostics = (body: any) => ({
+  requestId: body?.request_id ?? null,
+  errorType: body?.error_type ?? null,
+  errorCode: body?.error_code ?? null,
+  errorMessage: body?.error_message ?? null,
+  displayMessage: body?.display_message ?? null,
+  matchedWatchedError: PLAID_ERROR_CODES_TO_WATCH.find((code) =>
+    String(body?.error_code ?? '').includes(code) || String(body?.error_message ?? '').includes(code)
+  ) ?? null,
+});
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -35,6 +69,18 @@ Deno.serve(async (req) => {
     const rawPlaidEnv = Deno.env.get('PLAID_ENV') || null;
     const webhookUrl = Deno.env.get('PLAID_WEBHOOK_URL') || null;
 
+    const body: any = {
+      client_id: clientId,
+      secret,
+      client_name: 'FinFlow',
+      language: 'en',
+      country_codes: ['US'],
+      user: { client_user_id: userId },
+      products: ['transactions'],
+      redirect_uri: PLAID_REDIRECT_URI,
+    };
+    if (webhookUrl) body.webhook = webhookUrl;
+
     console.log('[Plaid:create_link_token] starting', {
       userId,
       rawPlaidEnv,
@@ -45,19 +91,8 @@ Deno.serve(async (req) => {
       hasSecret: Boolean(secret),
       redirectUri: PLAID_REDIRECT_URI,
       hasWebhookUrl: Boolean(webhookUrl),
+      requestBody: sanitizePlaidPayload(body),
     });
-
-    const body: any = {
-      client_id: clientId,
-      secret,
-      client_name: 'FinFlow',
-      language: 'pt',
-      country_codes: ['US'],
-      user: { client_user_id: userId },
-      products: ['transactions'],
-      redirect_uri: PLAID_REDIRECT_URI,
-    };
-    if (webhookUrl) body.webhook = webhookUrl;
 
     const res = await fetch(`${PLAID_BASE_URL}/link/token/create`, {
       method: 'POST',
@@ -68,11 +103,10 @@ Deno.serve(async (req) => {
     console.log('[Plaid:create_link_token] response', {
       ok: res.ok,
       status: res.status,
-      requestId: data?.request_id ?? null,
+      ...plaidDiagnostics(data),
       linkToken: maskToken(data?.link_token),
-      errorType: data?.error_type ?? null,
-      errorCode: data?.error_code ?? null,
-      errorMessage: data?.error_message ?? null,
+      expiration: data?.expiration ?? null,
+      fullBody: sanitizePlaidPayload(data),
     });
     if (!res.ok) {
       return new Response(JSON.stringify({ error: data }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -82,6 +116,9 @@ Deno.serve(async (req) => {
       plaid_env: PLAID_EFFECTIVE_ENV,
       plaid_base_url: PLAID_BASE_URL,
       redirect_uri: PLAID_REDIRECT_URI,
+      country_codes: body.country_codes,
+      language: body.language,
+      expiration: data.expiration ?? null,
       webhook_configured: Boolean(webhookUrl),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
