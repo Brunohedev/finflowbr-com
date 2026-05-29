@@ -62,6 +62,85 @@ const maskPlaidToken = (token: string | null | undefined) => {
   return `${token.slice(0, 18)}…${token.slice(-6)}`;
 };
 
+const PLAID_ERROR_CODES_TO_WATCH = [
+  "PRODUCTS_NOT_READY",
+  "INVALID_PRODUCTS",
+  "OAUTH",
+  "ITEM_LOGIN_REQUIRED",
+  "INVALID_CREDENTIALS",
+  "INVALID_REDIRECT_URI",
+  "INVALID_ENVIRONMENT",
+];
+
+const sanitizePlaidPayload = (value: any): any => {
+  if (Array.isArray(value)) return value.map(sanitizePlaidPayload);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes("secret")) return [key, "[redacted]"];
+      if (lowerKey.includes("token")) return [key, maskPlaidToken(String(entry))];
+      return [key, sanitizePlaidPayload(entry)];
+    })
+  );
+};
+
+const plaidDiagnostics = (err: any, metadata?: any) => {
+  const errorCode = err?.error_code ?? err?.errorCode ?? null;
+  const errorMessage = err?.error_message ?? err?.errorMessage ?? err?.display_message ?? null;
+  return {
+    institutionName: metadata?.institution?.name ?? metadata?.institution_name ?? null,
+    institutionId: metadata?.institution?.institution_id ?? metadata?.institution_id ?? null,
+    status: metadata?.status ?? metadata?.exit_status ?? null,
+    requestId: metadata?.request_id ?? err?.request_id ?? null,
+    linkSessionId: metadata?.link_session_id ?? null,
+    errorType: err?.error_type ?? err?.errorType ?? null,
+    errorCode,
+    errorMessage,
+    displayMessage: err?.display_message ?? null,
+    matchedWatchedError: PLAID_ERROR_CODES_TO_WATCH.find((code) =>
+      String(errorCode ?? "").includes(code) || String(errorMessage ?? "").includes(code)
+    ) ?? null,
+    manuallyCancelled: !err,
+    automaticallyExitedByPlaid: Boolean(err),
+  };
+};
+
+type StoredPlaidLinkToken = {
+  linkToken: string;
+  expiration?: string | null;
+  createdAt: number;
+};
+
+const encodeStoredPlaidLinkToken = (linkToken: string, expiration?: string | null) =>
+  JSON.stringify({ linkToken, expiration: expiration ?? null, createdAt: Date.now() } satisfies StoredPlaidLinkToken);
+
+const readStoredPlaidLinkToken = (key: string) => {
+  const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as StoredPlaidLinkToken;
+    const expiresAt = parsed.expiration ? new Date(parsed.expiration).getTime() : null;
+    const isExpired = expiresAt ? expiresAt <= Date.now() + 30_000 : true;
+    if (!parsed.linkToken || isExpired) {
+      console.warn("[Plaid] Stored link_token expired or invalid", {
+        hasLinkToken: Boolean(parsed.linkToken),
+        expiration: parsed.expiration ?? null,
+        now: new Date().toISOString(),
+      });
+      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
+      return null;
+    }
+    return parsed.linkToken;
+  } catch {
+    console.warn("[Plaid] Ignoring legacy/unknown stored link_token format to avoid expired token reuse");
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+    return null;
+  }
+};
+
 type Subcat = { id: string; name: string };
 
 const BankConnect = () => {
@@ -136,23 +215,44 @@ const BankConnect = () => {
         linkTokenPrefix: linkToken.split("-").slice(0, 2).join("-"),
         receivedRedirectUri: receivedRedirectUri ?? null,
         frontendUrl: window.location.href,
+        usingStoredOAuthToken: Boolean(receivedRedirectUri),
       });
       const handler = window.Plaid.create({
         token: linkToken,
         ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
+        onEvent: (eventName: string, metadata: any) => {
+          console.log("[Plaid] Link onEvent", {
+            eventName,
+            institutionName: metadata?.institution_name ?? metadata?.institution?.name ?? null,
+            status: metadata?.status ?? null,
+            requestId: metadata?.request_id ?? null,
+            errorCode: metadata?.error_code ?? null,
+            errorMessage: metadata?.error_message ?? null,
+            metadata: sanitizePlaidPayload(metadata),
+          });
+        },
         onSuccess: async (public_token: string, metadata: any) => {
           console.log("[Plaid] Link onSuccess", {
+            ...plaidDiagnostics(null, metadata),
             hasPublicToken: Boolean(public_token),
             publicToken: maskPlaidToken(public_token),
             publicTokenPrefix: public_token?.split("-").slice(0, 2).join("-") ?? null,
             publicTokenLength: public_token?.length ?? 0,
-            metadata,
+            metadata: sanitizePlaidPayload(metadata),
           });
           try {
             const { data: exchangeData, error: exErr } = await supabase.functions.invoke("exchange-public-token", {
               body: { public_token, user_id: user.id },
             });
-            console.log("[Plaid] exchange-public-token result", { exchangeData, error: exErr });
+            console.log("[Plaid] exchange-public-token result", {
+              exchangeData: sanitizePlaidPayload(exchangeData),
+              error: exErr,
+              hasAccessToken: Boolean(exchangeData?.has_access_token),
+              itemId: exchangeData?.item_id ?? null,
+              transactionsOk: exchangeData?.transactions_ok ?? null,
+              transactionsErrorCode: exchangeData?.transactions_error_code ?? null,
+              transactionsErrorMessage: exchangeData?.transactions_error_message ?? null,
+            });
             if (exErr) {
               console.error("[Plaid] exchange-public-token error", exErr);
               throw exErr;
@@ -167,7 +267,19 @@ const BankConnect = () => {
           }
         },
         onExit: (err: any, metadata: any) => {
-          console.log("[Plaid] Link onExit", { err, metadata });
+          const diagnostics = plaidDiagnostics(err, metadata);
+          console.log("[Plaid] Link onExit", {
+            ...diagnostics,
+            err: sanitizePlaidPayload(err),
+            metadata: sanitizePlaidPayload(metadata),
+          });
+          console.table({
+            institution_name: diagnostics.institutionName,
+            status: diagnostics.status,
+            request_id: diagnostics.requestId,
+            error_code: diagnostics.errorCode,
+            error_message: diagnostics.errorMessage,
+          });
           if (err) toast.error(err.display_message || "Conexão cancelada");
           sessionStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
           localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
@@ -194,14 +306,20 @@ const BankConnect = () => {
         hasLinkToken: Boolean(data.link_token),
         linkToken: maskPlaidToken(data.link_token),
         linkTokenPrefix: data.link_token.split("-").slice(0, 2).join("-"),
-        rawData: data,
+        plaidEnv: data.plaid_env ?? null,
+        countryCodes: data.country_codes ?? null,
+        language: data.language ?? null,
+        expiration: data.expiration ?? null,
+        rawData: sanitizePlaidPayload(data),
       });
-      sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
-      localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
+      const storedToken = encodeStoredPlaidLinkToken(data.link_token, data.expiration);
+      sessionStorage.setItem(PLAID_TOKEN_STORAGE_KEY, storedToken);
+      localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, storedToken);
       const params = new URLSearchParams(window.location.search);
       const hasOAuth = params.get("oauth_state_id");
       openPlaidHandler(data.link_token, hasOAuth ? window.location.href : undefined);
     } catch (e: any) {
+      console.error("[Plaid] create-link-token failed", e);
       toast.error(e?.message || "Erro ao iniciar Plaid");
     } finally {
       setConnecting(false);
@@ -213,9 +331,7 @@ const BankConnect = () => {
     const params = new URLSearchParams(window.location.search);
     const oauthStateId = params.get("oauth_state_id");
     if (!oauthStateId) return;
-    const storedToken =
-      sessionStorage.getItem(PLAID_TOKEN_STORAGE_KEY) ||
-      localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
+    const storedToken = readStoredPlaidLinkToken(PLAID_TOKEN_STORAGE_KEY);
     if (!storedToken) return;
 
     const tryOpen = () => {

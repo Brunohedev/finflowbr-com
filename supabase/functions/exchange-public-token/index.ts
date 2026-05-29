@@ -9,6 +9,40 @@ const maskToken = (value: string | null | undefined) => {
   return `${value.slice(0, 12)}…${value.slice(-6)}`;
 };
 
+const PLAID_ERROR_CODES_TO_WATCH = [
+  'PRODUCTS_NOT_READY',
+  'INVALID_PRODUCTS',
+  'OAUTH',
+  'ITEM_LOGIN_REQUIRED',
+  'INVALID_CREDENTIALS',
+  'INVALID_REDIRECT_URI',
+  'INVALID_ENVIRONMENT',
+];
+
+const sanitizePlaidPayload = (value: any): any => {
+  if (Array.isArray(value)) return value.map(sanitizePlaidPayload);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('secret')) return [key, '[redacted]'];
+      if (lowerKey.includes('token')) return [key, maskToken(String(entry))];
+      return [key, sanitizePlaidPayload(entry)];
+    })
+  );
+};
+
+const plaidDiagnostics = (body: any) => ({
+  requestId: body?.request_id ?? null,
+  errorType: body?.error_type ?? null,
+  errorCode: body?.error_code ?? null,
+  errorMessage: body?.error_message ?? null,
+  displayMessage: body?.display_message ?? null,
+  matchedWatchedError: PLAID_ERROR_CODES_TO_WATCH.find((code) =>
+    String(body?.error_code ?? '').includes(code) || String(body?.error_message ?? '').includes(code)
+  ) ?? null,
+});
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -46,6 +80,7 @@ Deno.serve(async (req) => {
       usingProduction: PLAID_BASE_URL === 'https://production.plaid.com',
       hasClientId: Boolean(clientId),
       hasSecret: Boolean(secret),
+      hasPublicToken: Boolean(public_token),
       publicToken: maskToken(public_token),
     });
 
@@ -58,17 +93,37 @@ Deno.serve(async (req) => {
     console.log('[Plaid:exchange_public_token] exchange response', {
       ok: exchangeRes.ok,
       status: exchangeRes.status,
-      requestId: exchangeData?.request_id ?? null,
+      ...plaidDiagnostics(exchangeData),
       itemId: exchangeData?.item_id ?? null,
+      hasAccessToken: Boolean(exchangeData?.access_token),
       accessToken: maskToken(exchangeData?.access_token),
-      errorType: exchangeData?.error_type ?? null,
-      errorCode: exchangeData?.error_code ?? null,
-      errorMessage: exchangeData?.error_message ?? null,
+      fullBody: sanitizePlaidPayload(exchangeData),
     });
     if (!exchangeRes.ok) {
       return new Response(JSON.stringify({ error: exchangeData }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     const accessToken = exchangeData.access_token as string;
+
+    const itemRes = await fetch(`${PLAID_BASE_URL}/item/get`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId, secret, access_token: accessToken }),
+    });
+    const itemData = await itemRes.json();
+    console.log('[Plaid:exchange_public_token] item get response', {
+      ok: itemRes.ok,
+      status: itemRes.status,
+      ...plaidDiagnostics(itemData),
+      itemId: itemData?.item?.item_id ?? exchangeData?.item_id ?? null,
+      institutionId: itemData?.item?.institution_id ?? null,
+      products: itemData?.item?.products ?? null,
+      availableProducts: itemData?.item?.available_products ?? null,
+      billedProducts: itemData?.item?.billed_products ?? null,
+      consentExpirationTime: itemData?.item?.consent_expiration_time ?? null,
+      updateType: itemData?.item?.update_type ?? null,
+      itemError: itemData?.item?.error ?? null,
+      fullBody: sanitizePlaidPayload(itemData),
+    });
 
     // Store the connection using service role (bypass RLS)
     const admin = createClient(
@@ -102,11 +157,13 @@ Deno.serve(async (req) => {
     console.log('[Plaid:exchange_public_token] transactions response', {
       ok: txRes.ok,
       status: txRes.status,
-      requestId: txData?.request_id ?? null,
+      ...plaidDiagnostics(txData),
       transactionCount: Array.isArray(txData?.transactions) ? txData.transactions.length : null,
-      errorType: txData?.error_type ?? null,
-      errorCode: txData?.error_code ?? null,
-      errorMessage: txData?.error_message ?? null,
+      totalTransactions: txData?.total_transactions ?? null,
+      accountsCount: Array.isArray(txData?.accounts) ? txData.accounts.length : null,
+      itemStatus: txData?.item?.status ?? null,
+      itemError: txData?.item?.error ?? null,
+      fullBody: sanitizePlaidPayload(txData),
     });
     if (txRes.ok && Array.isArray(txData.transactions)) {
       const rows = txData.transactions.map((t: any) => ({
@@ -133,7 +190,10 @@ Deno.serve(async (req) => {
       imported: txData?.transactions?.length || 0,
       plaid_env: PLAID_EFFECTIVE_ENV,
       item_id: exchangeData?.item_id ?? null,
+      has_access_token: Boolean(accessToken),
       transactions_ok: txRes.ok,
+      transactions_error_code: txData?.error_code ?? null,
+      transactions_error_message: txData?.error_message ?? null,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
