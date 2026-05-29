@@ -120,6 +120,37 @@ const BankConnect = () => {
     loadPending();
   }, [loadPending]);
 
+  const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
+
+  const openPlaidHandler = useCallback(
+    (linkToken: string, receivedRedirectUri?: string) => {
+      if (!user || !window.Plaid) return;
+      const handler = window.Plaid.create({
+        token: linkToken,
+        ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
+        onSuccess: async (public_token: string) => {
+          try {
+            const { error: exErr } = await supabase.functions.invoke("exchange-public-token", {
+              body: { public_token, user_id: user.id },
+            });
+            if (exErr) throw exErr;
+            toast.success("Banco conectado com sucesso!");
+            localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
+            await loadPending();
+          } catch (e: any) {
+            toast.error(e?.message || "Erro ao trocar token");
+          }
+        },
+        onExit: (err: any) => {
+          if (err) toast.error(err.display_message || "Conexão cancelada");
+          localStorage.removeItem(PLAID_TOKEN_STORAGE_KEY);
+        },
+      });
+      handler.open();
+    },
+    [user, loadPending]
+  );
+
   const startPlaid = async () => {
     if (!user) return;
     if (!window.Plaid) {
@@ -132,32 +163,41 @@ const BankConnect = () => {
         body: { user_id: user.id },
       });
       if (error || !data?.link_token) throw new Error(error?.message || "Falha ao gerar link_token");
-
-      const handler = window.Plaid.create({
-        token: data.link_token,
-        onSuccess: async (public_token: string) => {
-          try {
-            const { error: exErr } = await supabase.functions.invoke("exchange-public-token", {
-              body: { public_token, user_id: user.id },
-            });
-            if (exErr) throw exErr;
-            toast.success("Banco conectado com sucesso!");
-            await loadPending();
-          } catch (e: any) {
-            toast.error(e?.message || "Erro ao trocar token");
-          }
-        },
-        onExit: (err: any) => {
-          if (err) toast.error(err.display_message || "Conexão cancelada");
-        },
-      });
-      handler.open();
+      localStorage.setItem(PLAID_TOKEN_STORAGE_KEY, data.link_token);
+      openPlaidHandler(data.link_token);
     } catch (e: any) {
       toast.error(e?.message || "Erro ao iniciar Plaid");
     } finally {
       setConnecting(false);
     }
   };
+
+  // OAuth redirect handling: re-initialize Plaid Link when returning from bank auth
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthStateId = params.get("oauth_state_id");
+    if (!oauthStateId) return;
+    const storedToken = localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
+    if (!storedToken) return;
+
+    const tryOpen = () => {
+      if (window.Plaid) {
+        openPlaidHandler(storedToken, window.location.href);
+        return true;
+      }
+      return false;
+    };
+    if (tryOpen()) return;
+    const interval = setInterval(() => {
+      if (tryOpen()) clearInterval(interval);
+    }, 200);
+    const timeout = setTimeout(() => clearInterval(interval), 8000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [openPlaidHandler]);
+
 
   const categorize = async (id: string, category: string, subcategoryId?: string) => {
     if (!user) return;
