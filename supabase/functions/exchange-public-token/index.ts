@@ -1,6 +1,14 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+const PLAID_EFFECTIVE_ENV = 'production';
+const PLAID_BASE_URL = 'https://production.plaid.com';
+
+const maskToken = (value: string | null | undefined) => {
+  if (!value) return null;
+  return `${value.slice(0, 12)}…${value.slice(-6)}`;
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -28,15 +36,35 @@ Deno.serve(async (req) => {
 
     const clientId = Deno.env.get('PLAID_CLIENT_ID')!;
     const secret = Deno.env.get('PLAID_SECRET')!;
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox';
-    const baseUrl = `https://${plaidEnv}.plaid.com`;
+    const rawPlaidEnv = Deno.env.get('PLAID_ENV') || null;
 
-    const exchangeRes = await fetch(`${baseUrl}/item/public_token/exchange`, {
+    console.log('[Plaid:exchange_public_token] starting', {
+      userId,
+      rawPlaidEnv,
+      effectivePlaidEnv: PLAID_EFFECTIVE_ENV,
+      baseUrl: PLAID_BASE_URL,
+      usingProduction: PLAID_BASE_URL === 'https://production.plaid.com',
+      hasClientId: Boolean(clientId),
+      hasSecret: Boolean(secret),
+      publicToken: maskToken(public_token),
+    });
+
+    const exchangeRes = await fetch(`${PLAID_BASE_URL}/item/public_token/exchange`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id: clientId, secret, public_token }),
     });
     const exchangeData = await exchangeRes.json();
+    console.log('[Plaid:exchange_public_token] exchange response', {
+      ok: exchangeRes.ok,
+      status: exchangeRes.status,
+      requestId: exchangeData?.request_id ?? null,
+      itemId: exchangeData?.item_id ?? null,
+      accessToken: maskToken(exchangeData?.access_token),
+      errorType: exchangeData?.error_type ?? null,
+      errorCode: exchangeData?.error_code ?? null,
+      errorMessage: exchangeData?.error_message ?? null,
+    });
     if (!exchangeRes.ok) {
       return new Response(JSON.stringify({ error: exchangeData }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
@@ -47,12 +75,18 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
-    await admin.from('plaid_connections').insert({ user_id: userId, access_token: accessToken });
+    const { error: insertConnectionError } = await admin.from('plaid_connections').insert({ user_id: userId, access_token: accessToken });
+    console.log('[Plaid:exchange_public_token] connection insert', {
+      ok: !insertConnectionError,
+      itemId: exchangeData?.item_id ?? null,
+      error: insertConnectionError?.message ?? null,
+    });
+    if (insertConnectionError) throw insertConnectionError;
 
     // Fetch recent transactions (last 30 days) and upsert
     const end = new Date().toISOString().slice(0, 10);
     const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const txRes = await fetch(`${baseUrl}/transactions/get`, {
+    const txRes = await fetch(`${PLAID_BASE_URL}/transactions/get`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -65,6 +99,15 @@ Deno.serve(async (req) => {
       }),
     });
     const txData = await txRes.json();
+    console.log('[Plaid:exchange_public_token] transactions response', {
+      ok: txRes.ok,
+      status: txRes.status,
+      requestId: txData?.request_id ?? null,
+      transactionCount: Array.isArray(txData?.transactions) ? txData.transactions.length : null,
+      errorType: txData?.error_type ?? null,
+      errorCode: txData?.error_code ?? null,
+      errorMessage: txData?.error_message ?? null,
+    });
     if (txRes.ok && Array.isArray(txData.transactions)) {
       const rows = txData.transactions.map((t: any) => ({
         plaid_id: t.transaction_id,
@@ -74,7 +117,15 @@ Deno.serve(async (req) => {
         category: null,
         user_id: userId,
       }));
-      if (rows.length > 0) await admin.from('transactions').insert(rows);
+      if (rows.length > 0) {
+        const { error: insertTransactionsError } = await admin.from('transactions').insert(rows);
+        console.log('[Plaid:exchange_public_token] transactions insert', {
+          attempted: rows.length,
+          ok: !insertTransactionsError,
+          error: insertTransactionsError?.message ?? null,
+        });
+        if (insertTransactionsError) throw insertTransactionsError;
+      }
     }
 
     return new Response(JSON.stringify({ success: true, imported: txData?.transactions?.length || 0 }), {
