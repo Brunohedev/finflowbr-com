@@ -220,6 +220,17 @@ const BankConnect = () => {
       const handler = window.Plaid.create({
         token: linkToken,
         ...(receivedRedirectUri ? { receivedRedirectUri } : {}),
+        onEvent: (eventName: string, metadata: any) => {
+          console.log("[Plaid] Link onEvent", {
+            eventName,
+            institutionName: metadata?.institution_name ?? metadata?.institution?.name ?? null,
+            status: metadata?.status ?? null,
+            requestId: metadata?.request_id ?? null,
+            errorCode: metadata?.error_code ?? null,
+            errorMessage: metadata?.error_message ?? null,
+            metadata: sanitizePlaidPayload(metadata),
+          });
+        },
         onSuccess: async (public_token: string, metadata: any) => {
           console.log("[Plaid] Link onSuccess", {
             ...plaidDiagnostics(null, metadata),
@@ -308,6 +319,7 @@ const BankConnect = () => {
       const hasOAuth = params.get("oauth_state_id");
       openPlaidHandler(data.link_token, hasOAuth ? window.location.href : undefined);
     } catch (e: any) {
+      console.error("[Plaid] create-link-token failed", e);
       toast.error(e?.message || "Erro ao iniciar Plaid");
     } finally {
       setConnecting(false);
