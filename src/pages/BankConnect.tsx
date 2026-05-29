@@ -213,36 +213,6 @@ const BankConnect = () => {
     };
   }, [openPlaidHandler]);
 
-      setConnecting(false);
-    }
-  };
-
-  // OAuth redirect handling: re-initialize Plaid Link when returning from bank auth
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthStateId = params.get("oauth_state_id");
-    if (!oauthStateId) return;
-    const storedToken = localStorage.getItem(PLAID_TOKEN_STORAGE_KEY);
-    if (!storedToken) return;
-
-    const tryOpen = () => {
-      if (window.Plaid) {
-        openPlaidHandler(storedToken, window.location.href);
-        return true;
-      }
-      return false;
-    };
-    if (tryOpen()) return;
-    const interval = setInterval(() => {
-      if (tryOpen()) clearInterval(interval);
-    }, 200);
-    const timeout = setTimeout(() => clearInterval(interval), 8000);
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [openPlaidHandler]);
-
 
   const categorize = async (id: string, category: string, subcategoryId?: string) => {
     if (!user) return;
