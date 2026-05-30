@@ -108,16 +108,19 @@ export type Database = {
         Row: {
           access_token: string
           created_at: string | null
+          item_id: string | null
           user_id: string
         }
         Insert: {
           access_token: string
           created_at?: string | null
+          item_id?: string | null
           user_id: string
         }
         Update: {
           access_token?: string
           created_at?: string | null
+          item_id?: string | null
           user_id?: string
         }
         Relationships: []
