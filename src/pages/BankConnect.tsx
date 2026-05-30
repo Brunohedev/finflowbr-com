@@ -240,6 +240,34 @@ const BankConnect = () => {
     loadPending();
   }, [loadPending]);
 
+  // Auto-refresh Plaid on mount
+  const autoRefreshedRef = useRef(false);
+  useEffect(() => {
+    if (!user || autoRefreshedRef.current) return;
+    autoRefreshedRef.current = true;
+    refreshPlaid(false);
+  }, [user, refreshPlaid]);
+
+  // Pull-to-refresh handlers
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY > 0) return;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current == null) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0 && window.scrollY <= 0) {
+      setPullDistance(Math.min(delta * 0.5, 100));
+    }
+  };
+  const onTouchEnd = () => {
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      refreshPlaid(true);
+    }
+    setPullDistance(0);
+    touchStartY.current = null;
+  };
+
   const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
   const PLAID_REDIRECT_URI = "https://finflowbr.com/banco";
 
