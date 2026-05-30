@@ -534,7 +534,26 @@ const BankConnect = () => {
 
 
   return (
-    <div className="min-h-screen bg-[#ecf3f0] pb-16">
+    <div
+      className="min-h-screen bg-[#ecf3f0] pb-16"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {(pullDistance > 0 || refreshing) && (
+        <div
+          className="flex justify-center items-center text-xs text-muted-foreground transition-all"
+          style={{ height: refreshing ? 40 : pullDistance }}
+        >
+          {refreshing ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Atualizando…</>
+          ) : pullDistance >= PULL_THRESHOLD ? (
+            "Solte para atualizar"
+          ) : (
+            "Puxe para atualizar"
+          )}
+        </div>
+      )}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="rounded-xl">
