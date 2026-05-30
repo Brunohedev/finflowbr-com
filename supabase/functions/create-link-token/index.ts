@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
     const clientId = Deno.env.get('PLAID_CLIENT_ID')!;
     const secret = Deno.env.get('PLAID_SECRET')!;
     const rawPlaidEnv = Deno.env.get('PLAID_ENV') || null;
-    const webhookUrl = Deno.env.get('PLAID_WEBHOOK_URL') || null;
+    const webhookUrl = Deno.env.get('PLAID_WEBHOOK_URL') || 'https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-webhook';
 
     const body: any = {
       client_id: clientId,
