@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -154,10 +154,46 @@ const BankConnect = () => {
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const touchStartY = useRef<number | null>(null);
+  const PULL_THRESHOLD = 70;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) navigate("/login");
   }, [isLoading, isAuthenticated, navigate]);
+
+  const refreshPlaid = useCallback(async (showToast = true) => {
+    if (!user) return;
+    setRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Sessão inválida");
+      const res = await fetch(
+        "https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-refresh",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: user.id }),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      if (showToast) toast.success("Transações atualizadas");
+      await loadPending();
+    } catch (e: any) {
+      console.error("[Plaid] refresh failed", e);
+      if (showToast) toast.error(e?.message || "Erro ao atualizar");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user]);
 
 
 
@@ -203,6 +239,34 @@ const BankConnect = () => {
   useEffect(() => {
     loadPending();
   }, [loadPending]);
+
+  // Auto-refresh Plaid on mount
+  const autoRefreshedRef = useRef(false);
+  useEffect(() => {
+    if (!user || autoRefreshedRef.current) return;
+    autoRefreshedRef.current = true;
+    refreshPlaid(false);
+  }, [user, refreshPlaid]);
+
+  // Pull-to-refresh handlers
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY > 0) return;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current == null) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0 && window.scrollY <= 0) {
+      setPullDistance(Math.min(delta * 0.5, 100));
+    }
+  };
+  const onTouchEnd = () => {
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      refreshPlaid(true);
+    }
+    setPullDistance(0);
+    touchStartY.current = null;
+  };
 
   const PLAID_TOKEN_STORAGE_KEY = "plaid_link_token";
   const PLAID_REDIRECT_URI = "https://finflowbr.com/banco";
@@ -470,7 +534,26 @@ const BankConnect = () => {
 
 
   return (
-    <div className="min-h-screen bg-[#ecf3f0] pb-16">
+    <div
+      className="min-h-screen bg-[#ecf3f0] pb-16"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {(pullDistance > 0 || refreshing) && (
+        <div
+          className="flex justify-center items-center text-xs text-muted-foreground transition-all"
+          style={{ height: refreshing ? 40 : pullDistance }}
+        >
+          {refreshing ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Atualizando…</>
+          ) : pullDistance >= PULL_THRESHOLD ? (
+            "Solte para atualizar"
+          ) : (
+            "Puxe para atualizar"
+          )}
+        </div>
+      )}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="rounded-xl">
