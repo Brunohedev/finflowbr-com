@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.remove_expense_from_finance_data() FROM PUBLIC, anon, authenticated;
