@@ -154,10 +154,46 @@ const BankConnect = () => {
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const touchStartY = useRef<number | null>(null);
+  const PULL_THRESHOLD = 70;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) navigate("/login");
   }, [isLoading, isAuthenticated, navigate]);
+
+  const refreshPlaid = useCallback(async (showToast = true) => {
+    if (!user) return;
+    setRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Sessão inválida");
+      const res = await fetch(
+        "https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-refresh",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: user.id }),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      if (showToast) toast.success("Transações atualizadas");
+      await loadPending();
+    } catch (e: any) {
+      console.error("[Plaid] refresh failed", e);
+      if (showToast) toast.error(e?.message || "Erro ao atualizar");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user]);
 
 
 
