@@ -63,20 +63,13 @@ Deno.serve(async (req) => {
 
     let inserted = 0;
     if (rows.length > 0) {
-      // Dedup by plaid_id
-      const ids = rows.map((r) => r.plaid_id);
-      const { data: existing } = await supabase
+      // ON CONFLICT (plaid_id) DO NOTHING
+      const { data: insertedRows, error } = await supabase
         .from('transactions')
-        .select('plaid_id')
-        .eq('user_id', user_id)
-        .in('plaid_id', ids);
-      const existingSet = new Set((existing || []).map((e: any) => e.plaid_id));
-      const fresh = rows.filter((r) => !existingSet.has(r.plaid_id));
-      if (fresh.length > 0) {
-        const { error } = await supabase.from('transactions').insert(fresh);
-        if (error) throw error;
-        inserted = fresh.length;
-      }
+        .upsert(rows, { onConflict: 'plaid_id', ignoreDuplicates: true })
+        .select('plaid_id');
+      if (error) throw error;
+      inserted = insertedRows?.length ?? 0;
     }
 
     return new Response(JSON.stringify({ ok: true, inserted, total: allTx.length }), {

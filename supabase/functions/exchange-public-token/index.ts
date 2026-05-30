@@ -175,8 +175,11 @@ Deno.serve(async (req) => {
         user_id: userId,
       }));
       if (rows.length > 0) {
-        const { error: insertTransactionsError } = await admin.from('transactions').insert(rows);
-        console.log('[Plaid:exchange_public_token] transactions insert', {
+        // ON CONFLICT (plaid_id) DO NOTHING
+        const { error: insertTransactionsError } = await admin
+          .from('transactions')
+          .upsert(rows, { onConflict: 'plaid_id', ignoreDuplicates: true });
+        console.log('[Plaid:exchange_public_token] transactions insert (ignoreDuplicates)', {
           attempted: rows.length,
           ok: !insertTransactionsError,
           error: insertTransactionsError?.message ?? null,
