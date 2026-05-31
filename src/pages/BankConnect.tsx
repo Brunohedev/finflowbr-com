@@ -605,14 +605,35 @@ const BankConnect = () => {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Building2 className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="font-semibold">🇺🇸 Conecte sua conta bancária</p>
               <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações automaticamente via Plaid{"\n"}Uso exclusivo de usuarios presentes nos Estados Unidos.</p>
             </div>
           </div>
-          <Button onClick={startPlaid} disabled={connecting} className="w-full">
-            {connecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco"}
-          </Button>
+          {hasPlaidConnection ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                Banco conectado
+              </div>
+              <Button
+                onClick={disconnectPlaid}
+                disabled={disconnecting}
+                variant="outline"
+                className="w-full"
+              >
+                {disconnecting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Desconectando…</>
+                ) : (
+                  <><Unlink className="w-4 h-4 mr-2" /> Desconectar banco</>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={startPlaid} disabled={connecting} className="w-full">
+              {connecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco"}
+            </Button>
+          )}
         </div>
 
         <div className="finance-card space-y-3">
