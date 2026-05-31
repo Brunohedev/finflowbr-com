@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Unlink } from "lucide-react";
 import { PluggyConnect } from "pluggy-connect-sdk";
 
 const monthBounds = () => {
@@ -154,6 +154,8 @@ const BankConnect = () => {
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
+  const [hasPlaidConnection, setHasPlaidConnection] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const touchStartY = useRef<number | null>(null);
@@ -195,8 +197,36 @@ const BankConnect = () => {
     }
   }, [user]);
 
+  const checkPlaidConnection = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("plaid_connections")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!error) {
+      setHasPlaidConnection(Boolean(data));
+    }
+  }, [user]);
 
-
+  const disconnectPlaid = async () => {
+    if (!user) return;
+    setDisconnecting(true);
+    try {
+      const { error } = await supabase
+        .from("plaid_connections")
+        .delete()
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setHasPlaidConnection(false);
+      toast.success("Banco desconectado com sucesso!");
+    } catch (e: any) {
+      console.error("[Plaid] disconnect failed", e);
+      toast.error(e?.message || "Erro ao desconectar banco");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
 
   const loadPending = useCallback(async () => {
     if (!user) return;
@@ -243,7 +273,8 @@ const BankConnect = () => {
 
   useEffect(() => {
     loadPending();
-  }, [loadPending]);
+    checkPlaidConnection();
+  }, [loadPending, checkPlaidConnection]);
 
   // Auto-refresh Plaid on mount
   const autoRefreshedRef = useRef(false);
@@ -574,14 +605,35 @@ const BankConnect = () => {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Building2 className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="font-semibold">🇺🇸 Conecte sua conta bancária</p>
               <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações automaticamente via Plaid{"\n"}Uso exclusivo de usuarios presentes nos Estados Unidos.</p>
             </div>
           </div>
-          <Button onClick={startPlaid} disabled={connecting} className="w-full">
-            {connecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco"}
-          </Button>
+          {hasPlaidConnection ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                Banco conectado
+              </div>
+              <Button
+                onClick={disconnectPlaid}
+                disabled={disconnecting}
+                variant="outline"
+                className="w-full"
+              >
+                {disconnecting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Desconectando…</>
+                ) : (
+                  <><Unlink className="w-4 h-4 mr-2" /> Desconectar banco</>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={startPlaid} disabled={connecting} className="w-full">
+              {connecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco"}
+            </Button>
+          )}
         </div>
 
         <div className="finance-card space-y-3">
