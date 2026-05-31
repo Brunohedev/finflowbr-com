@@ -154,6 +154,8 @@ const BankConnect = () => {
   const [chosenCat, setChosenCat] = useState<Record<string, string>>({});
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcat[]>>({});
   const [loadingTx, setLoadingTx] = useState(false);
+  const [hasPlaidConnection, setHasPlaidConnection] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const touchStartY = useRef<number | null>(null);
