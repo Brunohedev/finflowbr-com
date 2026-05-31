@@ -227,6 +227,8 @@ const BankConnect = () => {
       setDisconnecting(false);
     }
   };
+
+  const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
     const { first, last } = monthBounds();
