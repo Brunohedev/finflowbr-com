@@ -197,10 +197,36 @@ const BankConnect = () => {
     }
   }, [user]);
 
+  const checkPlaidConnection = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("plaid_connections")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!error) {
+      setHasPlaidConnection(Boolean(data));
+    }
+  }, [user]);
 
-
-
-  const loadPending = useCallback(async () => {
+  const disconnectPlaid = async () => {
+    if (!user) return;
+    setDisconnecting(true);
+    try {
+      const { error } = await supabase
+        .from("plaid_connections")
+        .delete()
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setHasPlaidConnection(false);
+      toast.success("Banco desconectado com sucesso!");
+    } catch (e: any) {
+      console.error("[Plaid] disconnect failed", e);
+      toast.error(e?.message || "Erro ao desconectar banco");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
     if (!user) return;
     setLoadingTx(true);
     const { first, last } = monthBounds();
