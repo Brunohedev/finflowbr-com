@@ -273,7 +273,8 @@ const BankConnect = () => {
 
   useEffect(() => {
     loadPending();
-  }, [loadPending]);
+    checkPlaidConnection();
+  }, [loadPending, checkPlaidConnection]);
 
   // Auto-refresh Plaid on mount
   const autoRefreshedRef = useRef(false);
