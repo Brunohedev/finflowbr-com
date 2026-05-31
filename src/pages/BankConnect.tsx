@@ -201,12 +201,14 @@ const BankConnect = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("plaid_connections")
-      .select("id")
+      .select("user_id")
       .eq("user_id", user.id)
       .maybeSingle();
-    if (!error) {
-      setHasPlaidConnection(Boolean(data));
+    if (error) {
+      console.error("[Plaid] checkPlaidConnection failed", error);
+      return;
     }
+    setHasPlaidConnection(Boolean(data));
   }, [user]);
 
   const disconnectPlaid = async () => {
