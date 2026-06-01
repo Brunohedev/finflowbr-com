@@ -243,6 +243,34 @@ const BankConnect = () => {
     }
   };
 
+  const openDeleteDialog = (id: string) => {
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteTransaction = async () => {
+    if (!deleteId || !user) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", deleteId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success("Transação deletada");
+      setPending((p) => p.filter((t) => t.id !== deleteId));
+      setCategorized((c) => c.filter((t) => t.id !== deleteId));
+      setDeleteId(null);
+    } catch (e: any) {
+      console.error("[Tx] delete failed", e);
+      toast.error(e?.message || "Erro ao deletar transação");
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
