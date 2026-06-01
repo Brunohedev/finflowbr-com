@@ -29,13 +29,13 @@ const monthBounds = () => {
   return { first, last, ym: `${y}-${pad(m + 1)}` };
 };
 
+// Preserves the user-selected transaction date exactly as YYYY-MM-DD.
+// Does NOT normalize to start of month or current month. Only falls back to today
+// when there is truly no date available (new entry with empty value).
 const clampToCurrentMonth = (d: string | null | undefined) => {
-  const { first, last, ym } = monthBounds();
-  if (!d) return new Date().toISOString().slice(0, 10);
-  if (d.slice(0, 7) !== ym) return new Date().toISOString().slice(0, 10);
-  if (d < first) return first;
-  if (d > last) return last;
-  return d;
+  if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  if (d) return d;
+  return new Date().toISOString().slice(0, 10);
 };
 
 declare global {
