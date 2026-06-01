@@ -281,8 +281,6 @@ const BankConnect = () => {
         .select("id, name, amount, date, plaid_id, created_at")
         .eq("user_id", user.id)
         .is("category", null)
-        .gte("date", first)
-        .lte("date", last)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(500),
