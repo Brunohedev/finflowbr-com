@@ -170,7 +170,8 @@ Deno.serve(async (req) => {
         plaid_id: t.transaction_id,
         name: t.name,
         amount: t.amount,
-        date: t.date,
+        // Use authorized_date (actual purchase date) when available; fall back to posted date.
+        date: t.authorized_date || t.date,
         category: null,
         user_id: userId,
       }));
