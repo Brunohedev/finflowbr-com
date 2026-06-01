@@ -797,7 +797,17 @@ const BankConnect = () => {
                       {catLabel(t.category)} · {t.date || ""}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => openDeleteDialog(t.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
