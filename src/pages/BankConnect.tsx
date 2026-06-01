@@ -5,8 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2, Unlink } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Unlink, Trash2 } from "lucide-react";
 import { PluggyConnect } from "pluggy-connect-sdk";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const monthBounds = () => {
   const now = new Date();
