@@ -247,7 +247,7 @@ const BankConnect = () => {
         .limit(500),
       supabase
         .from("transactions")
-        .select("id, name, amount, date, category, created_at")
+        .select("id, name, amount, date, plaid_id, category, created_at")
         .eq("user_id", user.id)
         .not("category", "is", null)
         .gte("date", first)
