@@ -721,7 +721,17 @@ const BankConnect = () => {
                 <div key={t.id} className="border border-border rounded-xl p-3 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <p className="text-sm font-medium truncate">{t.name || "—"}</p>
-                    <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => openDeleteDialog(t.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-xs text-muted-foreground shrink-0">Data:</label>
