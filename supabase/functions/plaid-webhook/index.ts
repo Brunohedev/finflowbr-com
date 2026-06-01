@@ -125,15 +125,17 @@ Deno.serve(async (req) => {
       });
 
       if (txRes.ok && Array.isArray(txData.transactions) && txData.transactions.length > 0) {
-        const rows = txData.transactions.map((t: any) => ({
-          plaid_id: t.transaction_id,
-          name: t.name,
-          amount: t.amount,
-          // Use authorized_date (actual purchase date) when available; fall back to posted date.
-          date: t.authorized_date || t.date,
-          category: null,
-          user_id: conn.user_id,
-        }));
+        const rows = txData.transactions
+          .filter((t: any) => typeof t?.amount === 'number' && t.amount > 0)
+          .map((t: any) => ({
+            plaid_id: t.transaction_id,
+            name: t.name,
+            amount: t.amount,
+            // Use authorized_date (actual purchase date) when available; fall back to posted date.
+            date: t.authorized_date || t.date,
+            category: null,
+            user_id: conn.user_id,
+          }));
         const { error: upErr } = await admin
           .from('transactions')
           .upsert(rows, { onConflict: 'plaid_id', ignoreDuplicates: true });
