@@ -166,15 +166,17 @@ Deno.serve(async (req) => {
       fullBody: sanitizePlaidPayload(txData),
     });
     if (txRes.ok && Array.isArray(txData.transactions)) {
-      const rows = txData.transactions.map((t: any) => ({
-        plaid_id: t.transaction_id,
-        name: t.name,
-        amount: t.amount,
-        // Use authorized_date (actual purchase date) when available; fall back to posted date.
-        date: t.authorized_date || t.date,
-        category: null,
-        user_id: userId,
-      }));
+      const rows = txData.transactions
+        .filter((t: any) => typeof t?.amount === 'number' && t.amount > 0)
+        .map((t: any) => ({
+          plaid_id: t.transaction_id,
+          name: t.name,
+          amount: t.amount,
+          // Use authorized_date (actual purchase date) when available; fall back to posted date.
+          date: t.authorized_date || t.date,
+          category: null,
+          user_id: userId,
+        }));
       if (rows.length > 0) {
         // ON CONFLICT (plaid_id) DO NOTHING
         const { error: insertTransactionsError } = await admin
