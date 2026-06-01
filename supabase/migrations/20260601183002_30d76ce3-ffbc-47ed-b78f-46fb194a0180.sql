@@ -1,0 +1,1 @@
+UPDATE public.plaid_connections SET item_id = '6amMvR0DpmfPzX1M5QzbUKwvwxV7QvC0YZ0Mr' WHERE user_id = 'd6cf26ac-250e-49ee-aa27-de6e11ae1d57' AND item_id IS NULL;
