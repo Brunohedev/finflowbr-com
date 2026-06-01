@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
-    const { error: insertConnectionError } = await admin.from('plaid_connections').insert({ user_id: userId, access_token: accessToken });
+    const { error: insertConnectionError } = await admin.from('plaid_connections').insert({ user_id: userId, access_token: accessToken, item_id: exchangeData?.item_id ?? null });
     console.log('[Plaid:exchange_public_token] connection insert', {
       ok: !insertConnectionError,
       itemId: exchangeData?.item_id ?? null,
