@@ -168,6 +168,9 @@ const BankConnect = () => {
   const [disconnecting, setDisconnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const touchStartY = useRef<number | null>(null);
   const PULL_THRESHOLD = 70;
 
