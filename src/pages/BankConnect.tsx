@@ -5,8 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2, Unlink } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Unlink, Trash2 } from "lucide-react";
 import { PluggyConnect } from "pluggy-connect-sdk";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const monthBounds = () => {
   const now = new Date();
@@ -158,6 +168,9 @@ const BankConnect = () => {
   const [disconnecting, setDisconnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const touchStartY = useRef<number | null>(null);
   const PULL_THRESHOLD = 70;
 
@@ -227,6 +240,34 @@ const BankConnect = () => {
       toast.error(e?.message || "Erro ao desconectar banco");
     } finally {
       setDisconnecting(false);
+    }
+  };
+
+  const openDeleteDialog = (id: string) => {
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteTransaction = async () => {
+    if (!deleteId || !user) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", deleteId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success("Transação deletada");
+      setPending((p) => p.filter((t) => t.id !== deleteId));
+      setCategorized((c) => c.filter((t) => t.id !== deleteId));
+      setDeleteId(null);
+    } catch (e: any) {
+      console.error("[Tx] delete failed", e);
+      toast.error(e?.message || "Erro ao deletar transação");
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -680,7 +721,17 @@ const BankConnect = () => {
                 <div key={t.id} className="border border-border rounded-xl p-3 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <p className="text-sm font-medium truncate">{t.name || "—"}</p>
-                    <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => openDeleteDialog(t.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-xs text-muted-foreground shrink-0">Data:</label>
@@ -746,13 +797,51 @@ const BankConnect = () => {
                       {catLabel(t.category)} · {t.date || ""}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold font-heading shrink-0">{formatCurrency(t.amount)}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => openDeleteDialog(t.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar transação?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A transação será removida permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                deleteTransaction();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deletando…</>
+              ) : (
+                "Deletar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
