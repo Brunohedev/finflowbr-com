@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useEffect, useCallback, useRef } from "react";
 
 const monthBounds = () => {
   const now = new Date();
@@ -29,10 +30,9 @@ const monthBounds = () => {
   return { first, last, ym: `${y}-${pad(m + 1)}` };
 };
 
-// Preserves the user-selected transaction date exactly as YYYY-MM-DD.
-// Does NOT normalize to start of month or current month. Only falls back to today
-// when there is truly no date available (new entry with empty value).
-const clampToCurrentMonth = (d: string | null | undefined) => {
+// Retorna a data exatamente como veio do banco (YYYY-MM-DD).
+// Só usa hoje como fallback se não houver data alguma.
+const resolveDate = (d: string | null | undefined): string => {
   if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
   if (d) return d;
   return new Date().toISOString().slice(0, 10);
@@ -43,7 +43,6 @@ declare global {
     Plaid?: {
       create: (config: any) => { open: () => void; exit: () => void; destroy: () => void };
     };
-    
   }
 }
 
@@ -91,7 +90,7 @@ const sanitizePlaidPayload = (value: any): any => {
       if (lowerKey.includes("secret")) return [key, "[redacted]"];
       if (lowerKey.includes("token")) return [key, maskPlaidToken(String(entry))];
       return [key, sanitizePlaidPayload(entry)];
-    })
+    }),
   );
 };
 
@@ -108,9 +107,10 @@ const plaidDiagnostics = (err: any, metadata?: any) => {
     errorCode,
     errorMessage,
     displayMessage: err?.display_message ?? null,
-    matchedWatchedError: PLAID_ERROR_CODES_TO_WATCH.find((code) =>
-      String(errorCode ?? "").includes(code) || String(errorMessage ?? "").includes(code)
-    ) ?? null,
+    matchedWatchedError:
+      PLAID_ERROR_CODES_TO_WATCH.find(
+        (code) => String(errorCode ?? "").includes(code) || String(errorMessage ?? "").includes(code),
+      ) ?? null,
     manuallyCancelled: !err,
     automaticallyExitedByPlaid: Boolean(err),
   };
@@ -133,18 +133,12 @@ const readStoredPlaidLinkToken = (key: string) => {
     const expiresAt = parsed.expiration ? new Date(parsed.expiration).getTime() : null;
     const isExpired = expiresAt ? expiresAt <= Date.now() + 30_000 : true;
     if (!parsed.linkToken || isExpired) {
-      console.warn("[Plaid] Stored link_token expired or invalid", {
-        hasLinkToken: Boolean(parsed.linkToken),
-        expiration: parsed.expiration ?? null,
-        now: new Date().toISOString(),
-      });
       sessionStorage.removeItem(key);
       localStorage.removeItem(key);
       return null;
     }
     return parsed.linkToken;
   } catch {
-    console.warn("[Plaid] Ignoring legacy/unknown stored link_token format to avoid expired token reuse");
     sessionStorage.removeItem(key);
     localStorage.removeItem(key);
     return null;
@@ -178,37 +172,39 @@ const BankConnect = () => {
     if (!isLoading && !isAuthenticated) navigate("/login");
   }, [isLoading, isAuthenticated, navigate]);
 
-  const refreshPlaid = useCallback(async (showToast = true) => {
-    if (!user) return;
-    setRefreshing(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error("Sessão inválida");
-      const res = await fetch(
-        "https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-refresh",
-        {
+  const refreshPlaid = useCallback(
+    async (showToast = true) => {
+      if (!user) return;
+      setRefreshing(true);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) throw new Error("Sessão inválida");
+        const res = await fetch("https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-refresh", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ user_id: user.id }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || `HTTP ${res.status}`);
         }
-      );
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `HTTP ${res.status}`);
+        if (showToast) toast.success("Transações atualizadas");
+        await loadPending();
+      } catch (e: any) {
+        console.error("[Plaid] refresh failed", e);
+        if (showToast) toast.error(e?.message || "Erro ao atualizar");
+      } finally {
+        setRefreshing(false);
       }
-      if (showToast) toast.success("Transações atualizadas");
-      await loadPending();
-    } catch (e: any) {
-      console.error("[Plaid] refresh failed", e);
-      if (showToast) toast.error(e?.message || "Erro ao atualizar");
-    } finally {
-      setRefreshing(false);
-    }
-  }, [user]);
+    },
+    [user],
+  );
 
   const checkPlaidConnection = useCallback(async () => {
     if (!user) return;
@@ -228,10 +224,7 @@ const BankConnect = () => {
     if (!user) return;
     setDisconnecting(true);
     try {
-      const { error } = await supabase
-        .from("plaid_connections")
-        .delete()
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("plaid_connections").delete().eq("user_id", user.id);
       if (error) throw error;
       setHasPlaidConnection(false);
       toast.success("Banco desconectado com sucesso!");
@@ -252,11 +245,7 @@ const BankConnect = () => {
     if (!deleteId || !user) return;
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", deleteId)
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("transactions").delete().eq("id", deleteId).eq("user_id", user.id);
       if (error) throw error;
       toast.success("Transação deletada");
       setPending((p) => p.filter((t) => t.id !== deleteId));
@@ -309,7 +298,10 @@ const BankConnect = () => {
       const list = (data as PendingTx[]) || [];
       setPending(list);
       const map: Record<string, string> = {};
-      list.forEach((t) => { map[t.id] = clampToCurrentMonth(t.date); });
+      // ✅ FIX: usa a data real da transação, sem forçar mês atual
+      list.forEach((t) => {
+        map[t.id] = resolveDate(t.date);
+      });
       setDates(map);
     }
     setCategorized((catData as CategorizedTx[]) || []);
@@ -329,7 +321,7 @@ const BankConnect = () => {
     checkPlaidConnection();
   }, [loadPending, checkPlaidConnection]);
 
-  // Auto-refresh Plaid on mount
+  // Auto-refresh Plaid ao abrir a tela
   const autoRefreshedRef = useRef(false);
   useEffect(() => {
     if (!user || autoRefreshedRef.current) return;
@@ -337,7 +329,7 @@ const BankConnect = () => {
     refreshPlaid(false);
   }, [user, refreshPlaid]);
 
-  // Pull-to-refresh handlers
+  // Pull-to-refresh
   const onTouchStart = (e: React.TouchEvent) => {
     if (window.scrollY > 0) return;
     touchStartY.current = e.touches[0].clientY;
@@ -440,7 +432,7 @@ const BankConnect = () => {
       });
       handler.open();
     },
-    [user, loadPending]
+    [user, loadPending],
   );
 
   const startPlaid = async () => {
@@ -479,7 +471,7 @@ const BankConnect = () => {
     }
   };
 
-  // OAuth redirect handling: re-initialize Plaid Link when returning from bank auth
+  // OAuth redirect: re-inicializa o Plaid Link ao voltar do banco
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const oauthStateId = params.get("oauth_state_id");
@@ -505,34 +497,30 @@ const BankConnect = () => {
     };
   }, [openPlaidHandler]);
 
-
   const categorize = async (id: string, category: string, subcategoryId?: string) => {
     if (!user) return;
     const tx = pending.find((t) => t.id === id);
-    const chosenDate = clampToCurrentMonth(dates[id] || tx?.date || null);
+    // ✅ FIX: usa a data que o usuário vê/editou, sem forçar mês atual
+    const chosenDate = dates[id] || resolveDate(tx?.date);
     const prev = pending;
     setPending((p) => p.filter((t) => t.id !== id));
-    setChosenCat((c) => { const n = { ...c }; delete n[id]; return n; });
+    setChosenCat((c) => {
+      const n = { ...c };
+      delete n[id];
+      return n;
+    });
 
-    const { error } = await supabase
-      .from("transactions")
-      .update({ category, date: chosenDate })
-      .eq("id", id);
+    const { error } = await supabase.from("transactions").update({ category, date: chosenDate }).eq("id", id);
     if (error) {
       toast.error("Erro ao categorizar");
       setPending(prev);
       return;
     }
 
-    // Desconta no saldo da categoria adicionando como expense em finance_data
     try {
       const amount = Math.abs(Number(tx?.amount ?? 0));
       if (amount > 0) {
-        const { data: row } = await supabase
-          .from("finance_data")
-          .select("data")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const { data: row } = await supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle();
 
         const fd: any = row?.data || null;
         if (fd && Array.isArray(fd.expenses)) {
@@ -548,9 +536,7 @@ const BankConnect = () => {
             transactionId: id,
           };
           const nextData = { ...fd, expenses: [...fd.expenses, newExpense] };
-          await supabase
-            .from("finance_data")
-            .upsert([{ user_id: user.id, data: nextData }], { onConflict: "user_id" });
+          await supabase.from("finance_data").upsert([{ user_id: user.id, data: nextData }], { onConflict: "user_id" });
         }
       }
     } catch (e) {
@@ -619,9 +605,6 @@ const BankConnect = () => {
     }
   };
 
-
-
-
   return (
     <div
       className="min-h-screen bg-[#ecf3f0] pb-16"
@@ -635,7 +618,9 @@ const BankConnect = () => {
           style={{ height: refreshing ? 40 : pullDistance }}
         >
           {refreshing ? (
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Atualizando…</>
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Atualizando…
+            </>
           ) : pullDistance >= PULL_THRESHOLD ? (
             "Solte para atualizar"
           ) : (
@@ -660,7 +645,10 @@ const BankConnect = () => {
             </div>
             <div className="flex-1">
               <p className="font-semibold">🇺🇸 Conecte sua conta bancária</p>
-              <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações automaticamente via Plaid{"\n"}Uso exclusivo de usuarios presentes nos Estados Unidos.</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">
+                Importe transações automaticamente via Plaid{"\n"}Uso exclusivo de usuarios presentes nos Estados
+                Unidos.
+              </p>
             </div>
           </div>
           {hasPlaidConnection ? (
@@ -669,22 +657,27 @@ const BankConnect = () => {
                 <span className="w-2 h-2 rounded-full bg-green-500" />
                 Banco conectado
               </div>
-              <Button
-                onClick={disconnectPlaid}
-                disabled={disconnecting}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={disconnectPlaid} disabled={disconnecting} variant="outline" className="w-full">
                 {disconnecting ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Desconectando…</>
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Desconectando…
+                  </>
                 ) : (
-                  <><Unlink className="w-4 h-4 mr-2" /> Desconectar banco</>
+                  <>
+                    <Unlink className="w-4 h-4 mr-2" /> Desconectar banco
+                  </>
                 )}
               </Button>
             </div>
           ) : (
             <Button onClick={startPlaid} disabled={connecting} className="w-full">
-              {connecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco"}
+              {connecting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…
+                </>
+              ) : (
+                "Conectar banco"
+              )}
             </Button>
           )}
         </div>
@@ -696,21 +689,31 @@ const BankConnect = () => {
             </div>
             <div>
               <p className="font-semibold">🇧🇷 Conectar banco brasileiro</p>
-              <p className="text-xs text-muted-foreground whitespace-pre-line">Importe transações dos seus bancos no Brasil via Pluggy.{"\n"}Uso exclusivo de usuarios presentes no Brasil.</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">
+                Importe transações dos seus bancos no Brasil via Pluggy.{"\n"}Uso exclusivo de usuarios presentes no
+                Brasil.
+              </p>
             </div>
           </div>
           <Button onClick={startPluggy} disabled={connectingPluggy} className="w-full">
-            {connectingPluggy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…</> : "Conectar banco\n"}
+            {connectingPluggy ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando…
+              </>
+            ) : (
+              "Conectar banco"
+            )}
           </Button>
         </div>
-
 
         <div className="finance-card">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Transações Pendentes
           </h2>
           {loadingTx ? (
-            <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+            <div className="py-6 flex justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
           ) : pending.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">Nenhuma transação pendente.</p>
           ) : (
@@ -733,14 +736,11 @@ const BankConnect = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-xs text-muted-foreground shrink-0">Data:</label>
+                    {/* ✅ FIX: removido min/max — permite datas de qualquer mês */}
                     <Input
                       type="date"
-                      min={monthBounds().first}
-                      max={monthBounds().last}
                       value={dates[t.id] || ""}
-                      onChange={(e) =>
-                        setDates((d) => ({ ...d, [t.id]: clampToCurrentMonth(e.target.value) }))
-                      }
+                      onChange={(e) => setDates((d) => ({ ...d, [t.id]: e.target.value }))}
                       className="h-8 text-xs"
                     />
                   </div>
@@ -832,7 +832,9 @@ const BankConnect = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deletando…</>
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deletando…
+                </>
               ) : (
                 "Deletar"
               )}
