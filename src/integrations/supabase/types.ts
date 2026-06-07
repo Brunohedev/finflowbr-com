@@ -109,18 +109,21 @@ export type Database = {
           access_token: string
           created_at: string | null
           item_id: string | null
+          sync_cursor: string | null
           user_id: string
         }
         Insert: {
           access_token: string
           created_at?: string | null
           item_id?: string | null
+          sync_cursor?: string | null
           user_id: string
         }
         Update: {
           access_token?: string
           created_at?: string | null
           item_id?: string | null
+          sync_cursor?: string | null
           user_id?: string
         }
         Relationships: []
@@ -166,6 +169,21 @@ export type Database = {
           id?: string
           name?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sync_locks: {
+        Row: {
+          locked_at: string
+          user_id: string
+        }
+        Insert: {
+          locked_at?: string
+          user_id: string
+        }
+        Update: {
+          locked_at?: string
           user_id?: string
         }
         Relationships: []
