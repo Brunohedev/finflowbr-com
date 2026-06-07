@@ -65,6 +65,39 @@ const CATS = [
 
 const catLabel = (id: string) => CATS.find((c) => c.id === id)?.label || id;
 
+const monthLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  return format(date, "MMMM yyyy", { locale: ptBR });
+};
+
+type MonthGroup = {
+  monthKey: string;
+  label: string;
+  transactions: CategorizedTx[];
+};
+
+const groupByMonth = (transactions: CategorizedTx[]): MonthGroup[] => {
+  const groups: Record<string, CategorizedTx[]> = {};
+  transactions.forEach((t) => {
+    const key = (t.date || "").slice(0, 7);
+    if (!key) return;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  return Object.entries(groups)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([monthKey, txs]) => ({
+      monthKey,
+      label: monthLabel(monthKey),
+      transactions: txs.sort((a, b) => {
+        const d = (b.date || "").localeCompare(a.date || "");
+        if (d !== 0) return d;
+        return (b.created_at || "").localeCompare(a.created_at || "");
+      }),
+    }));
+};
+
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
 
