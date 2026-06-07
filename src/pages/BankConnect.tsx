@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -52,6 +54,7 @@ type PendingTx = {
   amount: number | null;
   date: string | null;
   plaid_id: string | null;
+  created_at: string | null;
 };
 
 type CategorizedTx = PendingTx & { category: string };
@@ -62,6 +65,39 @@ const CATS = [
 ];
 
 const catLabel = (id: string) => CATS.find((c) => c.id === id)?.label || id;
+
+const monthLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  return format(date, "MMMM yyyy", { locale: ptBR });
+};
+
+type MonthGroup = {
+  monthKey: string;
+  label: string;
+  transactions: CategorizedTx[];
+};
+
+const groupByMonth = (transactions: CategorizedTx[]): MonthGroup[] => {
+  const groups: Record<string, CategorizedTx[]> = {};
+  transactions.forEach((t) => {
+    const key = (t.date || "").slice(0, 7);
+    if (!key) return;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  return Object.entries(groups)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([monthKey, txs]) => ({
+      monthKey,
+      label: monthLabel(monthKey),
+      transactions: txs.sort((a, b) => {
+        const d = (b.date || "").localeCompare(a.date || "");
+        if (d !== 0) return d;
+        return (b.created_at || "").localeCompare(a.created_at || "");
+      }),
+    }));
+};
 
 const formatCurrency = (v: number | null) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v ?? 0);
@@ -263,7 +299,6 @@ const BankConnect = () => {
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
-    const { first, last } = monthBounds();
     const [{ data, error }, { data: catData, error: catErr }, { data: fdRow }] = await Promise.all([
       supabase
         .from("transactions")
@@ -278,15 +313,12 @@ const BankConnect = () => {
         .select("id, name, amount, date, plaid_id, category, created_at")
         .eq("user_id", user.id)
         .not("category", "is", null)
-        .gte("date", first)
-        .lte("date", last)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(500),
       supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle(),
     ]);
     console.log("[Tx] loadPending", {
-      month: { first, last },
       pendingCount: data?.length ?? 0,
       categorizedCount: catData?.length ?? 0,
       newestPendingDate: data?.[0]?.date ?? null,
@@ -782,33 +814,38 @@ const BankConnect = () => {
         </div>
 
         {categorized.length > 0 && (
-          <div className="finance-card">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <div className="finance-card space-y-5">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Transações Categorizadas
             </h2>
-            <div className="space-y-2">
-              {categorized.map((t) => (
-                <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{t.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {catLabel(t.category)} · {t.date || ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => openDeleteDialog(t.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+            {groupByMonth(categorized).map((group) => (
+              <div key={group.monthKey} className="space-y-2">
+                <h3 className="font-heading font-semibold text-sm capitalize">{group.label}</h3>
+                <div className="space-y-2">
+                  {group.transactions.map((t) => (
+                    <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{t.name || "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {catLabel(t.category)} · {t.date || ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => openDeleteDialog(t.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
