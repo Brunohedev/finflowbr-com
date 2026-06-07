@@ -265,7 +265,6 @@ const BankConnect = () => {
   const loadPending = useCallback(async () => {
     if (!user) return;
     setLoadingTx(true);
-    const { first, last } = monthBounds();
     const [{ data, error }, { data: catData, error: catErr }, { data: fdRow }] = await Promise.all([
       supabase
         .from("transactions")
@@ -280,15 +279,12 @@ const BankConnect = () => {
         .select("id, name, amount, date, plaid_id, category, created_at")
         .eq("user_id", user.id)
         .not("category", "is", null)
-        .gte("date", first)
-        .lte("date", last)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(500),
       supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle(),
     ]);
     console.log("[Tx] loadPending", {
-      month: { first, last },
       pendingCount: data?.length ?? 0,
       categorizedCount: catData?.length ?? 0,
       newestPendingDate: data?.[0]?.date ?? null,
