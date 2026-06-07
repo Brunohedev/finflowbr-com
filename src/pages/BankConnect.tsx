@@ -54,6 +54,7 @@ type PendingTx = {
   amount: number | null;
   date: string | null;
   plaid_id: string | null;
+  created_at: string | null;
 };
 
 type CategorizedTx = PendingTx & { category: string };
