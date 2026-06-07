@@ -814,33 +814,38 @@ const BankConnect = () => {
         </div>
 
         {categorized.length > 0 && (
-          <div className="finance-card">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <div className="finance-card space-y-5">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Transações Categorizadas
             </h2>
-            <div className="space-y-2">
-              {categorized.map((t) => (
-                <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{t.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {catLabel(t.category)} · {t.date || ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => openDeleteDialog(t.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+            {groupByMonth(categorized).map((group) => (
+              <div key={group.monthKey} className="space-y-2">
+                <h3 className="font-heading font-semibold text-sm capitalize">{group.label}</h3>
+                <div className="space-y-2">
+                  {group.transactions.map((t) => (
+                    <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{t.name || "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {catLabel(t.category)} · {t.date || ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => openDeleteDialog(t.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
