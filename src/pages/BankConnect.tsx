@@ -751,69 +751,76 @@ const BankConnect = () => {
           ) : pending.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">Nenhuma transação pendente.</p>
           ) : (
-            <div className="space-y-3">
-              {pending.map((t) => (
-                <div key={t.id} className="border border-border rounded-xl p-3 space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <p className="text-sm font-medium truncate">{t.name || "—"}</p>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => openDeleteDialog(t.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs text-muted-foreground shrink-0">Data:</label>
-                    {/* ✅ FIX: removido min/max — permite datas de qualquer mês */}
-                    <Input
-                      type="date"
-                      value={dates[t.id] || ""}
-                      onChange={(e) => setDates((d) => ({ ...d, [t.id]: e.target.value }))}
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {CATS.map((c) => (
-                      <Button
-                        key={c.id}
-                        size="sm"
-                        variant={chosenCat[t.id] === c.id ? "default" : "secondary"}
-                        className="text-xs"
-                        onClick={() => handleCategoryClick(t.id, c.id)}
-                      >
-                        {c.label}
-                      </Button>
+            <div className="space-y-5">
+              {groupByMonth(pending).map((group) => (
+                <div key={group.monthKey} className="space-y-2">
+                  <h3 className="font-heading font-semibold text-sm capitalize">{group.label}</h3>
+                  <div className="space-y-3">
+                    {group.transactions.map((t) => (
+                      <div key={t.id} className="border border-border rounded-xl p-3 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-sm font-medium truncate">{t.name || "—"}</p>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-sm font-semibold font-heading">{formatCurrency(t.amount)}</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => openDeleteDialog(t.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-muted-foreground shrink-0">Data:</label>
+                          <Input
+                            type="date"
+                            value={dates[t.id] || ""}
+                            onChange={(e) => setDates((d) => ({ ...d, [t.id]: e.target.value }))}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {CATS.map((c) => (
+                            <Button
+                              key={c.id}
+                              size="sm"
+                              variant={chosenCat[t.id] === c.id ? "default" : "secondary"}
+                              className="text-xs"
+                              onClick={() => handleCategoryClick(t.id, c.id)}
+                            >
+                              {c.label}
+                            </Button>
+                          ))}
+                        </div>
+                        {chosenCat[t.id] && (subcatsByCat[chosenCat[t.id]] || []).length > 0 && (
+                          <div className="pt-1 space-y-1.5">
+                            <p className="text-xs text-muted-foreground">Subcategoria:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {(subcatsByCat[chosenCat[t.id]] || []).map((s) => (
+                                <Button
+                                  key={s.id}
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7"
+                                  onClick={() => categorize(t.id, chosenCat[t.id], s.id)}
+                                >
+                                  {s.name}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
-                  {chosenCat[t.id] && (subcatsByCat[chosenCat[t.id]] || []).length > 0 && (
-                    <div className="pt-1 space-y-1.5">
-                      <p className="text-xs text-muted-foreground">Subcategoria:</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(subcatsByCat[chosenCat[t.id]] || []).map((s) => (
-                          <Button
-                            key={s.id}
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7"
-                            onClick={() => categorize(t.id, chosenCat[t.id], s.id)}
-                          >
-                            {s.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
+
 
         {categorized.length > 0 && (
           <div className="finance-card space-y-5">
