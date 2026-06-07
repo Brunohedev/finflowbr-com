@@ -72,14 +72,16 @@ const monthLabel = (monthKey: string) => {
   return format(date, "MMMM yyyy", { locale: ptBR });
 };
 
-type MonthGroup = {
+type MonthGroup<T> = {
   monthKey: string;
   label: string;
-  transactions: CategorizedTx[];
+  transactions: T[];
 };
 
-const groupByMonth = (transactions: CategorizedTx[]): MonthGroup[] => {
-  const groups: Record<string, CategorizedTx[]> = {};
+const groupByMonth = <T extends { date: string | null; created_at: string | null }>(
+  transactions: T[],
+): MonthGroup<T>[] => {
+  const groups: Record<string, T[]> = {};
   transactions.forEach((t) => {
     const key = (t.date || "").slice(0, 7);
     if (!key) return;
