@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2, Unlink, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Unlink, Trash2, ChevronDown } from "lucide-react";
 import { PluggyConnect } from "pluggy-connect-sdk";
 import {
   AlertDialog,
@@ -751,11 +751,23 @@ const BankConnect = () => {
           ) : pending.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">Nenhuma transação pendente.</p>
           ) : (
-            <div className="space-y-5">
-              {groupByMonth(pending).map((group) => (
-                <div key={group.monthKey} className="space-y-2">
-                  <h3 className="font-heading font-semibold text-sm capitalize">{group.label}</h3>
-                  <div className="space-y-3">
+            <div className="space-y-3">
+              {groupByMonth(pending).map((group, idx) => (
+                <details
+                  key={group.monthKey}
+                  open={idx === 0}
+                  className="group border border-border rounded-xl overflow-hidden"
+                >
+                  <summary className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer list-none select-none hover:bg-muted/50">
+                    <h3 className="font-heading font-semibold text-sm capitalize">
+                      {group.label}{" "}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        ({group.transactions.length})
+                      </span>
+                    </h3>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="space-y-3 p-3 pt-2">
                     {group.transactions.map((t) => (
                       <div key={t.id} className="border border-border rounded-xl p-3 space-y-2">
                         <div className="flex justify-between items-start gap-2">
@@ -815,7 +827,7 @@ const BankConnect = () => {
                       </div>
                     ))}
                   </div>
-                </div>
+                </details>
               ))}
             </div>
           )}
@@ -823,14 +835,26 @@ const BankConnect = () => {
 
 
         {categorized.length > 0 && (
-          <div className="finance-card space-y-5">
+          <div className="finance-card space-y-3">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Transações Categorizadas
             </h2>
-            {groupByMonth(categorized).map((group) => (
-              <div key={group.monthKey} className="space-y-2">
-                <h3 className="font-heading font-semibold text-sm capitalize">{group.label}</h3>
-                <div className="space-y-2">
+            {groupByMonth(categorized).map((group, idx) => (
+              <details
+                key={group.monthKey}
+                open={idx === 0}
+                className="group border border-border rounded-xl overflow-hidden"
+              >
+                <summary className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer list-none select-none hover:bg-muted/50">
+                  <h3 className="font-heading font-semibold text-sm capitalize">
+                    {group.label}{" "}
+                    <span className="text-xs text-muted-foreground font-normal">
+                      ({group.transactions.length})
+                    </span>
+                  </h3>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="space-y-2 p-3 pt-2">
                   {group.transactions.map((t) => (
                     <div key={t.id} className="border border-border rounded-xl p-3 flex items-center justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -853,7 +877,7 @@ const BankConnect = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </details>
             ))}
           </div>
         )}
