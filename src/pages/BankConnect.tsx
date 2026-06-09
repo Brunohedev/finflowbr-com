@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Loader2, Unlink, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Unlink, Trash2, ChevronDown } from "lucide-react";
 import { PluggyConnect } from "pluggy-connect-sdk";
 import {
   AlertDialog,
