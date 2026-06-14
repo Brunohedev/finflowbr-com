@@ -606,7 +606,7 @@ const BankConnect = () => {
 
       const pluggy = new PluggyConnect({
         connectToken: data.accessToken,
-        includeSandbox: true,
+        includeSandbox: false,
         onSuccess: async (itemData: any) => {
           try {
             const itemId = itemData?.item?.id || itemData?.itemId;
