@@ -659,9 +659,9 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource, updateIncomeSource,
-    addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve, addReserveContribution, toggleReservePin,
+    addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve, addReserveContribution, updateReserveContribution, deleteReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
-    addInvestment, deleteInvestment,
+    addInvestment, updateInvestment, deleteInvestment,
     addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense,
   };
 }
