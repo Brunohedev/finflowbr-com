@@ -56,6 +56,8 @@ const ReservaInvestimentosView = ({
   const [modalAmount, setModalAmount] = useState("");
   const [modalDate, setModalDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [modalNote, setModalNote] = useState("");
+  const [editingContributionId, setEditingContributionId] = useState<string | null>(null);
+  const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null);
 
   // Reserve form
   const [showNewReserve, setShowNewReserve] = useState(false);
@@ -85,11 +87,11 @@ const ReservaInvestimentosView = ({
 
   // Combined transaction history
   const history = useMemo(() => {
-    const items: { id: string; type: "reserve" | "investment"; name: string; amount: number; date: string; note?: string }[] = [];
+    const items: { id: string; type: "reserve" | "investment"; name: string; amount: number; date: string; note?: string; reserveId?: string }[] = [];
 
     emergencyReserves.forEach((r) => {
       r.contributions.forEach((c) => {
-        items.push({ id: c.id, type: "reserve", name: r.name, amount: c.amount, date: c.date, note: c.note });
+        items.push({ id: c.id, type: "reserve", name: r.name, amount: c.amount, date: c.date, note: c.note, reserveId: r.id });
       });
     });
 
