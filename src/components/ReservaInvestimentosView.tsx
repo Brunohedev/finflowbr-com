@@ -540,9 +540,9 @@ const ReservaInvestimentosView = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              Adicionar à Reserva
+              {editingContributionId ? "Editar Aporte" : "Adicionar à Reserva"}
             </DialogTitle>
-            <DialogDescription>Informe o valor a ser adicionado à sua reserva de emergência</DialogDescription>
+            <DialogDescription>{editingContributionId ? "Corrija o valor deste aporte" : "Informe o valor a ser adicionado à sua reserva de emergência"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {emergencyReserves.length > 1 && (
@@ -597,9 +597,9 @@ const ReservaInvestimentosView = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Adicionar aos Investimentos
+              {editingInvestmentId ? "Editar Aporte" : "Adicionar aos Investimentos"}
             </DialogTitle>
-            <DialogDescription>Registre um novo aporte nos seus investimentos</DialogDescription>
+            <DialogDescription>{editingInvestmentId ? "Corrija o valor deste aporte" : "Registre um novo aporte nos seus investimentos"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
