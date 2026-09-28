@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import {
   ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff,
-  TrendingUp, Trophy, ArrowUpCircle, PiggyBank, History
+  TrendingUp, Trophy, ArrowUpCircle, PiggyBank, History, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -24,6 +24,8 @@ interface Props {
   onDeleteReserve: (id: string) => void;
   onUpdateReserve: (id: string, updates: { name?: string; targetAmount?: number }) => void;
   onAddReserveContribution: (reserveId: string, amount: number, note?: string) => void;
+  onUpdateReserveContribution: (reserveId: string, contributionId: string, updates: { amount?: number; note?: string }) => void;
+  onDeleteReserveContribution: (reserveId: string, contributionId: string) => void;
   onToggleReservePin: (id: string) => void;
   onAddGoal: (name: string, targetAmount: number, deadline?: string) => void;
   onDeleteGoal: (goalId: string) => void;
@@ -31,6 +33,7 @@ interface Props {
   onUpdateGoal: (goalId: string, updates: { name?: string; targetAmount?: number; deadline?: string }) => void;
   onToggleGoalPin: (goalId: string) => void;
   onAddInvestment: (name: string, amount: number, note?: string) => void;
+  onUpdateInvestment: (id: string, updates: { name?: string; amount?: number; note?: string }) => void;
   onDeleteInvestment: (id: string) => void;
 }
 
@@ -43,9 +46,9 @@ type ModalType = "reserve" | "investment" | null;
 
 const ReservaInvestimentosView = ({
   budget, spent, emergencyReserves, financialGoals, investments, currentMonth, onBack,
-  onAddReserve, onDeleteReserve, onUpdateReserve, onAddReserveContribution, onToggleReservePin,
+  onAddReserve, onDeleteReserve, onUpdateReserve, onAddReserveContribution, onUpdateReserveContribution, onDeleteReserveContribution, onToggleReservePin,
   onAddGoal, onDeleteGoal, onAddGoalContribution, onUpdateGoal, onToggleGoalPin,
-  onAddInvestment, onDeleteInvestment,
+  onAddInvestment, onUpdateInvestment, onDeleteInvestment,
 }: Props) => {
   // Modal state
   const [modalType, setModalType] = useState<ModalType>(null);
@@ -53,6 +56,8 @@ const ReservaInvestimentosView = ({
   const [modalAmount, setModalAmount] = useState("");
   const [modalDate, setModalDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [modalNote, setModalNote] = useState("");
+  const [editingContributionId, setEditingContributionId] = useState<string | null>(null);
+  const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null);
 
   // Reserve form
   const [showNewReserve, setShowNewReserve] = useState(false);
@@ -82,11 +87,11 @@ const ReservaInvestimentosView = ({
 
   // Combined transaction history
   const history = useMemo(() => {
-    const items: { id: string; type: "reserve" | "investment"; name: string; amount: number; date: string; note?: string }[] = [];
+    const items: { id: string; type: "reserve" | "investment"; name: string; amount: number; date: string; note?: string; reserveId?: string }[] = [];
 
     emergencyReserves.forEach((r) => {
       r.contributions.forEach((c) => {
-        items.push({ id: c.id, type: "reserve", name: r.name, amount: c.amount, date: c.date, note: c.note });
+        items.push({ id: c.id, type: "reserve", name: r.name, amount: c.amount, date: c.date, note: c.note, reserveId: r.id });
       });
     });
 
@@ -103,6 +108,7 @@ const ReservaInvestimentosView = ({
     setModalAmount("");
     setModalDate(format(new Date(), "yyyy-MM-dd"));
     setModalNote("");
+    setEditingContributionId(null);
   };
 
   const openInvestmentModal = () => {
@@ -111,6 +117,23 @@ const ReservaInvestimentosView = ({
     setModalDate(format(new Date(), "yyyy-MM-dd"));
     setModalNote("");
     setInvName("");
+    setEditingInvestmentId(null);
+  };
+
+  const openEditReserveContribution = (reserveId: string, contributionId: string, amount: number, note?: string) => {
+    setModalType("reserve");
+    setModalReserveId(reserveId);
+    setEditingContributionId(contributionId);
+    setModalAmount(String(amount));
+    setModalNote(note || "");
+  };
+
+  const openEditInvestment = (id: string, name: string, amount: number, note?: string) => {
+    setModalType("investment");
+    setEditingInvestmentId(id);
+    setInvName(name);
+    setModalAmount(String(amount));
+    setModalNote(note || "");
   };
 
   const handleModalConfirm = () => {
@@ -118,9 +141,17 @@ const ReservaInvestimentosView = ({
     if (val <= 0) return;
 
     if (modalType === "reserve" && modalReserveId) {
-      onAddReserveContribution(modalReserveId, val, modalNote.trim() || undefined);
+      if (editingContributionId) {
+        onUpdateReserveContribution(modalReserveId, editingContributionId, { amount: val, note: modalNote.trim() || undefined });
+      } else {
+        onAddReserveContribution(modalReserveId, val, modalNote.trim() || undefined);
+      }
     } else if (modalType === "investment") {
-      onAddInvestment(invName.trim() || "Investimento", val, modalNote.trim() || undefined);
+      if (editingInvestmentId) {
+        onUpdateInvestment(editingInvestmentId, { name: invName.trim() || "Investimento", amount: val, note: modalNote.trim() || undefined });
+      } else {
+        onAddInvestment(invName.trim() || "Investimento", val, modalNote.trim() || undefined);
+      }
     }
     setModalType(null);
   };
@@ -471,6 +502,32 @@ const ReservaInvestimentosView = ({
                     {item.type === "reserve" ? "Reserva" : "Investimento"}
                   </p>
                 </div>
+                <div className="flex items-center gap-0.5 ml-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() =>
+                      item.type === "reserve" && item.reserveId
+                        ? openEditReserveContribution(item.reserveId, item.id, item.amount, item.note)
+                        : openEditInvestment(item.id, item.name, item.amount, item.note)
+                    }
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() =>
+                      item.type === "reserve" && item.reserveId
+                        ? onDeleteReserveContribution(item.reserveId, item.id)
+                        : onDeleteInvestment(item.id)
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -483,9 +540,9 @@ const ReservaInvestimentosView = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              Adicionar à Reserva
+              {editingContributionId ? "Editar Aporte" : "Adicionar à Reserva"}
             </DialogTitle>
-            <DialogDescription>Informe o valor a ser adicionado à sua reserva de emergência</DialogDescription>
+            <DialogDescription>{editingContributionId ? "Corrija o valor deste aporte" : "Informe o valor a ser adicionado à sua reserva de emergência"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {emergencyReserves.length > 1 && (
@@ -540,9 +597,9 @@ const ReservaInvestimentosView = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Adicionar aos Investimentos
+              {editingInvestmentId ? "Editar Aporte" : "Adicionar aos Investimentos"}
             </DialogTitle>
-            <DialogDescription>Registre um novo aporte nos seus investimentos</DialogDescription>
+            <DialogDescription>{editingInvestmentId ? "Corrija o valor deste aporte" : "Registre um novo aporte nos seus investimentos"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">

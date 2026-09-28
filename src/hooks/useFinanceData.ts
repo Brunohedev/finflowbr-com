@@ -483,6 +483,43 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     });
   }, [activeMonth]);
 
+  const updateReserveContribution = useCallback((reserveId: string, contributionId: string, updates: { amount?: number; note?: string }) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        emergencyReserves: prev.emergencyReserves.map((r) => {
+          if (r.id !== reserveId) return r;
+          const old = r.contributions.find((c) => c.id === contributionId);
+          if (!old) return r;
+          const newAmount = updates.amount ?? old.amount;
+          return {
+            ...r,
+            currentAmount: r.currentAmount - old.amount + newAmount,
+            contributions: r.contributions.map((c) =>
+              c.id === contributionId ? { ...c, amount: newAmount, note: updates.note !== undefined ? updates.note : c.note } : c
+            ),
+          };
+        }),
+      };
+    });
+  }, []);
+
+  const deleteReserveContribution = useCallback((reserveId: string, contributionId: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        emergencyReserves: prev.emergencyReserves.map((r) => {
+          if (r.id !== reserveId) return r;
+          const old = r.contributions.find((c) => c.id === contributionId);
+          if (!old) return r;
+          return { ...r, currentAmount: r.currentAmount - old.amount, contributions: r.contributions.filter((c) => c.id !== contributionId) };
+        }),
+      };
+    });
+  }, []);
+
   const toggleReservePin = useCallback((reserveId: string) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -544,6 +581,13 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
       return { ...prev, investments: [...prev.investments, investment] };
     });
   }, [activeMonth]);
+
+  const updateInvestment = useCallback((id: string, updates: { name?: string; amount?: number; note?: string }) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, investments: prev.investments.map((i) => i.id === id ? { ...i, ...updates } : i) };
+    });
+  }, []);
 
   const deleteInvestment = useCallback((id: string) => {
     setData((prev) => prev ? { ...prev, investments: prev.investments.filter((i) => i.id !== id) } : prev);
@@ -615,9 +659,9 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     addSubcategory, deleteSubcategory, resetMonth,
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource, updateIncomeSource,
-    addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve, addReserveContribution, toggleReservePin,
+    addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve, addReserveContribution, updateReserveContribution, deleteReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
-    addInvestment, deleteInvestment,
+    addInvestment, updateInvestment, deleteInvestment,
     addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense,
   };
 }
