@@ -108,6 +108,7 @@ const ReservaInvestimentosView = ({
     setModalAmount("");
     setModalDate(format(new Date(), "yyyy-MM-dd"));
     setModalNote("");
+    setEditingContributionId(null);
   };
 
   const openInvestmentModal = () => {
@@ -116,6 +117,23 @@ const ReservaInvestimentosView = ({
     setModalDate(format(new Date(), "yyyy-MM-dd"));
     setModalNote("");
     setInvName("");
+    setEditingInvestmentId(null);
+  };
+
+  const openEditReserveContribution = (reserveId: string, contributionId: string, amount: number, note?: string) => {
+    setModalType("reserve");
+    setModalReserveId(reserveId);
+    setEditingContributionId(contributionId);
+    setModalAmount(String(amount));
+    setModalNote(note || "");
+  };
+
+  const openEditInvestment = (id: string, name: string, amount: number, note?: string) => {
+    setModalType("investment");
+    setEditingInvestmentId(id);
+    setInvName(name);
+    setModalAmount(String(amount));
+    setModalNote(note || "");
   };
 
   const handleModalConfirm = () => {
@@ -123,9 +141,17 @@ const ReservaInvestimentosView = ({
     if (val <= 0) return;
 
     if (modalType === "reserve" && modalReserveId) {
-      onAddReserveContribution(modalReserveId, val, modalNote.trim() || undefined);
+      if (editingContributionId) {
+        onUpdateReserveContribution(modalReserveId, editingContributionId, { amount: val, note: modalNote.trim() || undefined });
+      } else {
+        onAddReserveContribution(modalReserveId, val, modalNote.trim() || undefined);
+      }
     } else if (modalType === "investment") {
-      onAddInvestment(invName.trim() || "Investimento", val, modalNote.trim() || undefined);
+      if (editingInvestmentId) {
+        onUpdateInvestment(editingInvestmentId, { name: invName.trim() || "Investimento", amount: val, note: modalNote.trim() || undefined });
+      } else {
+        onAddInvestment(invName.trim() || "Investimento", val, modalNote.trim() || undefined);
+      }
     }
     setModalType(null);
   };
