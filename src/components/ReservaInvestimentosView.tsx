@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import {
   ArrowLeft, Plus, Trash2, Target, Shield, CalendarDays, Pin, PinOff,
-  TrendingUp, Trophy, ArrowUpCircle, PiggyBank, History
+  TrendingUp, Trophy, ArrowUpCircle, PiggyBank, History, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -24,6 +24,8 @@ interface Props {
   onDeleteReserve: (id: string) => void;
   onUpdateReserve: (id: string, updates: { name?: string; targetAmount?: number }) => void;
   onAddReserveContribution: (reserveId: string, amount: number, note?: string) => void;
+  onUpdateReserveContribution: (reserveId: string, contributionId: string, updates: { amount?: number; note?: string }) => void;
+  onDeleteReserveContribution: (reserveId: string, contributionId: string) => void;
   onToggleReservePin: (id: string) => void;
   onAddGoal: (name: string, targetAmount: number, deadline?: string) => void;
   onDeleteGoal: (goalId: string) => void;
@@ -31,6 +33,7 @@ interface Props {
   onUpdateGoal: (goalId: string, updates: { name?: string; targetAmount?: number; deadline?: string }) => void;
   onToggleGoalPin: (goalId: string) => void;
   onAddInvestment: (name: string, amount: number, note?: string) => void;
+  onUpdateInvestment: (id: string, updates: { name?: string; amount?: number; note?: string }) => void;
   onDeleteInvestment: (id: string) => void;
 }
 
@@ -43,9 +46,9 @@ type ModalType = "reserve" | "investment" | null;
 
 const ReservaInvestimentosView = ({
   budget, spent, emergencyReserves, financialGoals, investments, currentMonth, onBack,
-  onAddReserve, onDeleteReserve, onUpdateReserve, onAddReserveContribution, onToggleReservePin,
+  onAddReserve, onDeleteReserve, onUpdateReserve, onAddReserveContribution, onUpdateReserveContribution, onDeleteReserveContribution, onToggleReservePin,
   onAddGoal, onDeleteGoal, onAddGoalContribution, onUpdateGoal, onToggleGoalPin,
-  onAddInvestment, onDeleteInvestment,
+  onAddInvestment, onUpdateInvestment, onDeleteInvestment,
 }: Props) => {
   // Modal state
   const [modalType, setModalType] = useState<ModalType>(null);
