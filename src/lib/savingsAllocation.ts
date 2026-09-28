@@ -41,7 +41,15 @@ export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) =>
 export const getSavingsAllocationForMonth = (data: FinanceData, monthKey: string): SavingsAllocationSummary => {
   const salary = getMonthlyIncomeForMonth(data, monthKey);
   const reservePercentage = getReservePercentage(data, monthKey);
-  const reserveCap = (salary * reservePercentage) / 100;
+  // Essentials/Wants have priority: the portion of reserve contributions that is
+  // deducted from salary can never exceed what is left after that spending.
+  // Anything beyond it is treated as an external ("extra") contribution, so the
+  // reserve alone never pushes the month negative, while real overspending stays visible.
+  const essentialsWantsSpent = data.expenses
+    .filter((e) => e.date.startsWith(monthKey) && e.categoryId !== "reserva_investimentos")
+    .reduce((sum, e) => sum + e.amount, 0);
+  const availableAfterSpending = Math.max(0, salary - essentialsWantsSpent);
+  const reserveCap = Math.min((salary * reservePercentage) / 100, availableAfterSpending);
 
   const entries = [
     ...data.emergencyReserves.flatMap((reserve) =>
