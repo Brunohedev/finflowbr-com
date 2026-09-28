@@ -46,9 +46,9 @@ const Index = () => {
     getSpentByCategory, getSpentBySubcategory, getBudget,
     addIncomeSource, deleteIncomeSource,
     addEmergencyReserve, deleteEmergencyReserve, updateEmergencyReserve,
-    addReserveContribution, toggleReservePin,
+    addReserveContribution, updateReserveContribution, deleteReserveContribution, toggleReservePin,
     addFinancialGoal, deleteFinancialGoal, addGoalContribution, updateGoal, toggleGoalPin,
-    addInvestment, deleteInvestment,
+    addInvestment, updateInvestment, deleteInvestment,
     addRecurringExpense, deleteRecurringExpense, toggleRecurringExpense
   } = useFinanceData(user?.id, selectedMonth);
 
