@@ -502,6 +502,32 @@ const ReservaInvestimentosView = ({
                     {item.type === "reserve" ? "Reserva" : "Investimento"}
                   </p>
                 </div>
+                <div className="flex items-center gap-0.5 ml-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() =>
+                      item.type === "reserve" && item.reserveId
+                        ? openEditReserveContribution(item.reserveId, item.id, item.amount, item.note)
+                        : openEditInvestment(item.id, item.name, item.amount, item.note)
+                    }
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() =>
+                      item.type === "reserve" && item.reserveId
+                        ? onDeleteReserveContribution(item.reserveId, item.id)
+                        : onDeleteInvestment(item.id)
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
