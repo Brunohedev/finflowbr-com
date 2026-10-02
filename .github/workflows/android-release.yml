@@ -1,4 +1,4 @@
-name: Build Android Release AAB
+name: FinFlow Android Release AAB
 
 on:
   workflow_dispatch:
