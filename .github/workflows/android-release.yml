@@ -33,10 +33,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Decode release keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/finflow-release.keystore
+  env:
+    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+  run: |
+    node -e "require('fs').writeFileSync('android/app/finflow-release.keystore', Buffer.from(process.env.KEYSTORE_BASE64, 'base64'))"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
