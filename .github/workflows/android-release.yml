@@ -39,7 +39,20 @@ jobs:
           node -e "require('fs').writeFileSync('android/app/finflow-release.keystore', Buffer.from(process.env.KEYSTORE_BASE64, 'base64'))"
 
       - name: Verify keystore
-        run: sha256sum android/app/finflow-release.keystore
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          echo "Keystore size:"
+          ls -lh android/app/finflow-release.keystore
+
+          echo "Keystore SHA256:"
+          sha256sum android/app/finflow-release.keystore
+
+          echo "Validating keystore:"
+          keytool -list -v \
+            -keystore android/app/finflow-release.keystore \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias finflow
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
