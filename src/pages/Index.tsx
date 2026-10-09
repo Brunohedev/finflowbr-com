@@ -17,7 +17,7 @@ import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu, BookOpen, Download } from "lucide-react";
+import { Plus, Settings, Wallet, CalendarDays, LogOut, TrendingDown, TrendingUp, ChevronLeft, ChevronRight, Headphones, Building2, Menu, BookOpen, Download, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import InstallPWAButton from "@/components/InstallPWAButton";
 import { format, addMonths, subMonths } from "date-fns";
@@ -150,6 +150,9 @@ const Index = () => {
                     <CalendarDays className="w-4 h-4 mr-2" /> {t("Relatório Mensal")}
                   </Button>
                   <InstallPWAButton variant="menu" />
+                  <Button variant="ghost" className="justify-start rounded-xl text-muted-foreground hover:text-destructive" onClick={() => navigate("/excluir-conta")}>
+                    <UserX className="w-4 h-4 mr-2" /> {t("Excluir conta")}
+                  </Button>
                   <Button variant="ghost" className="justify-start rounded-xl text-muted-foreground hover:text-destructive" onClick={logout}>
                     <LogOut className="w-4 h-4 mr-2" /> {t("Sair")}
                   </Button>
@@ -195,6 +198,8 @@ const Index = () => {
           onDeleteReserve={deleteEmergencyReserve}
           onUpdateReserve={updateEmergencyReserve}
           onAddReserveContribution={addReserveContribution}
+          onUpdateReserveContribution={updateReserveContribution}
+          onDeleteReserveContribution={deleteReserveContribution}
           onToggleReservePin={toggleReservePin}
           onAddGoal={addFinancialGoal}
           onDeleteGoal={deleteFinancialGoal}
@@ -202,6 +207,7 @@ const Index = () => {
           onUpdateGoal={updateGoal}
           onToggleGoalPin={toggleGoalPin}
           onAddInvestment={addInvestment}
+          onUpdateInvestment={updateInvestment}
           onDeleteInvestment={deleteInvestment} /> :
 
         view === "category" && selectedCategory ?

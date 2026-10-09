@@ -14,6 +14,7 @@ import VSL from "./pages/VSL";
 import BankConnect from "./pages/BankConnect";
 import Onboarding from "./pages/Onboarding";
 import Privacy from "./pages/Privacy";
+import DeleteAccount from "./pages/DeleteAccount";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/vsl" element={<VSL />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/excluir-conta" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
