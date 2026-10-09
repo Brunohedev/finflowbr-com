@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          reason: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          reason?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          reason?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       admin_access: {
         Row: {
           created_at: string | null
