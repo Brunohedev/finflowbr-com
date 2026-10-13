@@ -38,5 +38,15 @@ export async function getAccess(user: User): Promise<AccessLevel> {
     return "pro";
   }
 
+  // 3. Server-verified Stripe subscription (check-subscription edge function).
+  // Retries briefly to tolerate delays right after checkout.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data, error } = await supabase.functions.invoke("check-subscription", { body: null });
+    if (!error && data && !data.error) {
+      return data.subscribed === true ? "pro" : "none";
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+
   return "none";
 }
