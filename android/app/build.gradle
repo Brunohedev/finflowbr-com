@@ -4,7 +4,6 @@ android {
 namespace = "com.finflowbr.app"
 compileSdk = rootProject.ext.compileSdkVersion
 
-```
 defaultConfig {
     applicationId "com.finflowbr.app"
     minSdkVersion rootProject.ext.minSdkVersion
