@@ -37,7 +37,7 @@ describe("VoiceExpenseBar confirm flow", () => {
     render(<VoiceExpenseBar categories={DEFAULT_CATEGORIES} onAddExpense={onAddExpense} />);
 
     fireEvent.click(screen.getByLabelText("Start recording"));
-    fireEvent.click(screen.getByLabelText("Stop recording"));
+    fireEvent.click(await screen.findByLabelText("Stop recording"));
 
     await screen.findByText("We Identified Your Expense");
     fireEvent.click(screen.getByRole("button", { name: "Mercado" }));
