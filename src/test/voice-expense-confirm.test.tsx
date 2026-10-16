@@ -30,7 +30,9 @@ const mockFetch = (body: any, ok = true, status = 200) =>
   vi.fn().mockResolvedValue({ ok, status, json: () => Promise.resolve(body) });
 
 describe("VoiceExpenseBar confirm flow", () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    Object.defineProperty(globalThis.navigator, "mediaDevices", { value: { getUserMedia: vi.fn().mockResolvedValue({ getTracks: () => [{ stop: () => {} }] }) }, configurable: true });
+  });
 
   const recordAndConfirm = async (onAddExpense: any, backendBody: any) => {
     (globalThis as any).fetch = mockFetch(backendBody);
