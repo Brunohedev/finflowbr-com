@@ -1,2 +1,2 @@
 - [x] Split by Month in voice expense review
-- [ ] Essential Expenses: findings reported, waiting on user to confirm account + month
+- [ ] Essential Expenses (michellelafreitas): Oct records gone from DB; recovery needs Supabase backup restore by user
