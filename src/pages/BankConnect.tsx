@@ -355,6 +355,47 @@ const BankConnect = () => {
     checkPlaidConnection();
   }, [loadPending, checkPlaidConnection]);
 
+  // Live updates: reload list when this user's transactions change (RLS-scoped + user filter).
+  useEffect(() => {
+    if (!user) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const channel = supabase
+      .channel(`tx-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` },
+        () => {
+          // Debounce bursts (a sync can upsert many rows at once).
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(() => loadPending(), 400);
+        },
+      )
+      .subscribe();
+    return () => {
+      if (timer) clearTimeout(timer);
+      supabase.removeChannel(channel);
+    };
+  }, [user, loadPending]);
+
+  // When the app returns to the foreground (web tab or Android), check for new transactions (max 1x/min).
+  const lastFgSyncRef = useRef(0);
+  useEffect(() => {
+    if (!user) return;
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastFgSyncRef.current < 60_000) return;
+      lastFgSyncRef.current = now;
+      refreshPlaid(false);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [user, refreshPlaid]);
+
   // Auto-refresh Plaid ao abrir a tela
   const autoRefreshedRef = useRef(false);
   useEffect(() => {
