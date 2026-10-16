@@ -182,7 +182,12 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
                 </div>
               </div>
             ))}
-            <Button className="w-full" disabled={!valid || saving} onClick={confirm}>Confirm Expense</Button>
+            {!valid && draft && (
+              <p className="text-xs text-destructive">To confirm, add {missing.join(", ")}.</p>
+            )}
+            <Button className="w-full" disabled={!valid || saving} onClick={confirm}>
+              {saving ? "Saving…" : "Confirm Expense"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
