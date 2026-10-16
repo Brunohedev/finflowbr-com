@@ -7,10 +7,13 @@ import type { Json } from "@/integrations/supabase/types";
  * saved since we last read it. Otherwise it reports a conflict so the caller
  * can reload the newer data instead of erasing it.
  */
-export type SaveResult =
-  | { ok: true; updatedAt: string | null }
-  | { ok: false; conflict: true; remote: { data: unknown; updated_at: string } | null }
-  | { ok: false; conflict: false; error: string };
+export type SaveResult = {
+  ok: boolean;
+  conflict?: boolean;
+  updatedAt?: string | null;
+  remote?: { data: unknown; updated_at: string } | null;
+  error?: string;
+};
 
 export async function saveFinanceDataSafely(
   userId: string,

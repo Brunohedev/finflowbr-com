@@ -163,18 +163,18 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     const result = await saveFinanceDataSafely(uid, toFinanceJson(toSave), remoteUpdatedAtRef.current);
     savingRef.current = false;
 
-    if (result.ok === true) {
-      remoteUpdatedAtRef.current = result.updatedAt;
+    if (result.ok) {
+      remoteUpdatedAtRef.current = result.updatedAt ?? null;
       if (pendingRef.current) void flushSave(uid);
       return;
     }
-    if ("remote" in result) {
+    if (result.conflict) {
       pendingRef.current = null;
       if (result.remote) applyRemote(uid, result.remote);
       toast.warning("Seus dados foram atualizados em outro aparelho. Carregamos a versão mais recente — refaça a última alteração, se necessário.");
       return;
     }
-    console.error("Finance sync save error:", "error" in result ? result.error : "unknown");
+    console.error("Finance sync save error:", result.error);
     lastSyncedSnapshotRef.current = null;
   }, [applyRemote]);
 
