@@ -10,6 +10,8 @@ import { format, addMonths, parseISO } from "date-fns";
 import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+import { saveFinanceDataSafely, fetchRemote } from "@/lib/financeSync";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
