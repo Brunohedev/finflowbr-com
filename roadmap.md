@@ -1,2 +1,3 @@
 - [x] Split by Month in voice expense review
-- [ ] Essential Expenses (michellelafreitas): Oct records gone from DB; recovery needs Supabase backup restore by user
+- [x] Stop stale devices from overwriting finance data (version-checked saves)
+- [ ] Restore Michelle's lost expenses — waiting on Supabase backup from user
