@@ -593,10 +593,12 @@ const BankConnect = () => {
     try {
       const amount = Math.abs(Number(tx?.amount ?? 0));
       if (amount > 0) {
-        const { data: row } = await supabase.from("finance_data").select("data").eq("user_id", user.id).maybeSingle();
-
-        const fd: any = row?.data || null;
-        if (fd && Array.isArray(fd.expenses)) {
+        // Retry a few times so we never overwrite a newer save from another device.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const { data: row } = await supabase.from("finance_data").select("data, updated_at").eq("user_id", user.id).maybeSingle();
+          const fd: any = row?.data || null;
+          if (!row || !fd || !Array.isArray(fd.expenses)) break;
+          if (fd.expenses.some((e: any) => e?.transactionId === id)) break;
           const newExpense = {
             id: crypto.randomUUID(),
             name: tx?.name || "Transação bancária",
@@ -609,7 +611,8 @@ const BankConnect = () => {
             transactionId: id,
           };
           const nextData = { ...fd, expenses: [...fd.expenses, newExpense] };
-          await supabase.from("finance_data").upsert([{ user_id: user.id, data: nextData }], { onConflict: "user_id" });
+          const res = await saveFinanceDataSafely(user.id, nextData, row.updated_at);
+          if (res.ok || !res.conflict) break;
         }
       }
     } catch (e) {
