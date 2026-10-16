@@ -86,24 +86,36 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
   };
 
   const amountNum = Number(draft?.amount?.replace(",", "."));
-  const valid = !!draft && draft.description.trim() && amountNum > 0 && /^\d{4}-\d{2}-\d{2}$/.test(draft.date) && pick;
+  const missing: string[] = [];
+  if (draft) {
+    if (!draft.description.trim()) missing.push("a description");
+    if (!(amountNum > 0)) missing.push("a valid amount");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) missing.push("a valid date");
+    if (!pick) missing.push("a category");
+  }
+  const valid = !!draft && missing.length === 0;
 
   const confirm = () => {
     if (!valid || saving || !draft || !pick) return;
     setSaving(true);
-    const name = draft.merchant.trim() ? `${draft.description.trim()} · ${draft.merchant.trim()}` : draft.description.trim();
-    onAddExpense({
-      name,
-      amount: Math.round(amountNum * 100) / 100,
-      categoryId: pick.categoryId,
-      subcategoryId: pick.subcategoryId,
-      date: draft.date,
-      status: "paid",
-      note: "Registrada por voz",
-    });
-    toast.success("Expense added");
-    setDraft(null);
-    setSaving(false);
+    try {
+      const name = draft.merchant.trim() ? `${draft.description.trim()} · ${draft.merchant.trim()}` : draft.description.trim();
+      onAddExpense({
+        name,
+        amount: Math.round(amountNum * 100) / 100,
+        categoryId: pick.categoryId,
+        subcategoryId: pick.subcategoryId,
+        date: draft.date,
+        status: "paid",
+        note: "Registrada por voz",
+      });
+      toast.success("Expense added");
+      setDraft(null);
+    } catch {
+      toast.error("Could not save the expense. Please try again — your details are still here.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const field = (k: keyof Draft, label: string, type = "text") => (
