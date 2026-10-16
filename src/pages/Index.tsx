@@ -14,6 +14,7 @@ import MonthlyReportPage from "@/components/report/MonthlyReportPage";
 import PinnedItems from "@/components/PinnedItems";
 import EndOfMonthPrediction from "@/components/EndOfMonthPrediction";
 import FinancialInsightsBanner from "@/components/FinancialInsightsBanner";
+import VoiceExpenseBar from "@/components/VoiceExpenseBar";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -341,6 +342,8 @@ const Index = () => {
                 })}
               </div>
             </div>
+
+            <VoiceExpenseBar categories={data.categories} onAddExpense={addExpense} />
 
             {/* 3️⃣ Financial Insights Banner */}
             <FinancialInsightsBanner
