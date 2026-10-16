@@ -72,7 +72,7 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body?.error || "Could not process the audio.");
       setDraft({
-        description: body.description ?? "",
+        description: body.description ?? body.merchant ?? "",
         merchant: body.merchant ?? "",
         amount: body.amount != null ? String(body.amount) : "",
         date: body.date ?? format(new Date(), "yyyy-MM-dd"),
