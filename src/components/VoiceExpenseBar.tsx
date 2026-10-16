@@ -4,13 +4,16 @@ import { Mic, Square, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Category, Expense } from "@/types/finance";
 
 interface Props {
   categories: Category[];
-  onAddExpense: (e: Omit<Expense, "id">) => void;
+  onAddExpense: (e: Omit<Expense, "id"> & { installments?: number }) => void;
 }
 
 type Draft = { description: string; merchant: string; amount: string; date: string };
@@ -20,6 +23,9 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pick, setPick] = useState<{ categoryId: string; subcategoryId: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [hasInstallments, setHasInstallments] = useState(false);
+  const [installments, setInstallments] = useState("2");
+  const { t } = useLanguage();
   const recRef = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const cancelled = useRef(false);
@@ -78,6 +84,8 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
         date: body.date ?? format(new Date(), "yyyy-MM-dd"),
       });
       setPick(null);
+      setHasInstallments(false);
+      setInstallments("2");
     } catch (e: any) {
       toast.error(e?.message || "Could not process the audio.");
     } finally {
@@ -92,6 +100,7 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
     if (!(amountNum > 0)) missing.push("a valid amount");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) missing.push("a valid date");
     if (!pick) missing.push("a category");
+    if (hasInstallments && !(parseInt(installments) >= 2 && parseInt(installments) <= 48)) missing.push("2 to 48 installments");
   }
   const valid = !!draft && missing.length === 0;
 
@@ -108,6 +117,7 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
         date: draft.date,
         status: "paid",
         note: "Registrada por voz",
+        installments: hasInstallments ? parseInt(installments) || 1 : undefined,
       });
       toast.success("Expense added");
       setDraft(null);
@@ -163,6 +173,24 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
             <div className="grid grid-cols-2 gap-3">
               {field("amount", "Amount ($)")}
               {field("date", "Date", "date")}
+            </div>
+            <div className="space-y-3 p-3 rounded-lg bg-secondary/50 border border-border">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">{t("Parcelado?")}</Label>
+                <Switch checked={hasInstallments} onCheckedChange={setHasInstallments} aria-label="Installments" />
+              </div>
+              {hasInstallments && (
+                <div className="space-y-2 animate-in fade-in duration-200">
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("Número de parcelas")}</label>
+                  <Input type="number" min="2" max="48" value={installments}
+                    onChange={(e) => setInstallments(e.target.value)} className="h-8 text-sm" aria-label="Number of installments" />
+                  {amountNum > 0 && parseInt(installments) > 1 && (
+                    <p className="text-xs text-primary font-medium">
+                      {parseInt(installments)}x {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amountNum / parseInt(installments))}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             <p className="text-sm font-medium pt-1">Which category does this expense belong to?</p>
             {spendCats.map((cat) => (

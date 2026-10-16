@@ -1,0 +1,2 @@
+- [x] Split by Month in voice expense review
+- [ ] Essential Expenses: findings reported, waiting on user to confirm account + month

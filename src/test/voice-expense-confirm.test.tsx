@@ -4,6 +4,8 @@ import VoiceExpenseBar from "@/components/VoiceExpenseBar";
 import { DEFAULT_CATEGORIES } from "@/types/finance";
 
 // Mock supabase session
+vi.mock("@/i18n/LanguageContext", () => ({ useLanguage: () => ({ t: (k: string) => k }) }));
+
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
@@ -79,5 +81,23 @@ describe("VoiceExpenseBar confirm flow", () => {
     fireEvent.click(btn);
     fireEvent.click(btn);
     await waitFor(() => expect(onAddExpense).toHaveBeenCalledTimes(1));
+  });
+
+  it("passes installments when split by month is on", async () => {
+    const onAddExpense = vi.fn();
+    const btn = await recordAndConfirm(onAddExpense, { description: "TV", merchant: null, amount: 300, date: "2026-10-16" });
+    fireEvent.click(screen.getByLabelText("Installments"));
+    fireEvent.change(screen.getByLabelText("Number of installments"), { target: { value: "3" } });
+    await waitFor(() => expect(btn).not.toBeDisabled());
+    fireEvent.click(btn);
+    expect(onAddExpense.mock.calls[0][0]).toMatchObject({ amount: 300, installments: 3 });
+  });
+
+  it("omits installments for ordinary voice expenses", async () => {
+    const onAddExpense = vi.fn();
+    const btn = await recordAndConfirm(onAddExpense, { description: "Gas", merchant: null, amount: 12, date: "2026-10-16" });
+    await waitFor(() => expect(btn).not.toBeDisabled());
+    fireEvent.click(btn);
+    expect(onAddExpense.mock.calls[0][0].installments).toBeUndefined();
   });
 });
