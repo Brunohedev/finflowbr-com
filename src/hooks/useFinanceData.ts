@@ -137,7 +137,44 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const [data, setData] = useState<FinanceData | null>(() => userId ? null : getInitialData(undefined));
   const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "loaded">(userId ? "loading" : "idle");
   const lastSyncedSnapshotRef = useRef<string | null>(null);
+  // Version of the cloud row we last read/wrote. Saves only succeed if the cloud
+  // still has this version, so a stale device/tab can never erase newer data.
+  const remoteUpdatedAtRef = useRef<string | null>(null);
+  const savingRef = useRef(false);
+  const pendingRef = useRef<FinanceData | null>(null);
   const isSyncLoading = !!userId && syncStatus !== "loaded";
+
+  const applyRemote = useCallback((uid: string, remote: { data: unknown; updated_at: string }) => {
+    const remoteData = normalizeFinanceData(remote.data);
+    remoteUpdatedAtRef.current = remote.updated_at;
+    if (!remoteData) return;
+    saveToLocalStorage(uid, remoteData);
+    lastSyncedSnapshotRef.current = JSON.stringify(withSyncedIncome(remoteData));
+    setData(remoteData);
+  }, []);
+
+  const flushSave = useCallback(async (uid: string) => {
+    if (savingRef.current || !pendingRef.current) return;
+    const toSave = pendingRef.current;
+    pendingRef.current = null;
+    savingRef.current = true;
+    const result = await saveFinanceDataSafely(uid, toFinanceJson(toSave), remoteUpdatedAtRef.current);
+    savingRef.current = false;
+
+    if (result.ok) {
+      remoteUpdatedAtRef.current = result.updatedAt;
+      if (pendingRef.current) void flushSave(uid);
+      return;
+    }
+    if (result.conflict) {
+      pendingRef.current = null;
+      if (result.remote) applyRemote(uid, result.remote);
+      toast.warning("Seus dados foram atualizados em outro aparelho. Carregamos a versão mais recente — refaça a última alteração, se necessário.");
+      return;
+    }
+    console.error("Finance sync save error:", result.error);
+    lastSyncedSnapshotRef.current = null;
+  }, [applyRemote]);
 
   useEffect(() => {
     if (!userId) {
@@ -151,6 +188,8 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     // For authenticated users, always start blank and wait for Supabase.
     setData(null);
     lastSyncedSnapshotRef.current = null;
+    remoteUpdatedAtRef.current = null;
+    pendingRef.current = null;
 
     let cancelled = false;
     setSyncStatus("loading");
@@ -172,7 +211,8 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
       const remoteData = normalizeFinanceData(remoteRow?.data);
 
-      if (remoteData) {
+      if (remoteData && remoteRow) {
+        remoteUpdatedAtRef.current = remoteRow.updated_at;
         saveToLocalStorage(userId, remoteData);
         lastSyncedSnapshotRef.current = JSON.stringify(remoteData);
         setData(remoteData);
@@ -191,10 +231,24 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
 
     void hydrateFromSupabase();
 
+    // When the user comes back to this tab/app, pull newer cloud data first.
+    const refreshIfStale = async () => {
+      if (document.visibilityState !== "visible" || savingRef.current || pendingRef.current) return;
+      const remote = await fetchRemote(userId);
+      if (cancelled || !remote || savingRef.current || pendingRef.current) return;
+      if (remoteUpdatedAtRef.current && remote.updated_at !== remoteUpdatedAtRef.current) {
+        applyRemote(userId, remote);
+      }
+    };
+    document.addEventListener("visibilitychange", refreshIfStale);
+    window.addEventListener("focus", refreshIfStale);
+
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", refreshIfStale);
+      window.removeEventListener("focus", refreshIfStale);
     };
-  }, [userId]);
+  }, [userId, applyRemote]);
 
   useEffect(() => {
     if (!data) {
@@ -212,17 +266,9 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     }
 
     lastSyncedSnapshotRef.current = snapshot;
-
-    void supabase
-      .from("finance_data")
-      .upsert([{ user_id: userId, data: toFinanceJson(synced) }], { onConflict: "user_id" })
-      .then(({ error }) => {
-        if (error) {
-          console.error("Finance sync save error:", error.message);
-          lastSyncedSnapshotRef.current = null;
-        }
-      });
-  }, [data, userId, syncStatus]);
+    pendingRef.current = synced;
+    void flushSave(userId);
+  }, [data, userId, syncStatus, flushSave]);
 
   const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources, activeMonth) : 0, [data, activeMonth]);
   const monthlyIncome = useMemo(() => {
