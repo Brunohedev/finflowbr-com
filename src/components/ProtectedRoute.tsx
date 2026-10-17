@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAccess, type AccessLevel } from "@/lib/getAccess";
+import { useBankForegroundRefresh } from "@/hooks/useBankForegroundRefresh";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [accessLevel, setAccessLevel] = useState<AccessLevel | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  useBankForegroundRefresh(user?.id);
 
   useEffect(() => {
     let cancelled = false;
