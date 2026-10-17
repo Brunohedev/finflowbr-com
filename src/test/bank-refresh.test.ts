@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
@@ -8,6 +8,31 @@ import { useBankForegroundRefresh } from "@/hooks/useBankForegroundRefresh";
 
 describe("bank refresh", () => {
   beforeEach(() => { invoke.mockReset(); invoke.mockResolvedValue({ data: { ok: true }, error: null }); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("checks again at 30 seconds if the first read preceded purchase availability", async () => {
+    vi.useFakeTimers();
+    const { unmount } = renderHook(() => useBankForegroundRefresh("follow-up"));
+    await act(async () => {});
+    await act(async () => { await vi.advanceTimersByTimeAsync(29_999); });
+    expect(invoke).toHaveBeenCalledTimes(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(invoke).toHaveBeenCalledTimes(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(90_000); });
+    expect(invoke).toHaveBeenCalledTimes(2);
+    unmount();
+  });
+
+  it("refreshes on focus and cancels the follow-up on unmount", async () => {
+    vi.useFakeTimers();
+    const { unmount } = renderHook(() => useBankForegroundRefresh("focus"));
+    await act(async () => {});
+    await act(async () => { window.dispatchEvent(new Event("focus")); });
+    expect(invoke).toHaveBeenCalledTimes(2);
+    unmount();
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(invoke).toHaveBeenCalledTimes(2);
+  });
 
   it("refreshes when the app opens, without requiring the bank page", async () => {
     const { unmount } = renderHook(() => useBankForegroundRefresh("u1"));
