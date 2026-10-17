@@ -1,5 +1,6 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { syncTransactions } from '../_shared/transactionSync.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -28,16 +29,7 @@ Deno.serve(async (req) => {
     }
     const userId = claims.claims.sub;
 
-    const admin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // Delegate to the centralized sync function.
-    const { data, error } = await admin.functions.invoke('sync-transactions', {
-      body: { user_id: userId, days: 30 },
-    });
-    if (error) throw error;
+    const data = await syncTransactions({ userId, days: 30 });
 
     return new Response(JSON.stringify(data ?? { ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

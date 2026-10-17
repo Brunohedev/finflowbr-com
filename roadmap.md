@@ -1,3 +1,4 @@
 - [x] Split by Month in voice expense review
 - [x] Stop stale devices from overwriting finance data (version-checked saves)
 - [ ] Restore Michelle's lost expenses — waiting on Supabase backup from user
+- [x] Reduce bank purchase ingestion delay: app-wide foreground sync, shared ingestion, pagination, verified webhooks

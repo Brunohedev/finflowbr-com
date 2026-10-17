@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { saveFinanceDataSafely } from "@/lib/financeSync";
+import { refreshBankTransactions } from "@/lib/bankRefresh";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -214,25 +215,8 @@ const BankConnect = () => {
       if (!user) return;
       setRefreshing(true);
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        if (!token) throw new Error("Sessão inválida");
-        const res = await fetch("https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/plaid-refresh", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ user_id: user.id }),
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        if (showToast) toast.success("Transações atualizadas");
-        await loadPending();
+        await refreshBankTransactions(user.id);
+        if (showToast) toast.success("Transações disponíveis atualizadas");
       } catch (e: any) {
         console.error("[Plaid] refresh failed", e);
         if (showToast) toast.error(e?.message || "Erro ao atualizar");
@@ -376,32 +360,24 @@ const BankConnect = () => {
     };
   }, [user, loadPending]);
 
-  // When the app returns to the foreground (web tab or Android), check for new transactions (max 1x/min).
-  const lastFgSyncRef = useRef(0);
+  // The protected app shell syncs on open/foreground, even outside this page.
+  // Read immediately on foreground, and again when that sync completes.
   useEffect(() => {
     if (!user) return;
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      const now = Date.now();
-      if (now - lastFgSyncRef.current < 60_000) return;
-      lastFgSyncRef.current = now;
-      refreshPlaid(false);
+      void loadPending();
+    };
+    const onRefreshed = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === user.id) void loadPending();
     };
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
+    window.addEventListener("bank-transactions-refreshed", onRefreshed);
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
+      window.removeEventListener("bank-transactions-refreshed", onRefreshed);
     };
-  }, [user, refreshPlaid]);
-
-  // Auto-refresh Plaid ao abrir a tela
-  const autoRefreshedRef = useRef(false);
-  useEffect(() => {
-    if (!user || autoRefreshedRef.current) return;
-    autoRefreshedRef.current = true;
-    refreshPlaid(false);
-  }, [user, refreshPlaid]);
+  }, [user, loadPending]);
 
   // Pull-to-refresh
   const onTouchStart = (e: React.TouchEvent) => {

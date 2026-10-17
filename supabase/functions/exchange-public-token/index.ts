@@ -1,5 +1,6 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { syncTransactions } from '../_shared/transactionSync.ts';
 
 const PLAID_EFFECTIVE_ENV = 'production';
 const PLAID_BASE_URL = 'https://production.plaid.com';
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
     const userId = claims.claims.sub;
 
     const { public_token } = await req.json();
-    if (!public_token) {
+    if (typeof public_token !== 'string' || !public_token || public_token.length > 2048) {
       return new Response(JSON.stringify({ error: 'public_token required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -83,10 +84,7 @@ Deno.serve(async (req) => {
     let syncOk = false;
     let syncError: string | null = null;
     try {
-      const { data, error } = await admin.functions.invoke('sync-transactions', {
-        body: { user_id: userId, access_token: accessToken, item_id: itemId, days: 30 },
-      });
-      if (error) throw error;
+      const data = await syncTransactions({ userId, itemId, days: 30 });
       syncOk = Boolean(data?.ok);
       imported = Number(data?.imported ?? 0);
       console.log('[Plaid:exchange_public_token] sync-transactions result', { syncOk, imported, data });
