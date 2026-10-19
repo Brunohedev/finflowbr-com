@@ -24,6 +24,7 @@ export async function requestBankRefresh(admin: SupabaseClient, userId: string) 
   const { data: connections, error } = await admin.from('plaid_connections')
     .select('item_id, access_token, last_bank_refresh_at').eq('user_id', userId);
   if (error) throw error;
+  console.log('[Plaid:refresh] connections', { count: connections?.length ?? 0 });
   const webhookUrl = Deno.env.get('PLAID_WEBHOOK_URL') ||
     `${Deno.env.get('SUPABASE_URL')}/functions/v1/plaid-webhook`;
 
@@ -35,9 +36,10 @@ export async function requestBankRefresh(admin: SupabaseClient, userId: string) 
     const cutoff = new Date(Date.now() - BANK_REFRESH_INTERVAL_MS).toISOString();
     const claimQuery = admin.from('plaid_connections').update({ last_bank_refresh_at: new Date().toISOString() })
       .eq('item_id', c.item_id);
-    const { data: claimed } = await (c.last_bank_refresh_at
+    const { data: claimed, error: claimError } = await (c.last_bank_refresh_at
       ? claimQuery.lt('last_bank_refresh_at', cutoff)
       : claimQuery.is('last_bank_refresh_at', null)).select('item_id');
+    if (claimError) console.error('[Plaid:refresh] claim failed', { item_id: c.item_id, error: claimError.message });
     if (!claimed?.length) return { item_id: c.item_id, requested: false };
 
     // First time: make sure older items also send their updates to us.
