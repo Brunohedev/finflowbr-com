@@ -1,6 +1,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { syncTransactions } from '../_shared/transactionSync.ts';
+import { requestBankRefresh } from '../_shared/bankRefreshRequest.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -29,7 +30,13 @@ Deno.serve(async (req) => {
     }
     const userId = claims.claims.sub;
 
-    const data = await syncTransactions({ userId, days: 30 });
+    const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    // Ask the bank for new purchases (throttled); never block the read on it.
+    const bankRefresh = await requestBankRefresh(admin, userId).catch((e) => {
+      console.error('[Plaid:refresh] bank refresh request failed', String(e));
+      return [];
+    });
+    const data = { ...(await syncTransactions({ userId, days: 30 })), bankRefresh };
 
     return new Response(JSON.stringify(data ?? { ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
