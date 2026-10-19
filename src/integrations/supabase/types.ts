@@ -136,6 +136,7 @@ export type Database = {
           access_token: string
           created_at: string | null
           item_id: string | null
+          last_bank_refresh_at: string | null
           sync_cursor: string | null
           user_id: string
         }
@@ -143,6 +144,7 @@ export type Database = {
           access_token: string
           created_at?: string | null
           item_id?: string | null
+          last_bank_refresh_at?: string | null
           sync_cursor?: string | null
           user_id: string
         }
@@ -150,6 +152,7 @@ export type Database = {
           access_token?: string
           created_at?: string | null
           item_id?: string | null
+          last_bank_refresh_at?: string | null
           sync_cursor?: string | null
           user_id?: string
         }
