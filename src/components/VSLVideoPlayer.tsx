@@ -9,12 +9,15 @@ interface VSLVideoPlayerProps {
   onUnlock?: () => void;
 }
 
+const SPEEDS = [1, 1.25, 1.5, 1.75, 2] as const;
+
 export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock }: VSLVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const maxWatchedRef = useRef(0);
   const unlockedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [speedIndex, setSpeedIndex] = useState(0);
   const [error, setError] = useState(false);
 
   const play = async () => {
