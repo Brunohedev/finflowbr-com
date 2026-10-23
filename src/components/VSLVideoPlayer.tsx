@@ -9,12 +9,15 @@ interface VSLVideoPlayerProps {
   onUnlock?: () => void;
 }
 
+const SPEEDS = [1, 1.25, 1.5, 1.75, 2] as const;
+
 export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock }: VSLVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const maxWatchedRef = useRef(0);
   const unlockedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [speedIndex, setSpeedIndex] = useState(0);
   const [error, setError] = useState(false);
 
   const play = async () => {
@@ -53,6 +56,13 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
       return;
     }
     void video.play().catch(() => setError(true));
+  };
+
+  const cycleSpeed = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const next = (speedIndex + 1) % SPEEDS.length;
+    setSpeedIndex(next);
+    if (videoRef.current) videoRef.current.playbackRate = SPEEDS[next];
   };
 
   return (
@@ -100,6 +110,16 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
             {error ? "Não foi possível reproduzir. Toque para tentar novamente." : "Toque para assistir"}
           </span>
         </Button>
+      )}
+      {playing && (
+        <button
+          type="button"
+          onClick={cycleSpeed}
+          aria-label="Velocidade do vídeo"
+          className="absolute bottom-5 right-3 z-30 rounded-full bg-foreground/80 px-3 py-1 text-xs font-bold text-background backdrop-blur-sm transition-colors hover:bg-foreground"
+        >
+          {SPEEDS[speedIndex]}x
+        </button>
       )}
       <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 h-1.5 overflow-hidden rounded-full bg-muted/50">
         <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${progress}%` }} />
