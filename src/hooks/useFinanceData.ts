@@ -4,7 +4,7 @@ import {
   FinancialGoal, Investment, EmergencyReserve, IncomeSource, IncomeFrequency,
   RecurringExpense, RecurringFrequency,
   DEFAULT_CATEGORIES, DEFAULT_EMERGENCY_RESERVES, DEFAULT_GOALS,
-  getTotalMonthlyIncome,
+  getTotalMonthlyIncome, getIncomeSourcesForMonth,
 } from "@/types/finance";
 import { format, addMonths, parseISO } from "date-fns";
 import { getSavingsAllocationForMonth, getPercentagesForMonth } from "@/lib/savingsAllocation";
