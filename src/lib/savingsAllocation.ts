@@ -1,4 +1,4 @@
-import { FinanceData, Percentages, getTotalMonthlyIncome } from "@/types/finance";
+import { FinanceData, Percentages, getTotalMonthlyIncome, getIncomeSourcesForMonth } from "@/types/finance";
 
 export interface SavingsAllocationEntry {
   id: string;
@@ -35,7 +35,7 @@ const getReservePercentage = (data: FinanceData, monthKey: string) =>
 
 export const getMonthlyIncomeForMonth = (data: FinanceData, monthKey: string) => {
   const override = data.salaryByMonth?.[monthKey];
-  return override !== undefined ? override : getTotalMonthlyIncome(data.incomeSources ?? [], monthKey);
+  return override !== undefined ? override : getTotalMonthlyIncome(getIncomeSourcesForMonth(data, monthKey), monthKey);
 };
 
 export const getSavingsAllocationForMonth = (data: FinanceData, monthKey: string): SavingsAllocationSummary => {
