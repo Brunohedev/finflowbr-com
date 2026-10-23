@@ -272,7 +272,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
     void flushSave(userId);
   }, [data, userId, syncStatus, flushSave]);
 
-  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(data.incomeSources, activeMonth) : 0, [data, activeMonth]);
+  const defaultIncome = useMemo(() => data ? getTotalMonthlyIncome(getIncomeSourcesForMonth(data, activeMonth), activeMonth) : 0, [data, activeMonth]);
   const monthlyIncome = useMemo(() => {
     if (!data) return 0;
     const override = data.salaryByMonth?.[activeMonth];
@@ -332,30 +332,30 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   }, []);
 
   // Income sources
-  const addIncomeSource = useCallback((name: string, amount: number, frequency: IncomeFrequency) => {
+  // Income edits only touch the active month's own list, never other months.
+  const editMonthSources = useCallback((edit: (sources: IncomeSource[]) => IncomeSource[]) => {
     setData((prev) => {
       if (!prev) return prev;
-      const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency, ...(frequency === "once" ? { month: activeMonth } : {}) };
-      const newSources = [...prev.incomeSources, source];
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
+      const newSources = edit(getIncomeSourcesForMonth(prev, activeMonth));
+      return {
+        ...prev,
+        incomeSourcesByMonth: { ...(prev.incomeSourcesByMonth || {}), [activeMonth]: newSources },
+      };
     });
   }, [activeMonth]);
 
+  const addIncomeSource = useCallback((name: string, amount: number, frequency: IncomeFrequency) => {
+    const source: IncomeSource = { id: crypto.randomUUID(), name, amount, frequency, ...(frequency === "once" ? { month: activeMonth } : {}) };
+    editMonthSources((sources) => [...sources, source]);
+  }, [activeMonth, editMonthSources]);
+
   const deleteIncomeSource = useCallback((id: string) => {
-    setData((prev) => {
-      if (!prev) return prev;
-      const newSources = prev.incomeSources.filter((s) => s.id !== id);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
-    });
-  }, []);
+    editMonthSources((sources) => sources.filter((s) => s.id !== id));
+  }, [editMonthSources]);
 
   const updateIncomeSource = useCallback((id: string, updates: Partial<Omit<IncomeSource, "id">>) => {
-    setData((prev) => {
-      if (!prev) return prev;
-      const newSources = prev.incomeSources.map((s) => s.id === id ? { ...s, ...updates } : s);
-      return { ...prev, incomeSources: newSources, income: getTotalMonthlyIncome(newSources, activeMonth) };
-    });
-  }, []);
+    editMonthSources((sources) => sources.map((s) => s.id === id ? { ...s, ...updates } : s));
+  }, [editMonthSources]);
 
   const addExpense = useCallback((expense: Omit<Expense, "id"> & { installments?: number }) => {
     setData((prev) => {
@@ -449,7 +449,7 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   const setMonthSalary = useCallback((month: string, amount: number) => {
     setData((prev) => {
       if (!prev) return prev;
-      const defaultIncome = getTotalMonthlyIncome(prev.incomeSources, month);
+      const defaultIncome = getTotalMonthlyIncome(getIncomeSourcesForMonth(prev, month), month);
       const salaryByMonth = { ...(prev.salaryByMonth || {}) };
 
       if (Math.abs(amount - defaultIncome) < 0.01) {

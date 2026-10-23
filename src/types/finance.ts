@@ -87,6 +87,7 @@ export interface FinanceData {
   income: number;
   incomeSources: IncomeSource[];
   salaryByMonth?: Record<string, number>;
+  incomeSourcesByMonth?: Record<string, IncomeSource[]>;
   percentagesByMonth?: Record<string, Percentages>;
   categories: Category[];
   expenses: Expense[];
@@ -122,6 +123,10 @@ export const normalizeToDaily = (amount: number, frequency: IncomeFrequency): nu
     case "once": return amount / 30;
   }
 };
+
+// Each month owns its income list once edited; untouched months fall back to the base list.
+export const getIncomeSourcesForMonth = (data: Pick<FinanceData, "incomeSources" | "incomeSourcesByMonth">, month: string): IncomeSource[] =>
+  data.incomeSourcesByMonth?.[month] ?? data.incomeSources ?? [];
 
 export const getTotalMonthlyIncome = (sources: IncomeSource[], month?: string): number =>
   sources
