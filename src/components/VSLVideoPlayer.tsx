@@ -111,6 +111,16 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
           </span>
         </Button>
       )}
+      {playing && (
+        <button
+          type="button"
+          onClick={cycleSpeed}
+          aria-label="Velocidade do vídeo"
+          className="absolute bottom-5 right-3 z-30 rounded-full bg-foreground/80 px-3 py-1 text-xs font-bold text-background backdrop-blur-sm transition-colors hover:bg-foreground"
+        >
+          {SPEEDS[speedIndex]}x
+        </button>
+      )}
       <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 h-1.5 overflow-hidden rounded-full bg-muted/50">
         <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${progress}%` }} />
       </div>
