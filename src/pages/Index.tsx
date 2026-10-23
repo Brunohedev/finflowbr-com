@@ -488,7 +488,7 @@ const Index = () => {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         income={monthlyIncome}
-        incomeSources={data.incomeSourcesByMonth?.[activeMonth] ?? data.incomeSources}
+        incomeSources={getIncomeSourcesForMonth(data, activeMonth)}
         percentages={pcts}
         activeMonth={activeMonth}
         onSave={(p, income) => { updatePercentages(p); setMonthSalary(activeMonth, income); }}
