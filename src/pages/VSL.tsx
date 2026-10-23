@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import YouTubeVSLPlayer from "@/components/YouTubeVSLPlayer";
+import VSLVideoPlayer from "@/components/VSLVideoPlayer";
+import vslVideo from "@/assets/vsl-finflow.mp4.asset.json";
 import {
   ArrowRight,
   Check,
@@ -140,8 +141,8 @@ const VSL = () => {
               }}
             />
             <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10" style={{ aspectRatio: "2160 / 3840" }}>
-              <YouTubeVSLPlayer
-                videoId="Ih9MhXaANfg"
+              <VSLVideoPlayer
+                src={vslVideo.url}
                 unlockAtSec={UNLOCK_AT_SEC}
                 onProgress={(t) => setWatchedSec(t)}
                 onUnlock={() => setUnlocked(true)}
@@ -149,7 +150,7 @@ const VSL = () => {
             </div>
           </div>
 
-          {/* CTAs — only visible after 2:40 of video */}
+          {/* CTAs — only visible after 2:10 of video */}
           {unlocked && (
             <div className="flex flex-col items-center justify-center gap-2 mb-6 animate-in fade-in zoom-in-95 duration-500">
               <Button
