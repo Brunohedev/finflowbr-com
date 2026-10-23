@@ -58,6 +58,13 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
     void video.play().catch(() => setError(true));
   };
 
+  const cycleSpeed = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const next = (speedIndex + 1) % SPEEDS.length;
+    setSpeedIndex(next);
+    if (videoRef.current) videoRef.current.playbackRate = SPEEDS[next];
+  };
+
   return (
     <div
       className="relative h-full w-full overflow-hidden bg-card"
