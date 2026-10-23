@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import InstallPWAButton from "@/components/InstallPWAButton";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR, enUS, es as esLocale } from "date-fns/locale";
-import { Percentages } from "@/types/finance";
+import { Percentages, getIncomeSourcesForMonth } from "@/types/finance";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const formatCurrency = (value: number) =>
