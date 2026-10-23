@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export interface Subcategory {
   id: string;
   name: string;
@@ -124,9 +126,14 @@ export const normalizeToDaily = (amount: number, frequency: IncomeFrequency): nu
   }
 };
 
-// Each month owns its income list once edited; untouched months fall back to the base list.
-export const getIncomeSourcesForMonth = (data: Pick<FinanceData, "incomeSources" | "incomeSourcesByMonth">, month: string): IncomeSource[] =>
-  data.incomeSourcesByMonth?.[month] ?? data.incomeSources ?? [];
+// Each month owns its income list once edited. Past and current months fall back to the base
+// list; future months start empty so each month's income is individual from the start.
+export const getIncomeSourcesForMonth = (data: Pick<FinanceData, "incomeSources" | "incomeSourcesByMonth">, month: string): IncomeSource[] => {
+  const own = data.incomeSourcesByMonth?.[month];
+  if (own) return own;
+  if (month > format(new Date(), "yyyy-MM")) return [];
+  return data.incomeSources ?? [];
+};
 
 export const getTotalMonthlyIncome = (sources: IncomeSource[], month?: string): number =>
   sources
