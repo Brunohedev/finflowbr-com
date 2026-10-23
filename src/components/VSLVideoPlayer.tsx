@@ -45,16 +45,31 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
     }
   };
 
+  // The video can't be paused: any pause that isn't the end of playback is undone.
+  const handlePause = () => {
+    const video = videoRef.current;
+    if (!video || video.ended || video.error) {
+      setPlaying(false);
+      return;
+    }
+    void video.play().catch(() => setError(true));
+  };
+
   return (
-    <div className="relative h-full w-full overflow-hidden bg-card">
+    <div
+      className="relative h-full w-full overflow-hidden bg-card"
+      onContextMenu={(event) => event.preventDefault()}
+    >
       <video
         ref={videoRef}
         src={src}
         playsInline
         preload="metadata"
+        disablePictureInPicture
+        disableRemotePlayback
         className="h-full w-full object-contain"
         onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onPause={handlePause}
         onTimeUpdate={updateProgress}
         onSeeking={() => {
           const video = videoRef.current;
@@ -70,24 +85,22 @@ export default function VSLVideoPlayer({ src, unlockAtSec, onProgress, onUnlock 
           setProgress(0);
         }}
       />
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => playing ? videoRef.current?.pause() : void play()}
-        aria-label={playing ? "Pausar vídeo" : error ? "Tentar reproduzir novamente" : "Reproduzir vídeo"}
-        className={`absolute inset-0 z-10 h-full w-full rounded-none p-0 hover:bg-transparent ${playing ? "" : "bg-background/55 backdrop-blur-[2px]"}`}
-      >
-        {!playing && (
-          <>
-            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl">
-              {error ? <RotateCcw className="h-8 w-8" /> : <Play className="ml-1 h-9 w-9" fill="currentColor" />}
-            </span>
-            <span className="absolute bottom-6 inset-x-4 text-center text-sm font-semibold text-foreground">
-              {error ? "Não foi possível reproduzir. Toque para tentar novamente." : "Toque para assistir"}
-            </span>
-          </>
-        )}
-      </Button>
+      {!playing && (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => void play()}
+          aria-label={error ? "Tentar reproduzir novamente" : "Reproduzir vídeo"}
+          className="absolute inset-0 z-10 h-full w-full rounded-none bg-background/55 p-0 backdrop-blur-[2px] hover:bg-transparent"
+        >
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl">
+            {error ? <RotateCcw className="h-8 w-8" /> : <Play className="ml-1 h-9 w-9" fill="currentColor" />}
+          </span>
+          <span className="absolute bottom-6 inset-x-4 text-center text-sm font-semibold text-foreground">
+            {error ? "Não foi possível reproduzir. Toque para tentar novamente." : "Toque para assistir"}
+          </span>
+        </Button>
+      )}
       <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 h-1.5 overflow-hidden rounded-full bg-muted/50">
         <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${progress}%` }} />
       </div>
