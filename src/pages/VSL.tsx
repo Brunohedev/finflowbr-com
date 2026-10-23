@@ -142,7 +142,7 @@ const VSL = () => {
             />
             <div className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden shadow-2xl shadow-primary/10" style={{ aspectRatio: "2160 / 3840" }}>
               <VSLVideoPlayer
-                src={vslVideo.url}
+                src={new URL(vslVideo.url, "https://finflowbr-com.lovable.app").href}
                 unlockAtSec={UNLOCK_AT_SEC}
                 onProgress={(t) => setWatchedSec(t)}
                 onUnlock={() => setUnlocked(true)}
