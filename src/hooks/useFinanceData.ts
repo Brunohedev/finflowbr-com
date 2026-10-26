@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { saveFinanceDataSafely, fetchRemote } from "@/lib/financeSync";
+import { resetMonthExpenses } from "@/lib/monthlyReset";
 
 const getStorageKey = (userId?: string) => userId ? `finflow-data-${userId}` : "finflow-data";
 const getCurrentMonth = () => format(new Date(), "yyyy-MM");
@@ -492,8 +493,8 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   }, []);
 
   const resetMonth = useCallback(() => {
-    setData((prev) => (prev ? { ...prev, expenses: [], currentMonth: getCurrentMonth() } : prev));
-  }, []);
+    setData((prev) => (prev ? { ...prev, expenses: resetMonthExpenses(prev.expenses, activeMonth) } : prev));
+  }, [activeMonth]);
 
   // Emergency Reserves
   const addEmergencyReserve = useCallback((name: string, targetAmount: number) => {
