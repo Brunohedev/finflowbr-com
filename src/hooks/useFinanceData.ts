@@ -492,8 +492,8 @@ export function useFinanceData(userId?: string, selectedMonth?: string) {
   }, []);
 
   const resetMonth = useCallback(() => {
-    setData((prev) => (prev ? { ...prev, expenses: [], currentMonth: getCurrentMonth() } : prev));
-  }, []);
+    setData((prev) => (prev ? { ...prev, expenses: resetMonthExpenses(prev.expenses, activeMonth) } : prev));
+  }, [activeMonth]);
 
   // Emergency Reserves
   const addEmergencyReserve = useCallback((name: string, targetAmount: number) => {
