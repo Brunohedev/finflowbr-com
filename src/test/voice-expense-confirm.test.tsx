@@ -16,11 +16,12 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 // Mock MediaRecorder
 class MockMediaRecorder {
+  static isTypeSupported(type: string) { return type.startsWith("audio/webm"); }
   ondataavailable: ((e: any) => void) | null = null;
   onstop: (() => void) | null = null;
   mimeType = "audio/webm";
   start() {}
-  stop() { this.onstop?.(); }
+  stop() { this.ondataavailable?.({ data: new Blob(["recorded audio"], { type: this.mimeType }) }); this.onstop?.(); }
 }
 (globalThis as any).MediaRecorder = MockMediaRecorder;
 Object.defineProperty(globalThis.navigator, "mediaDevices", {

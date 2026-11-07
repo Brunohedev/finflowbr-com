@@ -121,16 +121,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24 bg-[#ecf3f0]">
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3 safe-header">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-xl" title={t("Menu")}>
+                <Button variant="ghost" size="icon" className="rounded-xl" title={t("Menu")} aria-label={t("Menu")}>
                   <Menu className="w-4 h-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72">
+              <SheetContent side="left" className="w-72 safe-menu">
                 <SheetHeader>
                   <SheetTitle>{t("Menu")}</SheetTitle>
                 </SheetHeader>
@@ -169,7 +169,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSettingsOpen(true)}>
+            <Button variant="ghost" size="icon" className="rounded-xl" aria-label={t("Configurações")} onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
             </Button>
           </div>

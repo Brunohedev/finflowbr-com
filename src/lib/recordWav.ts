@@ -43,12 +43,13 @@ export async function recordWav(): Promise<{ stop: () => Promise<Blob> }> {
     const node = context.createScriptProcessor(4096, 1, 1);
     const chunks: Float32Array[] = [];
     let size = 44;
+    let tooLong = false;
     node.onaudioprocess = (event) => {
       const samples = event.inputBuffer.getChannelData(0);
       if (size + samples.length * 2 <= 10 * 1024 * 1024) {
         chunks.push(new Float32Array(samples));
         size += samples.length * 2;
-      }
+      } else tooLong = true;
       event.outputBuffer.getChannelData(0).fill(0);
     };
     source.connect(node);
@@ -65,6 +66,7 @@ export async function recordWav(): Promise<{ stop: () => Promise<Blob> }> {
         node.onaudioprocess = null;
         const blob = encodeWav(chunks, context.sampleRate);
         await context.close();
+        if (tooLong) throw new Error("Recording is too long. Please record a shorter expense.");
         if (blob.size < 2048) throw new Error("We couldn't hear anything. Please record again.");
         return blob;
       },

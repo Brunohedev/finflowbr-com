@@ -26,6 +26,11 @@ workflows:
         script: cp assets/icon-only.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
       - name: Capacitor sync
         script: npx cap sync ios
+      - name: Declare microphone usage
+        script: |
+          PLIST=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string FinFlow usa o microfone para registrar suas despesas por voz." "$PLIST" || \
+          /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription FinFlow usa o microfone para registrar suas despesas por voz." "$PLIST"
       - name: Declare standard encryption only
         script: |
           PLIST=ios/App/App/Info.plist

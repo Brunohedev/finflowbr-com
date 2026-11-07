@@ -111,6 +111,30 @@
 }
 
 @layer components {
+  .safe-header {
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+  }
+
+  .safe-menu {
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+  }
+
+  .safe-menu > button:last-child {
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+  }
+
+  @supports (height: 100dvh) {
+    .safe-settings {
+      top: calc((100% + env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2);
+      max-height: min(85vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem));
+    }
+  }
+
   .finance-card {
     @apply bg-card rounded-xl border border-border p-5 shadow-sm transition-all duration-200 hover:shadow-md;
   }
