@@ -1,6 +1,6 @@
 # AGENTS.md
 
-- CSS owns iOS safe-area spacing using viewport-fit=cover and env() insets; keep native automatic content insets disabled to avoid double spacing.
+- CSS owns iOS safe-area spacing using viewport-fit=cover and env() insets; keep native automatic content insets disabled to avoid double spacing. Public login uses its own iOS-only layout rules, not dashboard selectors, to reserve navigation space without affecting authenticated screens.
 - Native iOS expense recording captures complete PCM/WAV via Web Audio while web/Android use supported MediaRecorder formats; CI declares microphone usage in the generated iOS plist so recordings reach the unchanged expense workflow.
 
 - Uploaded VSL media uses a CDN asset pointer resolved against the published Lovable origin (also allowed by media-src) and the native VSLVideoPlayer, preserving watched-time gating — why: external hosting rewrites relative asset paths to HTML instead of serving video.

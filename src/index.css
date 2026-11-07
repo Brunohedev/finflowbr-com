@@ -110,6 +110,29 @@
   }
 }
 
+/* Public entry only: iOS WebKit needs its own safe area; desktop/Android stay unchanged. */
+@supports (-webkit-touch-callout: none) {
+  .public-login-layout {
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Reserve the absolute navigation row even when the form requires scrolling. */
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+  }
+
+  .public-login-demo {
+    top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    left: calc(0.75rem + env(safe-area-inset-left, 0px));
+  }
+
+  .public-login-language {
+    top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    right: calc(0.75rem + env(safe-area-inset-right, 0px));
+  }
+}
+
 /* Unlayered inset rules override the existing spacing utilities. */
   .safe-header {
     padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
