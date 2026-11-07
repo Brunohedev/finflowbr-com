@@ -95,6 +95,7 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body?.error || "Could not process the audio.");
+      if (!mounted.current) return;
       setDraft({
         description: body.description ?? body.merchant ?? "",
         merchant: body.merchant ?? "",
@@ -105,9 +106,9 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
       setHasInstallments(false);
       setInstallments("2");
     } catch (e: any) {
-      toast.error(e?.message || "Could not process the audio.");
+      if (mounted.current) toast.error(e?.message || "Could not process the audio.");
     } finally {
-      setState("idle");
+      if (mounted.current) setState("idle");
     }
   };
 

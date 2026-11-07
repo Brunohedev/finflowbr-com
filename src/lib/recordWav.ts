@@ -33,11 +33,12 @@ export function encodeWav(chunks: readonly Float32Array[], sampleRate: number): 
 export async function recordWav(): Promise<{ stop: () => Promise<Blob> }> {
   // Start the audio context during the tap gesture, before awaiting permission.
   const context = new AudioContext();
-  const resumed = context.resume();
+  const resumed = context.resume().then(() => null, (error: unknown) => error);
   let stream: MediaStream | undefined;
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    await resumed;
+    const resumeError = await resumed;
+    if (resumeError) throw resumeError;
     const source = context.createMediaStreamSource(stream);
     // Supported by WKWebView, including versions without MediaRecorder.
     const node = context.createScriptProcessor(4096, 1, 1);
@@ -75,7 +76,7 @@ export async function recordWav(): Promise<{ stop: () => Promise<Blob> }> {
     stream?.getTracks().forEach((track) => track.stop());
     await context.close();
     // Observe a rejected resume promise even if the permission request failed first.
-    await resumed.catch(() => undefined);
+    await resumed;
     throw error;
   }
 }
