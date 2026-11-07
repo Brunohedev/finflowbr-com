@@ -110,7 +110,7 @@
   }
 }
 
-@layer components {
+/* Unlayered inset rules override the existing spacing utilities. */
   .safe-header {
     padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
     padding-left: calc(1rem + env(safe-area-inset-left, 0px));
@@ -135,6 +135,7 @@
     }
   }
 
+@layer components {
   .finance-card {
     @apply bg-card rounded-xl border border-border p-5 shadow-sm transition-all duration-200 hover:shadow-md;
   }
