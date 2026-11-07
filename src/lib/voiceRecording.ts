@@ -18,7 +18,7 @@ export function audioFile(blob: Blob): File {
 }
 
 export function recordingError(error: unknown): string {
-  const name = error instanceof Error ? error.name : "";
+  const name = error instanceof Error || error instanceof DOMException ? error.name : "";
   if (name === "NotAllowedError" || name === "SecurityError") {
     return "Microphone access was denied. Allow microphone access for FinFlow in your settings to record.";
   }
