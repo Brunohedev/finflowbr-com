@@ -86,7 +86,7 @@ const SettingsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto safe-settings">
         <DialogHeader>
           <DialogTitle className="font-heading">{t("Configurações")}</DialogTitle>
         </DialogHeader>

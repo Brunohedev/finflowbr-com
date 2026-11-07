@@ -1,5 +1,8 @@
 # AGENTS.md
 
+- CSS owns iOS safe-area spacing using viewport-fit=cover and env() insets; keep native automatic content insets disabled to avoid double spacing.
+- Native iOS expense recording captures complete PCM/WAV via Web Audio while web/Android use supported MediaRecorder formats; CI declares microphone usage in the generated iOS plist so recordings reach the unchanged expense workflow.
+
 - Uploaded VSL media uses a CDN asset pointer resolved against the published Lovable origin (also allowed by media-src) and the native VSLVideoPlayer, preserving watched-time gating — why: external hosting rewrites relative asset paths to HTML instead of serving video.
 
 - All writes to `finance_data` go through `saveFinanceDataSafely` (src/lib/financeSync.ts), which only updates when `updated_at` matches the version last read — why: the whole finance document is one JSONB row, and blind upserts from stale tabs/devices erased users' expenses.

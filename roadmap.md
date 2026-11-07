@@ -3,3 +3,7 @@
 - [ ] Restore Michelle's lost expenses — waiting on Supabase backup from user
 - [x] Reduce bank purchase ingestion delay: app-wide foreground sync, shared ingestion, pagination, verified webhooks
 - [x] Restore focus refresh and add one bounded follow-up for purchases arriving after the initial read
+- [x] Correct iOS header and menu safe-area positioning without redesign
+- [x] Correct iOS voice recording and microphone configuration; preserve web/Android
+- [x] Validate automated compatibility checks and document physical-device checks
+- [ ] Verify header taps and spoken expense end-to-end in new TestFlight build — requires physical iPhone/Xcode build and authenticated app session

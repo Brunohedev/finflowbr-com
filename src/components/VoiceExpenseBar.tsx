@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Mic, Square, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Category, Expense } from "@/types/finance";
+import { audioFile, recordingError, startVoiceRecording, type VoiceRecording } from "@/lib/voiceRecording";
 
 interface Props {
   categories: Category[];
@@ -19,46 +20,64 @@ interface Props {
 type Draft = { description: string; merchant: string; amount: string; date: string };
 
 export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
-  const [state, setState] = useState<"idle" | "recording" | "processing">("idle");
+  const [state, setState] = useState<"idle" | "starting" | "recording" | "processing">("idle");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pick, setPick] = useState<{ categoryId: string; subcategoryId: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installments, setInstallments] = useState("2");
   const { t } = useLanguage();
-  const recRef = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
-  const cancelled = useRef(false);
+  const recRef = useRef<VoiceRecording | null>(null);
+  const busy = useRef(false);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      const rec = recRef.current;
+      recRef.current = null;
+      void rec?.stop().catch(() => undefined);
+    };
+  }, []);
 
   const spendCats = categories.filter((c) => c.id !== "reserva_investimentos" && c.subcategories.length > 0);
 
   const start = async () => {
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      toast.error("Voice recording isn't supported on this device.");
-      return;
-    }
+    if (busy.current || recRef.current) return;
+    busy.current = true;
+    setState("starting");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const rec = new MediaRecorder(stream);
-      chunks.current = [];
-      cancelled.current = false;
-      rec.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
-      rec.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        if (!cancelled.current) process(new Blob(chunks.current, { type: (rec.mimeType || "audio/webm").replace("video/", "audio/") }));
-        else setState("idle");
-      };
-      rec.start();
+      const rec = await startVoiceRecording((error) => {
+        recRef.current = null;
+        busy.current = false;
+        if (mounted.current) { toast.error(recordingError(error)); setState("idle"); }
+      });
+      if (!mounted.current) { await rec.stop().catch(() => undefined); return; }
       recRef.current = rec;
       setState("recording");
-    } catch {
-      toast.error("Microphone access was denied. Allow it in your settings to record.");
+    } catch (error) {
+      if (mounted.current) { toast.error(recordingError(error)); setState("idle"); }
+    } finally {
+      busy.current = false;
     }
   };
 
-  const stop = (cancel = false) => {
-    cancelled.current = cancel;
-    recRef.current?.stop();
+  const stop = async (cancel = false) => {
+    const rec = recRef.current;
+    if (!rec || busy.current) return;
+    recRef.current = null;
+    busy.current = true;
+    setState("processing");
+    try {
+      const blob = await rec.stop();
+      if (!cancel && mounted.current) await process(blob);
+    } catch (error) {
+      if (!cancel && mounted.current) toast.error(recordingError(error));
+    } finally {
+      busy.current = false;
+      if (mounted.current) setState("idle");
+    }
   };
 
   const process = async (blob: Blob) => {
@@ -66,9 +85,8 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Please sign in again.");
-      const ext = blob.type.includes("mp4") ? "m4a" : "webm";
       const fd = new FormData();
-      fd.append("file", new File([blob], `expense.${ext}`, { type: blob.type }));
+      fd.append("file", audioFile(blob));
       fd.append("today", format(new Date(), "yyyy-MM-dd"));
       const res = await fetch("https://symkogknbjhdesgmvtvc.supabase.co/functions/v1/voice-expense", {
         method: "POST",
@@ -77,6 +95,7 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body?.error || "Could not process the audio.");
+      if (!mounted.current) return;
       setDraft({
         description: body.description ?? body.merchant ?? "",
         merchant: body.merchant ?? "",
@@ -87,9 +106,9 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
       setHasInstallments(false);
       setInstallments("2");
     } catch (e: any) {
-      toast.error(e?.message || "Could not process the audio.");
+      if (mounted.current) toast.error(e?.message || "Could not process the audio.");
     } finally {
-      setState("idle");
+      if (mounted.current) setState("idle");
     }
   };
 
@@ -156,10 +175,10 @@ export default function VoiceExpenseBar({ categories, onAddExpense }: Props) {
           size="icon"
           className={`h-12 w-12 rounded-full shrink-0 ${state === "recording" ? "bg-destructive hover:bg-destructive/90 animate-pulse" : ""}`}
           onClick={state === "recording" ? () => stop(false) : start}
-          disabled={state === "processing"}
+          disabled={state === "processing" || state === "starting"}
           aria-label={state === "recording" ? "Stop recording" : "Start recording"}
         >
-          {state === "processing" ? <Loader2 className="w-5 h-5 animate-spin" />
+          {state === "processing" || state === "starting" ? <Loader2 className="w-5 h-5 animate-spin" />
             : state === "recording" ? <Square className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </Button>
       </div>

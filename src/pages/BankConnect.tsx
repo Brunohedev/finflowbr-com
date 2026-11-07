@@ -640,7 +640,7 @@ const BankConnect = () => {
           )}
         </div>
       )}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3 safe-header">
         <div className="max-w-lg mx-auto flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="rounded-xl">
             <ArrowLeft className="w-4 h-4" />
