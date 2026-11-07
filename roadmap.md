@@ -6,5 +6,6 @@
 - [x] Correct iOS header and menu safe-area positioning without redesign
 - [x] Correct iOS voice recording and microphone configuration; preserve web/Android
 - [x] Validate automated compatibility checks and document physical-device checks
-- [ ] Correct and validate public login iOS safe-area layout without changing dashboard or design
+- [x] Correct public login iOS safe-area layout; validate scrolling/actions with simulated insets without changing dashboard or design
+- [ ] Verify public homepage in new TestFlight build — requires physical iPhone and rebuilt iOS app
 - [ ] Verify header taps and spoken expense end-to-end in new TestFlight build — requires physical iPhone/Xcode build and authenticated app session

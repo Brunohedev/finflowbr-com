@@ -14,6 +14,11 @@ The viewport already has `viewport-fit=cover`. Capacitor 8's installed native de
 
 Content, logo animation, colors, typography, login behavior, dashboard, native configuration and viewport metadata are unchanged. Desktop and Android retain existing styles.
 
+## Validation
+Preview compilation succeeded. Browser checks exercised signed-out `/` redirecting to `/login`, login/register mode switching, required-field feedback, language navigation, and scrolling to the final action at 393×852, 375×667, 320×568, 852×393 and a reduced 375×400 viewport. The exact page CSS was exercised with simulated top/bottom/landscape insets: no horizontal overflow, controls below the simulated status bar, content below navigation, and final actions reachable above the home indicator. Screenshots were reviewed. Desktop control positioning remained unchanged.
+
+These are Chromium layout simulations, not physical WKWebView/TestFlight tests; actual device behavior is still unverified.
+
 ## Device release check
 Update the local project from the connected repository, rebuild the web app, run `npx cap sync ios`, and submit a new TestFlight build. Check signed-out `/` on small and Dynamic Island iPhones, portrait/landscape, login/register, language selection, and scrolling to the final action. Actual status-bar and home-indicator behavior requires this physical-device check.
 
