@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
 import DemoSimulation from "@/components/DemoSimulation";
+import LoginMascotInvite from "@/components/mascot/LoginMascotInvite";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -62,6 +63,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
         <LanguageSwitcher />
       </div>
       <DemoSimulation open={demoOpen} onOpenChange={setDemoOpen} />
+      <LoginMascotInvite />
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">
           <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto">
