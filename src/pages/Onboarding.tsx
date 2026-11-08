@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, ArrowRight, ArrowLeft, Check, Plus, PiggyBank,
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import TourMascotGuide from "@/components/mascot/TourMascotGuide";
+import { TOUR_COPY, TOUR_FINISH_PATH } from "@/lib/mascotTour";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -47,8 +49,11 @@ const slideVariants = {
 };
 
 const Onboarding = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+  // Guided tour mode (from the public start screen): mascot guide + ends at sign-up.
+  const [searchParams] = useSearchParams();
+  const isTour = searchParams.get("tour") === "1";
 
   const [step, setStep] = useState(0);
   const [income, setIncome] = useState(4000);
@@ -97,7 +102,7 @@ const Onboarding = () => {
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
-  const finish = () => navigate("/app");
+  const finish = () => navigate(isTour ? TOUR_FINISH_PATH : "/app");
 
   return (
     <Shell>
@@ -527,6 +532,10 @@ const Onboarding = () => {
         </AnimatePresence>
       </div>
 
+      {isTour && (
+        <TourMascotGuide step={step} totalSteps={TOTAL_STEPS} onSkip={() => navigate("/login")} />
+      )}
+
       {/* Footer CTA */}
       <div className="px-6 pb-6 pt-2">
         {step < TOTAL_STEPS - 1 ? (
@@ -542,7 +551,7 @@ const Onboarding = () => {
             onClick={finish}
             className="w-full h-12 text-base font-semibold bg-emerald-600 hover:bg-emerald-700 rounded-xl"
           >
-            {t("Ir para o app")}
+            {isTour ? (TOUR_COPY[language] ?? TOUR_COPY.pt).createAccount : t("Ir para o app")}
             <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         )}
