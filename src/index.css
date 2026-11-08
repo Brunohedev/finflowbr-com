@@ -131,7 +131,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     /* Reserve the absolute navigation row even when the form requires scrolling. */
-    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+    padding-top: calc(6rem + env(safe-area-inset-top, 0px));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     padding-left: calc(1rem + env(safe-area-inset-left, 0px));
     padding-right: calc(1rem + env(safe-area-inset-right, 0px));
