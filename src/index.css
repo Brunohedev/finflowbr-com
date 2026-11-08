@@ -54,6 +54,11 @@
 
     --font-heading: 'Space Grotesk', sans-serif;
     --font-body: 'DM Sans', sans-serif;
+
+    /* Mascot: the black FinFlow wallet with a cartoon arm */
+    --mascot-body: 0 0% 10%;
+    --mascot-flap: 0 0% 16%;
+    --mascot-glove: 0 0% 100%;
   }
 
   .dark {
@@ -92,7 +97,17 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --mascot-body: 0 0% 12%;
+    --mascot-flap: 0 0% 20%;
+    --mascot-glove: 0 0% 96%;
   }
+}
+
+/* Floating mascot on the public start screen, clear of iPhone home indicator. */
+.public-login-mascot {
+  right: calc(0.75rem + env(safe-area-inset-right, 0px));
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 @layer base {
