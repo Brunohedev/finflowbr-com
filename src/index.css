@@ -179,8 +179,8 @@
 
   /* iOS zooms into focused text fields under 16px and stays zoomed; keep them at 16px on iOS only. */
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-  textarea,
-  select {
+  textarea:not([data-ios-zoom-allowed]),
+  select:not([data-ios-zoom-allowed]) {
     font-size: max(16px, 1em);
   }
 }
