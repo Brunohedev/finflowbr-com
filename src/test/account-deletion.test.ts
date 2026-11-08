@@ -25,7 +25,7 @@ describe("account deletion orchestration", () => {
   });
   it("retains account and local credentials when a second revocation fails", async () => {
     const { store, plaid } = setup([{ access_token: "a", item_id: "one" }, { access_token: "b", item_id: "two" }]);
-    plaid.remove.mockRejectedValueOnce(new DeletionError("BANK_REVOCATION_FAILED"));
+    plaid.remove.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new DeletionError("BANK_REVOCATION_FAILED"));
     await expect(deleteOwnedAccount("owner", store, plaid)).rejects.toThrow("BANK_REVOCATION_FAILED");
     expect(store.cleanNonCascading).not.toHaveBeenCalled();
     expect(store.deleteIdentity).not.toHaveBeenCalled();

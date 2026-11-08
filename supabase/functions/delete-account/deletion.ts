@@ -38,12 +38,14 @@ export async function deleteOwnedAccount(userId: string, store: DeletionStore, p
 export function productionPlaid(clientId: string | undefined, secret: string | undefined, request: typeof fetch = fetch) {
   const call = async (endpoint: "get" | "remove", token: string): Promise<Record<string, unknown> | null> => {
     if (!clientId || !secret) throw new DeletionError("BANK_REVOCATION_FAILED");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
     try {
       const response = await request(`https://production.plaid.com/item/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client_id: clientId, secret, access_token: token }),
-        signal: AbortSignal.timeout(10_000),
+        signal: controller.signal,
       });
       const body: unknown = await response.json();
       if (!body || typeof body !== "object" || Array.isArray(body)) throw new DeletionError("BANK_REVOCATION_FAILED");
@@ -57,6 +59,8 @@ export function productionPlaid(clientId: string | undefined, secret: string | u
     } catch {
       // Never propagate raw provider/network messages containing credentials.
       throw new DeletionError("BANK_REVOCATION_FAILED");
+    } finally {
+      clearTimeout(timeout);
     }
   };
   return {
