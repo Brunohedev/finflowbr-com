@@ -32,17 +32,25 @@ const LoginMascotInvite = () => {
   };
 
   return (
-    <div className="public-login-mascot fixed z-20 flex flex-col items-end gap-2">
+    <div className="public-login-mascot absolute z-20 flex flex-col items-start gap-1">
+      <button
+        type="button"
+        onClick={() => (open ? start() : setOpen(true))}
+        aria-label={copy.openLabel}
+        className="rounded-2xl p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <WalletMascot pose={open ? "wave" : "idle"} size={68} />
+      </button>
       <AnimatePresence>
         {open && (
           <motion.div
             role="dialog"
             aria-label={copy.openLabel}
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="relative w-[240px] rounded-2xl rounded-br-sm border border-border bg-card p-3 text-card-foreground shadow-lg"
+            className="relative w-[240px] rounded-2xl rounded-tl-sm border border-border bg-card p-3 text-card-foreground shadow-lg"
           >
             <p className="text-sm leading-snug">{copy.invite}</p>
             <div className="mt-3 flex gap-2">
@@ -52,14 +60,6 @@ const LoginMascotInvite = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <button
-        type="button"
-        onClick={() => (open ? start() : setOpen(true))}
-        aria-label={copy.openLabel}
-        className="rounded-2xl p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <WalletMascot pose={open ? "wave" : "idle"} size={68} />
-      </button>
     </div>
   );
 };
