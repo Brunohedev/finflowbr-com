@@ -121,7 +121,7 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="ios-safe-page min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground mb-2">Escolha seu plano</h1>

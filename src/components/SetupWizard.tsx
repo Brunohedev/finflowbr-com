@@ -59,7 +59,7 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
 
   if (step === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="ios-safe-page min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-6 animate-in fade-in duration-500">
           <div className="text-center space-y-3">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-2">
@@ -132,7 +132,7 @@ const SetupWizard = ({ onComplete }: SetupWizardProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="ios-safe-page min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-1">
