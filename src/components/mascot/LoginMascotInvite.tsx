@@ -33,7 +33,7 @@ const LoginMascotInvite = () => {
 
   return (
     <div className="public-login-mascot absolute z-20 flex flex-col items-start gap-1">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-0.5">
         <button
           type="button"
           onClick={() => (open ? start() : setOpen(true))}
@@ -51,10 +51,12 @@ const LoginMascotInvite = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="relative max-w-[170px] rounded-xl border border-border bg-card px-2.5 py-1.5 text-left text-[11px] leading-snug text-card-foreground shadow-sm"
+              className="relative max-w-[135px] rounded-lg border border-border/30 bg-card/30 px-2 py-1 text-left text-[10px] leading-tight text-card-foreground backdrop-blur-sm"
             >
-              <span aria-hidden="true" className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-border bg-card" />
-              <span className="relative">{copy.hint}</span>
+              <svg aria-hidden="true" viewBox="0 0 5 8" className="absolute -left-[5px] top-1/2 h-2 w-[5px] -translate-y-1/2 fill-card/30">
+                <path d="M5 0 L0 4 L5 8 Z" />
+              </svg>
+              {copy.hint}
             </motion.button>
           )}
         </AnimatePresence>
