@@ -6,6 +6,8 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import WalletMascot from "./WalletMascot";
 import { markTourInviteSeen, shouldAutoOpenTourInvite, TOUR_COPY, TOUR_PATH } from "@/lib/mascotTour";
 
+const HINT_VISIBLE_MS = 5000;
+
 const safeStorage = () => (typeof window === "undefined" ? undefined : window.localStorage);
 
 /** Floating wallet mascot on the public start screen that invites visitors to the guided tour. */
@@ -14,6 +16,7 @@ const LoginMascotInvite = () => {
   const { language } = useLanguage();
   const copy = TOUR_COPY[language] ?? TOUR_COPY.pt;
   const [open, setOpen] = useState(false);
+  const [hintVisible, setHintVisible] = useState(true);
 
   useEffect(() => {
     if (!shouldAutoOpenTourInvite(safeStorage())) return;
@@ -21,9 +24,17 @@ const LoginMascotInvite = () => {
     return () => window.clearTimeout(timer);
   }, []);
 
+  // The small welcome hint stays for HINT_VISIBLE_MS, then fades out (tapping the wallet still opens the invite).
+  useEffect(() => {
+    if (open || !hintVisible) return;
+    const timer = window.setTimeout(() => setHintVisible(false), HINT_VISIBLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, hintVisible]);
+
   const dismiss = () => {
     markTourInviteSeen(safeStorage());
     setOpen(false);
+    setHintVisible(true);
   };
 
   const start = () => {
@@ -43,7 +54,7 @@ const LoginMascotInvite = () => {
           <WalletMascot pose={open ? "wave" : "idle"} size={60} />
         </button>
         <AnimatePresence>
-          {!open && (
+          {!open && hintVisible && (
             <motion.button
               type="button"
               onClick={() => setOpen(true)}
