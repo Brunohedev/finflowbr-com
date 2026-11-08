@@ -1,4 +1,5 @@
 # AGENTS.md
+- Account deletion uses an authentication-only guard, checks exclusive Plaid Item ownership before production revocation, cleans non-cascading user_id records, and deletes auth last using existing cascades; fail closed without raw provider errors — why: unpaid accounts need deletion without opening paid features or losing retry credentials early.
 
 - CSS owns iOS safe-area spacing using viewport-fit=cover and env() insets; keep native automatic content insets disabled to avoid double spacing. Public login uses its own iOS-only layout rules, not dashboard selectors, to reserve navigation space without affecting authenticated screens.
 - Native iOS expense recording captures complete PCM/WAV via Web Audio while web/Android use supported MediaRecorder formats; CI declares microphone usage in the generated iOS plist so recordings reach the unchanged expense workflow.
