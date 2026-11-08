@@ -6,6 +6,8 @@ interface WalletMascotProps {
   pose?: MascotPose;
   size?: number;
   className?: string;
+  /** When false, the arm shrinks back into the wallet. */
+  armOut?: boolean;
 }
 
 // Arm angle (degrees) for each pose. The arm is drawn pointing right, so negative
@@ -20,7 +22,7 @@ const ARM_ANIMATION: Record<MascotPose, number | number[]> = {
  * The black FinFlow wallet (same shapes as the animated logo) with a cartoon arm.
  * Pure presentation: no state, no data.
  */
-const WalletMascot = ({ pose = "idle", size = 72, className }: WalletMascotProps) => {
+const WalletMascot = ({ pose = "idle", size = 72, className, armOut = true }: WalletMascotProps) => {
   const reduceMotion = useReducedMotion();
   const loop = reduceMotion ? undefined : { duration: pose === "wave" ? 0.9 : 1.6, repeat: Infinity, ease: "easeInOut" as const };
   const arm = ARM_ANIMATION[pose];
@@ -50,6 +52,12 @@ const WalletMascot = ({ pose = "idle", size = 72, className }: WalletMascotProps
       <g transform="translate(86 50)">
         <motion.g
           style={{ originX: 0, originY: 0.5 }}
+          initial={false}
+          animate={{ scale: armOut ? 1 : 0, opacity: armOut ? 1 : 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeInOut" }}
+        >
+        <motion.g
+          style={{ originX: 0, originY: 0.5 }}
           initial={{ rotate: Array.isArray(arm) ? arm[0] : arm }}
           animate={{ rotate: reduceMotion && Array.isArray(arm) ? arm[0] : arm }}
           transition={loop}
@@ -60,6 +68,7 @@ const WalletMascot = ({ pose = "idle", size = 72, className }: WalletMascotProps
           <circle cx="28" cy="0" r="5.5" fill="hsl(var(--mascot-glove))" stroke="hsl(var(--mascot-body))" strokeWidth="1.4" />
           <rect x="30" y="-2" width="10" height="4" rx="2" fill="hsl(var(--mascot-glove))" stroke="hsl(var(--mascot-body))" strokeWidth="1.4" />
           <ellipse cx="27" cy="-5.2" rx="2.4" ry="1.8" fill="hsl(var(--mascot-glove))" stroke="hsl(var(--mascot-body))" strokeWidth="1.2" />
+        </motion.g>
         </motion.g>
       </g>
     </motion.svg>
