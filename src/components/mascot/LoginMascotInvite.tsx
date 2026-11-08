@@ -51,7 +51,7 @@ const LoginMascotInvite = () => {
           aria-label={copy.openLabel}
           className="rounded-2xl p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <WalletMascot pose={open ? "wave" : "idle"} size={60} />
+          <WalletMascot pose={open ? "wave" : "idle"} size={60} armOut={open || hintVisible} />
         </button>
         <AnimatePresence>
           {!open && hintVisible && (
