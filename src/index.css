@@ -106,7 +106,7 @@
 
 /* Mascot on the public start screen, top-left above "Ver demonstração", clear of the iPhone notch. */
 .public-login-mascot {
-  top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  top: calc(1.5rem + env(safe-area-inset-top, 0px));
   left: calc(0.75rem + env(safe-area-inset-left, 0px));
 }
 
@@ -131,14 +131,14 @@
     min-height: 100vh;
     min-height: 100dvh;
     /* Reserve the absolute navigation row even when the form requires scrolling. */
-    padding-top: calc(6rem + env(safe-area-inset-top, 0px));
+    padding-top: calc(7rem + env(safe-area-inset-top, 0px));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     padding-left: calc(1rem + env(safe-area-inset-left, 0px));
     padding-right: calc(1rem + env(safe-area-inset-right, 0px));
   }
 
   .public-login-demo {
-    top: calc(4rem + env(safe-area-inset-top, 0px));
+    top: calc(5rem + env(safe-area-inset-top, 0px));
     left: calc(0.75rem + env(safe-area-inset-left, 0px));
   }
 
