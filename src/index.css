@@ -104,10 +104,10 @@
   }
 }
 
-/* Floating mascot on the public start screen, clear of iPhone home indicator. */
+/* Mascot on the public start screen, right below "Ver demonstração", clear of the iPhone notch. */
 .public-login-mascot {
-  right: calc(0.75rem + env(safe-area-inset-right, 0px));
-  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  top: calc(3.25rem + env(safe-area-inset-top, 0px));
+  left: calc(0.75rem + env(safe-area-inset-left, 0px));
 }
 
 @layer base {
