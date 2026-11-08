@@ -44,7 +44,7 @@ const Privacy = () => {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Privacy Policy — FinFlow</h1>
-        <p className="text-muted-foreground text-sm mb-10">Last updated: May 2026</p>
+        <p className="text-muted-foreground text-sm mb-10">Last updated: November 2026</p>
         <p className="text-muted-foreground leading-relaxed mb-10">
           FinFlow ("we") is committed to protecting the privacy of our users. This policy describes how we collect, use, and protect your information.
         </p>
