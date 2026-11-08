@@ -51,7 +51,7 @@ const LoginMascotInvite = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="relative max-w-[100px] rounded-lg border border-border/30 bg-card/30 px-2 py-1 text-left text-[10px] leading-tight text-card-foreground backdrop-blur-sm"
+              className="relative max-w-[100px] max-[359px]:hidden rounded-lg border border-border/30 bg-card/30 px-2 py-1 text-left text-[10px] leading-tight text-card-foreground backdrop-blur-sm"
             >
               <svg aria-hidden="true" viewBox="0 0 5 8" className="absolute -left-[5px] top-1/2 h-2 w-[5px] -translate-y-1/2 fill-card/30">
                 <path d="M5 0 L0 4 L5 8 Z" />

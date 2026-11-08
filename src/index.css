@@ -138,7 +138,7 @@
   }
 
   .public-login-demo {
-    top: calc(3.75rem + env(safe-area-inset-top, 0px));
+    top: calc(4.2rem + env(safe-area-inset-top, 0px));
     right: calc(0.75rem + env(safe-area-inset-right, 0px));
   }
 
