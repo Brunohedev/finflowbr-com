@@ -42,7 +42,7 @@ const DeleteAccount = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <main className="ios-safe-delete max-w-lg mx-auto px-4 py-6 space-y-6">
         <Button variant="ghost" disabled={loading} className="rounded-xl -ml-2" onClick={() => navigate("/app")}>
           <ArrowLeft className="w-4 h-4 mr-2" /> {t("Voltar")}
         </Button>

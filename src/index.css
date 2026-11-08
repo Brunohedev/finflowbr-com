@@ -146,6 +146,43 @@
     top: calc(0.75rem + env(safe-area-inset-top, 0px));
     right: calc(0.75rem + env(safe-area-inset-right, 0px));
   }
+
+  /* Setup wizard + plans page: same 1rem padding as p-4, plus the notch/home-indicator insets. */
+  .ios-safe-page {
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+  }
+
+  @media (min-width: 768px) {
+    .ios-safe-page.md\:p-8 {
+      padding-top: calc(2rem + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+      padding-left: calc(2rem + env(safe-area-inset-left, 0px));
+      padding-right: calc(2rem + env(safe-area-inset-right, 0px));
+    }
+  }
+
+  /* Delete-account page: same px-4 py-6 spacing, plus insets. */
+  .ios-safe-delete {
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+  }
+
+  /* "Nova Despesa" floating button: same bottom-6 offset, above the home indicator. */
+  .ios-safe-fab {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* iOS zooms into focused text fields under 16px and stays zoomed; keep them at 16px on iOS only. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
 }
 
 /* Unlayered inset rules override the existing spacing utilities. */

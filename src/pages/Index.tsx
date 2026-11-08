@@ -464,7 +464,7 @@ const Index = () => {
       </main>
 
       {view === "dashboard" &&
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+      <div className="ios-safe-fab fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
           <Button
           size="lg"
           className="rounded-full h-14 px-6 shadow-lg shadow-primary/25 font-semibold text-base"
