@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Crown } from "lucide-react";
+import { Check, Loader2, Crown, Trash2 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -72,6 +73,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
@@ -218,6 +220,7 @@ const Pricing = () => {
         </div>
 
         <div className="text-center mt-8">
+          {isAuthenticated && <Button variant="ghost" onClick={() => navigate("/excluir-conta")}><Trash2 className="mr-2 h-4 w-4" />{t("Excluir conta")}</Button>}
           <Button variant="ghost" onClick={async () => { if (isAuthenticated) await logout(); navigate("/", { replace: true }); }}>
             Voltar à tela de cadastro
           </Button>

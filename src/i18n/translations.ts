@@ -18,6 +18,18 @@ type Dict = Record<string, string>;
 const pt: Dict = {};
 
 const en: Dict = {
+  "Excluir conta": "Delete account",
+  "Excluir minha conta": "Delete my account",
+  "Esta ação é permanente.": "This action is permanent.",
+  "Digite": "Type",
+  "para confirmar": "to confirm",
+  "Digite DELETE para confirmar": "Type DELETE to confirm",
+  "Excluindo...": "Deleting...",
+  "Sua conta foi excluída.": "Your account was deleted.",
+  "Não foi possível excluir a conta. Tente novamente.": "Could not delete your account. Please try again.",
+  "Todos os seus dados serão apagados: renda, despesas, metas, reservas, investimentos e conexões bancárias. Assinaturas ativas devem ser canceladas separadamente.": "Your income, expenses, goals, savings, investments and saved bank connections will be deleted. Active subscriptions must be canceled separately.",
+  "Excluir sua conta FinFlow não cancela sua assinatura Stripe. Cancele a assinatura separadamente antes de excluir a conta.": "Deleting your FinFlow account does not cancel your Stripe subscription. Cancel the subscription separately before deleting your account.",
+  "A exclusão não foi concluída. Algumas conexões bancárias ou dados podem já ter sido removidos. Tente novamente ou fale com o suporte.": "Deletion was not completed. Some bank connections or data may already have been removed. Retry or contact support.",
   // Auth / Login
   "Entrar na minha conta": "Sign in to my account",
   "Crie sua conta": "Create your account",
@@ -205,6 +217,18 @@ Object.assign(en, {
 });
 
 const es: Dict = {
+  "Excluir conta": "Eliminar cuenta",
+  "Excluir minha conta": "Eliminar mi cuenta",
+  "Esta ação é permanente.": "Esta acción es permanente.",
+  "Digite": "Escribe",
+  "para confirmar": "para confirmar",
+  "Digite DELETE para confirmar": "Escribe DELETE para confirmar",
+  "Excluindo...": "Eliminando...",
+  "Sua conta foi excluída.": "Tu cuenta fue eliminada.",
+  "Não foi possível excluir a conta. Tente novamente.": "No se pudo eliminar tu cuenta. Inténtalo de nuevo.",
+  "Todos os seus dados serão apagados: renda, despesas, metas, reservas, investimentos e conexões bancárias. Assinaturas ativas devem ser canceladas separadamente.": "Se eliminarán tus ingresos, gastos, metas, reservas, inversiones y conexiones bancarias guardadas. Las suscripciones activas deben cancelarse por separado.",
+  "Excluir sua conta FinFlow não cancela sua assinatura Stripe. Cancele a assinatura separadamente antes de excluir a conta.": "Eliminar tu cuenta FinFlow no cancela tu suscripción Stripe. Cancela la suscripción por separado antes de eliminar tu cuenta.",
+  "A exclusão não foi concluída. Algumas conexões bancárias ou dados podem já ter sido removidos. Tente novamente ou fale com o suporte.": "No se completó la eliminación. Es posible que algunas conexiones bancarias o datos ya se hayan eliminado. Reintenta o contacta con soporte.",
   // Auth / Login
   "Entrar na minha conta": "Entrar en mi cuenta",
   "Crie sua conta": "Crea tu cuenta",

@@ -9,3 +9,5 @@
 - [x] Correct public login iOS safe-area layout; validate scrolling/actions with simulated insets without changing dashboard or design
 - [ ] Verify public homepage in new TestFlight build — requires physical iPhone and rebuilt iOS app
 - [ ] Verify header taps and spoken expense end-to-end in new TestFlight build — requires physical iPhone/Xcode build and authenticated app session
+- [x] Make account deletion authentication-only and fail-safe: revoke owned Plaid Items, clean non-cascading data, preserve paid guards; 37 tests passed and deployed
+- [ ] Verify complete account deletion and bank revocation on a disposable account in TestFlight — requires an authenticated external-Supabase test session and physical iPhone

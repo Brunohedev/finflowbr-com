@@ -18,6 +18,7 @@ import DeleteAccount from "./pages/DeleteAccount";
 import PublicDeleteAccount from "./pages/PublicDeleteAccount";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { LanguageProvider } from "./i18n/LanguageContext";
 
 const queryClient = new QueryClient();
@@ -46,7 +47,7 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/delete-account" element={<PublicDeleteAccount />} />
-            <Route path="/excluir-conta" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
+            <Route path="/excluir-conta" element={<AuthenticatedRoute><DeleteAccount /></AuthenticatedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
