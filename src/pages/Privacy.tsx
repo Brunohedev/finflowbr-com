@@ -30,7 +30,7 @@ const Privacy = () => {
       num: "5",
       title: "Your Rights",
       icon: <UserX className="w-5 h-5" />,
-      body: "You may request the deletion of your account and all your data at any time by emailing finflow.br@gmail.com.",
+      body: "You may delete your account at any time inside the app through Menu → Delete account (Excluir conta), or by submitting the public account deletion form at /delete-account. Account deletion removes your financial information stored in FinFlow, including income, expenses, goals, reserves, investments, and bank transactions, according to our account deletion process. As part of account deletion, FinFlow's access to your bank accounts through Plaid is revoked. Stripe billing records may be retained for billing, accounting, and legal requirements. Emails submitted through the public account deletion request form are retained for up to 30 days after the request is completed and then deleted, unless we are legally required to keep them longer. Plaid may retain certain information according to its own privacy policy. Deleting your FinFlow account does NOT automatically cancel an active Stripe subscription; you must cancel your subscription separately.",
     },
     {
       num: "6",
