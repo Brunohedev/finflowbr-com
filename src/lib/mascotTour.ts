@@ -27,6 +27,7 @@ export const poseForStep = (step: number, totalSteps: number): MascotPose =>
   step === 0 || step === totalSteps - 1 ? "wave" : "point-up";
 
 interface TourCopy {
+  hint: string;
   invite: string;
   start: string;
   later: string;
@@ -38,6 +39,7 @@ interface TourCopy {
 
 export const TOUR_COPY: Record<Language, TourCopy> = {
   pt: {
+    hint: "Bem-vindo! Sou seu guia no FinFlow. Toque em mim e te mostro como funciona.",
     invite: "Oi! Eu sou a carteira do FinFlow. Quer que eu te mostre como fazer seu dinheiro sobrar todo mês?",
     start: "Me mostra!",
     later: "Agora não",
@@ -56,6 +58,7 @@ export const TOUR_COPY: Record<Language, TourCopy> = {
     ],
   },
   en: {
+    hint: "Welcome! I'm your FinFlow guide. Tap me and I'll show you how it works.",
     invite: "Hi! I'm the FinFlow wallet. Want me to show you how to have money left over every month?",
     start: "Show me!",
     later: "Not now",
@@ -74,6 +77,7 @@ export const TOUR_COPY: Record<Language, TourCopy> = {
     ],
   },
   es: {
+    hint: "¡Bienvenido! Soy tu guía en FinFlow. Tócame y te muestro cómo funciona.",
     invite: "¡Hola! Soy la billetera de FinFlow. ¿Quieres que te muestre cómo hacer que te sobre dinero cada mes?",
     start: "¡Muéstrame!",
     later: "Ahora no",
