@@ -33,14 +33,32 @@ const LoginMascotInvite = () => {
 
   return (
     <div className="public-login-mascot absolute z-20 flex flex-col items-start gap-1">
-      <button
-        type="button"
-        onClick={() => (open ? start() : setOpen(true))}
-        aria-label={copy.openLabel}
-        className="rounded-2xl p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <WalletMascot pose={open ? "wave" : "idle"} size={68} />
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => (open ? start() : setOpen(true))}
+          aria-label={copy.openLabel}
+          className="rounded-2xl p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <WalletMascot pose={open ? "wave" : "idle"} size={68} />
+        </button>
+        <AnimatePresence>
+          {!open && (
+            <motion.button
+              type="button"
+              onClick={() => setOpen(true)}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="relative max-w-[170px] rounded-xl border border-border bg-card px-2.5 py-1.5 text-left text-[11px] leading-snug text-card-foreground shadow-sm"
+            >
+              <span aria-hidden="true" className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-border bg-card" />
+              <span className="relative">{copy.hint}</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
       <AnimatePresence>
         {open && (
           <motion.div
