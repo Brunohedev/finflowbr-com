@@ -1,9 +1,10 @@
 import type { Language } from "@/i18n/translations";
 import type { MascotPose } from "@/components/mascot/WalletMascot";
+import { GET_STARTED_PATH } from "@/lib/getStarted";
 
 export const TOUR_SEEN_KEY = "finflow.mascotTourSeen";
 export const TOUR_PATH = "/onboarding?tour=1";
-export const TOUR_FINISH_PATH = "/login?mode=register";
+export const TOUR_FINISH_PATH = GET_STARTED_PATH;
 
 /** The invitation opens by itself only for visitors who never saw/dismissed it. */
 export const shouldAutoOpenTourInvite = (storage: Pick<Storage, "getItem"> | undefined): boolean => {

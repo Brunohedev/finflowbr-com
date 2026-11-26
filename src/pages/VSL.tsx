@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import VSLVideoPlayer from "@/components/VSLVideoPlayer";
 import vslVideo from "@/assets/vsl-finflow.mp4.asset.json";
+import { GET_STARTED_PATH } from "@/lib/getStarted";
 import {
   ArrowRight,
   Check,
@@ -23,8 +24,8 @@ const VSL = () => {
   const [unlocked, setUnlocked] = useState(false);
   const [watchedSec, setWatchedSec] = useState(0);
 
-  const handleCheckout = () => {
-    navigate("/planos");
+  const handleGetStarted = () => {
+    navigate(GET_STARTED_PATH);
   };
 
   const benefits = [
@@ -156,7 +157,7 @@ const VSL = () => {
               <Button
                 size="lg"
                 className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20"
-                onClick={handleCheckout}
+                onClick={handleGetStarted}
                 disabled={loading}
               >
                 {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
@@ -250,7 +251,7 @@ const VSL = () => {
               <Button
                 size="lg"
                 className="px-8 py-6 text-base md:text-lg font-semibold rounded-full shadow-lg shadow-primary/20 animate-in fade-in zoom-in-95 duration-500"
-                onClick={handleCheckout}
+                onClick={handleGetStarted}
                 disabled={loading}
               >
                 {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}

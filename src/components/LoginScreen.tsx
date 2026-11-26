@@ -62,7 +62,11 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
       <div className="public-login-language absolute top-3 right-3 z-10">
         <LanguageSwitcher />
       </div>
-      <DemoSimulation open={demoOpen} onOpenChange={setDemoOpen} />
+      <DemoSimulation
+        open={demoOpen}
+        onOpenChange={setDemoOpen}
+        onGetStarted={() => { setDemoOpen(false); setMode("register"); setError(""); }}
+      />
       <LoginMascotInvite />
       <div className="w-full max-w-sm space-y-6 animate-in fade-in duration-500">
         <div className="text-center space-y-3">

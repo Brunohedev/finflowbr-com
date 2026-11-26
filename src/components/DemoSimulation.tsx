@@ -22,6 +22,8 @@ import {
 interface DemoSimulationProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Overrides the closing behaviour of the final "Começar agora" button. */
+  onGetStarted?: () => void;
 }
 
 const fmt = (v: number) =>
@@ -46,7 +48,7 @@ const STEPS = [
   { key: "done", duration: 0 },
 ];
 
-const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
+const DemoSimulation = ({ open, onOpenChange, onGetStarted }: DemoSimulationProps) => {
   const { t } = useLanguage();
   // Setup state
   const [income, setIncome] = useState(4000);
@@ -305,7 +307,7 @@ const DemoSimulation = ({ open, onOpenChange }: DemoSimulationProps) => {
                 <Button variant="outline" size="sm" onClick={() => { setStarted(false); reset(); }}>
                   <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> {t("Ajustar")}
                 </Button>
-                <Button size="sm" onClick={() => onOpenChange(false)}>
+                <Button size="sm" onClick={() => (onGetStarted ? onGetStarted() : onOpenChange(false))}>
                   {t("Começar agora")}
                 </Button>
               </div>
