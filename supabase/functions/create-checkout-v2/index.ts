@@ -10,6 +10,8 @@ const Body = z.object({
 });
 const IN_FLIGHT_MS = 2 * 60 * 1000;
 const ALLOWED_ORIGINS = new Set([
+  "https://finflowbr.com",
+  "https://www.finflowbr.com",
   "https://finflowbr-com.lovable.app",
   "https://id-preview--a430a672-fa77-4f52-86c7-0a9f9b29c73c.lovable.app",
   "http://localhost:8080",

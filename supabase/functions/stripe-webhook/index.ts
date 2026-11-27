@@ -1,9 +1,11 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getAdminClient, getStripe, syncSubscription } from "../_shared/stripeProduction.ts";
+import { grantsAccess, type SubscriptionRow } from "../_shared/subscriptionState.ts";
+import { processStripeWebhookEvent, type WebhookIdentifiers } from "./webhookHandler.ts";
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
@@ -13,27 +15,7 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     headers: { "Content-Type": "application/json" },
   });
 
-const buildAppMetadata = (
-  currentMetadata: Record<string, unknown> | undefined,
-  {
-    customerId,
-    subscriptionId,
-    plan,
-  }: {
-    customerId: string | null;
-    subscriptionId: string | null;
-    plan: string | null;
-  },
-) => ({
-  ...(currentMetadata ?? {}),
-  subscription_status: "active",
-  is_active: true,
-  stripe_customer_id: customerId,
-  subscription_id: subscriptionId,
-  plan,
-});
-
-const findUserByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, email: string) => {
+const findUserByEmail = async (supabaseAdmin: SupabaseClient, email: string) => {
   const normalizedEmail = email.trim().toLowerCase();
   let page = 1;
   const perPage = 200;
@@ -51,105 +33,147 @@ const findUserByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, e
   }
 };
 
-serve(async (req) => {
-  // Webhooks are POST only
+async function syncAuthMetadata(admin: SupabaseClient, row: SubscriptionRow): Promise<void> {
+  const { data: userData, error: userError } = await admin.auth.admin.getUserById(row.user_id);
+  if (userError || !userData?.user) return;
+  const active = grantsAccess(row.status);
+  const subscriptionEnd = row.status === "trialing" ? row.trial_end : row.current_period_end;
+  const nextMeta = {
+    ...(userData.user.app_metadata ?? {}),
+    subscription_status: active ? "active" : "inactive",
+    is_active: active,
+    stripe_customer_id: row.stripe_customer_id,
+    subscription_id: row.stripe_subscription_id,
+    plan: row.plan,
+    subscription_end: subscriptionEnd,
+  };
+  const { error } = await admin.auth.admin.updateUserById(row.user_id, { app_metadata: nextMeta });
+  if (error) logStep("Auth metadata sync failed", { userId: row.user_id, message: error.message });
+}
+
+async function provisionLegacyGuest(
+  stripe: Stripe,
+  admin: SupabaseClient,
+  ids: WebhookIdentifiers,
+): Promise<string | null> {
+  if (!ids.customerEmail) return null;
+  const existingUser = await findUserByEmail(admin, ids.customerEmail);
+  let userId = existingUser?.id ?? null;
+
+  if (!userId) {
+    const tempPassword = crypto.randomUUID() + "Aa1!";
+    const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+      email: ids.customerEmail,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: ids.plan ? { plan: ids.plan } : undefined,
+    });
+    if (createError) throw createError;
+    userId = newUser.user?.id ?? null;
+    logStep("Legacy guest user created", { userId });
+
+    const { error: resetError } = await admin.auth.admin.generateLink({
+      type: "magiclink",
+      email: ids.customerEmail,
+      options: { redirectTo: "https://finflowbr-com.lovable.app/app" },
+    });
+    if (resetError) logStep("Magic link error", { message: resetError.message });
+  }
+
+  if (userId && ids.customerId) {
+    await stripe.customers.update(ids.customerId, {
+      metadata: { supabase_user_id: userId },
+    });
+  }
+  return userId;
+}
+
+Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not set");
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+    const stripe = getStripe();
+    const admin = getAdminClient();
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     if (!signature) throw new Error("No stripe-signature header");
 
-    // Verify the webhook signature
     const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     logStep("Event received", { type: event.type, id: event.id });
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const customerEmail = session.customer_details?.email ?? session.customer_email ?? null;
-      const customerId = typeof session.customer === "string" ? session.customer : null;
-      const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
-      const plan = session.metadata?.plan || null;
-
-      logStep("Checkout completed", { customerEmail, customerId, subscriptionId, plan });
-
-      if (!customerEmail) {
-        logStep("No customer email found, skipping user creation");
-        return jsonResponse({ received: true });
-      }
-
-      const existingUser = await findUserByEmail(supabaseAdmin, customerEmail);
-      const nextAppMetadata = buildAppMetadata(existingUser?.app_metadata, {
-        customerId,
-        subscriptionId,
-        plan,
-      });
-
-      if (existingUser) {
-        logStep("User already exists", { userId: existingUser.id });
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
-          app_metadata: nextAppMetadata,
+    const outcome = await processStripeWebhookEvent(event, {
+      claim: async (ids, owner) => {
+        const { data, error } = await admin.rpc("claim_stripe_event", {
+          _event_id: ids.eventId,
+          _type: ids.type,
+          _event_created: ids.eventCreatedIso,
+          _owner: owner,
+          _customer_id: ids.customerId,
+          _subscription_id: ids.subscriptionId,
+          _session_id: ids.sessionId,
+          _lease_seconds: 120,
         });
-
-        if (updateError) {
-          logStep("Error activating existing user", { error: updateError.message, userId: existingUser.id });
-          throw updateError;
+        if (error) throw error;
+        return typeof data === "number" ? data : null;
+      },
+      isProcessed: async (eventId) => {
+        const { data, error } = await admin.from("stripe_events")
+          .select("processed_at").eq("event_id", eventId).maybeSingle();
+        if (error) throw error;
+        return Boolean(data?.processed_at);
+      },
+      complete: async (eventId, owner, token) => {
+        const { data, error } = await admin.rpc("complete_stripe_event", {
+          _event_id: eventId,
+          _owner: owner,
+          _token: token,
+        });
+        if (error) throw error;
+        return Boolean(data);
+      },
+      release: async (eventId, owner, token, errorCode, retrySeconds) => {
+        const { data, error } = await admin.rpc("release_stripe_event", {
+          _event_id: eventId,
+          _owner: owner,
+          _token: token,
+          _error_code: errorCode,
+          _retry_seconds: retrySeconds,
+        });
+        if (error) throw error;
+        return Boolean(data);
+      },
+      releaseExpiredSession: async (sessionId) => {
+        const { error } = await admin.from("trial_reservations")
+          .update({ status: "released", released_at: new Date().toISOString() })
+          .eq("checkout_session_id", sessionId)
+          .eq("status", "reserved");
+        if (error) throw error;
+        logStep("Expired checkout reservation released", { sessionId });
+      },
+      provisionLegacyGuest: async (ids) => await provisionLegacyGuest(stripe, admin, ids),
+      syncSubscription: async (subscriptionId) => {
+        const row = await syncSubscription(stripe, admin, subscriptionId);
+        if (!row) {
+          logStep("Subscription unmapped", { subscriptionId });
+          return null;
         }
-
-        logStep("Existing user activated", {
-          userId: existingUser.id,
-          subscriptionStatus: nextAppMetadata.subscription_status,
-          isActive: nextAppMetadata.is_active,
+        await syncAuthMetadata(admin, row);
+        logStep("Subscription reconciled", {
+          subscriptionId: row.stripe_subscription_id,
+          status: row.status,
+          plan: row.plan,
         });
-      } else {
-        // Create new user with a random password (user can reset later)
-        const tempPassword = crypto.randomUUID() + "Aa1!";
-        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-          email: customerEmail,
-          password: tempPassword,
-          email_confirm: true,
-          app_metadata: nextAppMetadata,
-          user_metadata: plan ? { plan } : undefined,
-        });
+        return { userId: row.user_id };
+      },
+    });
 
-        if (createError) {
-          logStep("Error creating user", { error: createError.message });
-          throw createError;
-        }
-        logStep("User created", { userId: newUser.user?.id });
-
-        // Send password reset email so user can set their own password
-        // Note: This uses the magic link / reset flow
-        const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-          type: "magiclink",
-          email: customerEmail,
-          options: {
-            redirectTo: `${req.headers.get("origin") || Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app')}`,
-          },
-        });
-        if (resetError) {
-          logStep("Error sending magic link", { error: resetError.message });
-        } else {
-          logStep("Magic link generated for new user");
-        }
-      }
-    }
-
-    return jsonResponse({ received: true });
+    return jsonResponse(outcome.body, outcome.status);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
+import {
+  DEFAULT_BILLING_CAPABILITIES,
+  fetchBillingCapabilities,
+  type ClientBillingCapabilities,
+} from "@/lib/billingCapabilities";
 
 interface Plan {
   id: string;
@@ -69,11 +74,19 @@ const PLANS: Plan[] = [
 ];
 
 const Pricing = () => {
-  const { isAuthenticated, isLoading, subscription, logout } = useAuth();
+  const { isAuthenticated, isLoading, subscription, checkSubscription, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
-  const isMobile = useIsMobile();
+  const [capabilities, setCapabilities] = useState<ClientBillingCapabilities>(DEFAULT_BILLING_CAPABILITIES);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    let active = true;
+    fetchBillingCapabilities().then((result) => {
+      if (active) setCapabilities(result);
+    });
+    return () => { active = false; };
+  }, []);
 
   if (isLoading) {
     return (
@@ -84,22 +97,41 @@ const Pricing = () => {
   }
 
   const handleSubscribe = async (planId: string) => {
-    console.log("[Pricing] handleSubscribe called for plan:", planId);
+    if (capabilities.checkoutV2 && !isAuthenticated) {
+      navigate("/login?mode=register&next=/planos");
+      return;
+    }
+
     setLoading(planId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan: planId },
-      });
-      console.log("[Pricing] create-checkout response:", data, error);
+      const { data, error } = capabilities.checkoutV2
+        ? await supabase.functions.invoke("create-checkout-v2", {
+            body: { plan: planId, request_id: crypto.randomUUID() },
+          })
+        : await supabase.functions.invoke("create-checkout", {
+            body: { plan: planId },
+          });
+
       if (error) throw error;
       if (data?.url) {
-        console.log("[Pricing] Redirecting to:", data.url);
         window.location.href = data.url;
+        return;
+      }
+      if (data?.code === "already_subscribed" || data?.code === "checkout_already_completed") {
+        await checkSubscription();
+        toast.success(t("Sua assinatura já está ativa."));
+        navigate("/app", { replace: true });
+        return;
+      }
+      if (data?.code === "checkout_in_progress") {
+        toast.info(t("Já existe um checkout em andamento. Aguarde alguns instantes e tente novamente."));
+        return;
       } else {
-        console.error("[Pricing] No URL returned from create-checkout");
+        toast.error(t("Não foi possível iniciar o checkout. Tente novamente."));
       }
     } catch (err: any) {
       console.error("[Pricing] Checkout error:", err);
+      toast.error(t("Não foi possível iniciar o checkout. Tente novamente."));
     } finally {
       setLoading(null);
     }
@@ -126,14 +158,18 @@ const Pricing = () => {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground mb-2">Escolha seu plano</h1>
           <p className="text-muted-foreground">
-            Tenha controle total das suas finanças pessoais
+            {capabilities.checkoutV2
+              ? t("Comece com 3 dias grátis (72 horas) no plano escolhido. Cartão obrigatório no cadastro; cancele antes do fim do teste para não ser cobrado.")
+              : "Tenha controle total das suas finanças pessoais"}
           </p>
         </div>
 
         {subscription?.subscribed && (
           <div className="mb-8 p-4 rounded-xl border border-primary/30 bg-primary/5 text-center">
             <p className="text-sm text-foreground">
-              Você tem o plano <strong className="capitalize">{subscription.plan}</strong> ativo
+              {subscription.status === "trialing" ? "Você está no teste grátis do plano " : "Você tem o plano "}
+              <strong className="capitalize">{subscription.plan}</strong>
+              {subscription.status === "trialing" ? "" : " ativo"}
               {subscription.subscriptionEnd && (
                 <> até <strong>{new Date(subscription.subscriptionEnd).toLocaleDateString("pt-BR")}</strong></>
               )}
@@ -184,6 +220,11 @@ const Pricing = () => {
                 <div className="mb-6">
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  {capabilities.checkoutV2 && !subscription?.subscribed && (
+                    <p className="text-xs font-medium text-primary mt-1">
+                      {t("3 dias grátis (72h) • $0 hoje para novos assinantes")}
+                    </p>
+                  )}
                 </div>
 
                 <ul className="space-y-2 mb-6 flex-1">
@@ -211,13 +252,23 @@ const Pricing = () => {
                     disabled={loading === plan.id}
                   >
                     {loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                    {loading === plan.id ? "Redirecionando..." : "Assinar"}
+                    {loading === plan.id
+                      ? "Redirecionando..."
+                      : capabilities.checkoutV2
+                      ? (isAuthenticated ? t("Começar 3 dias grátis") : t("Criar conta e testar grátis"))
+                      : "Assinar"}
                   </Button>
                 )}
               </div>
             );
           })}
         </div>
+
+        {capabilities.checkoutV2 && (
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            {t("O teste grátis de 72 horas é válido uma única vez por conta ou e-mail. Contas que já assinaram seguem diretamente para a cobrança do plano.")}
+          </p>
+        )}
 
         <div className="text-center mt-8">
           {isAuthenticated && <Button variant="ghost" onClick={() => navigate("/excluir-conta")}><Trash2 className="mr-2 h-4 w-4" />{t("Excluir conta")}</Button>}

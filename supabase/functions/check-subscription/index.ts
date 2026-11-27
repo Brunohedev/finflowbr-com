@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { grantsAccess, inactiveSubscriptionSnapshot } from "../_shared/subscriptionState.ts";
+import { syncSubscription } from "../_shared/stripeProduction.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +26,9 @@ type SubscriptionSnapshot = {
   subscriptionId: string | null;
   subscriptionEnd: string | null;
   customerId: string | null;
+  status?: string | null;
+  trialEnd?: string | null;
+  cancelAtPeriodEnd?: boolean;
 };
 
 const buildResponseBody = (snapshot: SubscriptionSnapshot) => ({
@@ -32,6 +36,9 @@ const buildResponseBody = (snapshot: SubscriptionSnapshot) => ({
   plan: snapshot.plan,
   subscription_id: snapshot.subscriptionId,
   subscription_end: snapshot.subscriptionEnd,
+  status: snapshot.status ?? (snapshot.subscribed ? "active" : null),
+  trial_end: snapshot.trialEnd ?? null,
+  cancel_at_period_end: snapshot.cancelAtPeriodEnd ?? false,
 });
 
 const getStoredSnapshot = (user: any): SubscriptionSnapshot => {
@@ -161,7 +168,14 @@ serve(async (req) => {
     });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    let customerId = storedSnapshot.customerId;
+    const { data: localBinding } = await supabaseClient
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    let customerId = localBinding?.stripe_customer_id ?? storedSnapshot.customerId;
 
     if (!customerId) {
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -190,8 +204,15 @@ serve(async (req) => {
 
     if (activeSubscription) {
       let subscriptionEnd: string | null = null;
+      let trialEnd: string | null = null;
       try {
-        const endTs = activeSubscription.current_period_end;
+        const itemPeriodEnd = activeSubscription.items?.data?.[0]?.current_period_end;
+        if (typeof activeSubscription.trial_end === "number" && activeSubscription.trial_end > 0) {
+          trialEnd = new Date(activeSubscription.trial_end * 1000).toISOString();
+        }
+        const endTs = activeSubscription.status === "trialing"
+          ? (activeSubscription.trial_end ?? activeSubscription.current_period_end ?? itemPeriodEnd)
+          : (activeSubscription.current_period_end ?? itemPeriodEnd);
         if (typeof endTs === "number" && endTs > 0) {
           subscriptionEnd = new Date(endTs * 1000).toISOString();
         }
@@ -205,15 +226,22 @@ serve(async (req) => {
         subscriptionId: activeSubscription.id,
         subscriptionEnd,
         customerId,
+        status: activeSubscription.status,
+        trialEnd,
+        cancelAtPeriodEnd: activeSubscription.cancel_at_period_end === true || activeSubscription.cancel_at !== null,
       };
 
       logStep("Active subscription found", {
         subscriptionId: snapshot.subscriptionId,
         plan: snapshot.plan,
+        status: snapshot.status,
         endDate: snapshot.subscriptionEnd,
       });
 
       await syncSnapshot(supabaseClient, user, snapshot);
+      await syncSubscription(stripe, supabaseClient, activeSubscription.id).catch((err) =>
+        logStep("Local subscription mirror skipped", { message: err instanceof Error ? err.message : String(err) })
+      );
 
       return new Response(JSON.stringify(buildResponseBody(snapshot)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

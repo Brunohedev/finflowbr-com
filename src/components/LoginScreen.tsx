@@ -18,6 +18,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
+  const safeNext = searchParams.get("next") === "/planos" ? "/planos" : "/app";
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +42,7 @@ const LoginScreen = ({ onLogin, onRegister }: LoginScreenProps) => {
         if (!result.success) {
           setError(result.error || t("Erro ao criar conta"));
         } else {
-          navigate("/app", { replace: true });
+          navigate(safeNext, { replace: true });
           return;
         }
       }

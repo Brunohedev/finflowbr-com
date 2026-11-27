@@ -7,6 +7,8 @@ interface SubscriptionInfo {
   plan: string | null;
   subscriptionId: string | null;
   subscriptionEnd: string | null;
+  status?: string | null;
+  trialEnd?: string | null;
 }
 
 interface AuthContextType {
@@ -46,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         plan: data?.plan ?? null,
         subscriptionId: data?.subscription_id ?? null,
         subscriptionEnd: data?.subscription_end ?? null,
+        status: data?.status ?? null,
+        trialEnd: data?.trial_end ?? null,
       });
     } catch (err) {
       console.error("Error checking subscription:", err);

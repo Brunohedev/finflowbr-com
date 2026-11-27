@@ -1,17 +1,19 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
 
 const Login = () => {
   const { isAuthenticated, isLoading, login, register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const safeNext = searchParams.get("next") === "/planos" ? "/planos" : "/app";
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/app", { replace: true });
+      navigate(safeNext, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, safeNext]);
 
   if (isLoading) {
     return (

@@ -137,7 +137,7 @@ const PublicDeleteAccount = () => {
             <li>Your deletion request record (email and date), kept as proof that we handled it.</li>
             <li>Data held by Plaid or Pluggy under their own privacy policies.</li>
           </ul>
-          <p>Deleting your account does not cancel an active subscription. Please cancel it separately before deleting.</p>
+          <p>When you delete your account inside the app after confirming the cancellation notice, active Stripe subscriptions or free trials linked to your account are canceled immediately before account deletion. For offline email requests, our team will confirm cancellation details with you.</p>
         </Section>
 
         <Section title="Contact">
