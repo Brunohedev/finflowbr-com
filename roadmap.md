@@ -13,4 +13,4 @@
 - [ ] Verify complete account deletion and bank revocation on a disposable account in TestFlight — requires an authenticated external-Supabase test session and physical iPhone
 - [x] Audit and present a 3-day Stripe trial implementation plan only; identified access fallbacks, entitlement bypass, guest/concurrency limitations and automatic-production-deployment blocker; no application or service changes
 - [x] Prepare detailed 3-day trial technical plan with isolated staging, access rules, atomic eligibility, ordered webhook reconciliation and real checkout confirmation; implementation waits for explicit approval
-- [ ] Present service costs, isolated-environment creation procedure, production exclusion evidence, manual-entitlement preservation, guest-trial proposal and failure-test matrix; no resource creation or implementation
+- [x] Present Trial Lab service costs/availability, independent isolation procedure, production exclusion evidence, manual-entitlement preservation and failure-test matrix; guests remain paid, no email verification or implementation; free Supabase slot requires user confirmation
