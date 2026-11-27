@@ -14,3 +14,8 @@
 - [x] Audit and present a 3-day Stripe trial implementation plan only; identified access fallbacks, entitlement bypass, guest/concurrency limitations and automatic-production-deployment blocker; no application or service changes
 - [x] Prepare detailed 3-day trial technical plan with isolated staging, access rules, atomic eligibility, ordered webhook reconciliation and real checkout confirmation; implementation waits for explicit approval
 - [x] Present Trial Lab service costs/availability, independent isolation procedure, production exclusion evidence, manual-entitlement preservation and failure-test matrix; guests remain paid, no email verification or implementation; free Supabase slot requires user confirmation
+- [ ] Trial preparation stage 0: revalidate four Live subscriptions, administrative grants and deployment contracts
+- [ ] Trial preparation stage 1: validate and deploy additive billing schema with atomic reservations and four verified links
+- [ ] Trial preparation stage 2: deploy compatible access correction without reviving confirmed canceled subscriptions
+- [ ] Trial preparation stage 3: deploy blocked versioned functions and prepare compatible preview; preserve legacy checkout/deletion/webhook
+- [ ] Trial activation/publication/webhook/iOS — waiting on separate explicit authorizations; outside this preparation
