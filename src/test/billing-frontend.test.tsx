@@ -124,4 +124,32 @@ describe("gated billing frontend flows", () => {
     );
     expect(await screen.findByRole("heading", { name: "Checkout expirado" })).toBeInTheDocument();
   });
+
+  it("keeps plan buttons disabled while billing-capabilities is loading so legacy checkout cannot fire", async () => {
+    mocks.isAuthenticated = true;
+    let resolveCapabilities!: (value: { data: Record<string, unknown>; error: null }) => void;
+    mocks.invoke.mockImplementation((name: string) => {
+      if (name === "billing-capabilities") {
+        return new Promise((resolve) => { resolveCapabilities = resolve; });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+    render(
+      <MemoryRouter initialEntries={["/planos"]}>
+        <Routes>
+          <Route path="/planos" element={<Pricing />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const loadingButtons = screen.getAllByRole("button", { name: "Carregando..." });
+    expect(loadingButtons[0]).toBeDisabled();
+    fireEvent.click(loadingButtons[0]);
+    expect(mocks.invoke).not.toHaveBeenCalledWith("create-checkout", expect.anything());
+    resolveCapabilities({
+      data: { checkout_v2: true, checkout_confirmation: true, account_deletion_with_cancellation: true, trial_seconds: 259200 },
+      error: null,
+    });
+    const readyButtons = await screen.findAllByRole("button", { name: "Começar 3 dias grátis" });
+    expect(readyButtons[0]).not.toBeDisabled();
+  });
 });

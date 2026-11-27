@@ -78,13 +78,18 @@ const Pricing = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<ClientBillingCapabilities>(DEFAULT_BILLING_CAPABILITIES);
+  const [capabilitiesLoading, setCapabilitiesLoading] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
     let active = true;
-    fetchBillingCapabilities().then((result) => {
-      if (active) setCapabilities(result);
-    });
+    fetchBillingCapabilities()
+      .then((result) => {
+        if (active) setCapabilities(result);
+      })
+      .finally(() => {
+        if (active) setCapabilitiesLoading(false);
+      });
     return () => { active = false; };
   }, []);
 
@@ -97,6 +102,7 @@ const Pricing = () => {
   }
 
   const handleSubscribe = async (planId: string) => {
+    if (capabilitiesLoading) return;
     if (capabilities.checkoutV2 && !isAuthenticated) {
       navigate("/login?mode=register&next=/planos");
       return;
@@ -249,11 +255,13 @@ const Pricing = () => {
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
                     onClick={() => handleSubscribe(plan.id)}
-                    disabled={loading === plan.id}
+                    disabled={capabilitiesLoading || loading === plan.id}
                   >
-                    {loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                    {capabilitiesLoading || loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
                     {loading === plan.id
                       ? "Redirecionando..."
+                      : capabilitiesLoading
+                      ? t("Carregando...")
                       : capabilities.checkoutV2
                       ? (isAuthenticated ? t("Começar 3 dias grátis") : t("Criar conta e testar grátis"))
                       : "Assinar"}
