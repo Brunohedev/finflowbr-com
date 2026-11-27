@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { User } from "@supabase/supabase-js";
 
 const invoke = vi.fn();
 const maybeSingle = vi.fn();
@@ -10,10 +11,22 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import { getAccess } from "@/lib/getAccess";
-const user = { id: "u1", email: "a@b.com" } as never;
+const user = { id: "u1", email: "a@b.com" } as User;
 
 describe("access after payment", () => {
   beforeEach(() => { invoke.mockReset(); maybeSingle.mockReset().mockResolvedValue({ data: null }); });
+
+  it("preserves an administrative grant without calling Stripe", async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { email: user.email } });
+    expect(await getAccess(user)).toBe("unlimited");
+    expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it("preserves a manual unlimited entitlement without calling Stripe", async () => {
+    maybeSingle.mockResolvedValueOnce({ data: null }).mockResolvedValueOnce({ data: { access_type: "unlimited" } });
+    expect(await getAccess(user)).toBe("unlimited");
+    expect(invoke).not.toHaveBeenCalled();
+  });
 
   it("unlocks the app when Stripe confirms an active subscription", async () => {
     invoke.mockResolvedValue({ data: { subscribed: true }, error: null });

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { grantsAccess, inactiveSubscriptionSnapshot } from "../_shared/subscriptionState.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,6 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1TFJDUETsKMFlYgfTeuJbIcE": "semestral",
   "price_1TFJFDETsKMFlYgftrXoLKEq": "anual",
 };
-
-const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -170,22 +169,10 @@ serve(async (req) => {
     }
 
     if (!customerId) {
-      if (storedSnapshot.subscribed) {
-        logStep("No Stripe customer found, using stored access metadata", { userId: user.id });
-        return new Response(JSON.stringify(buildResponseBody(storedSnapshot)), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      logStep("No customer found");
-      return new Response(JSON.stringify(buildResponseBody({
-        subscribed: false,
-        plan: null,
-        subscriptionId: null,
-        subscriptionEnd: null,
-        customerId: null,
-      })), {
+      logStep("No Stripe customer found; stored metadata cannot grant access", { userId: user.id });
+      const snapshot = inactiveSubscriptionSnapshot(null);
+      await syncSnapshot(supabaseClient, user, snapshot);
+      return new Response(JSON.stringify(buildResponseBody(snapshot)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -199,9 +186,7 @@ serve(async (req) => {
       limit: 10,
     });
 
-    const activeSubscription = subscriptions.data.find((subscription) =>
-      ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status)
-    );
+    const activeSubscription = subscriptions.data.find((subscription) => grantsAccess(subscription.status));
 
     if (activeSubscription) {
       let subscriptionEnd: string | null = null;
@@ -236,30 +221,16 @@ serve(async (req) => {
       });
     }
 
-    if (storedSnapshot.subscribed) {
-      logStep("No active Stripe subscription found, using stored access metadata", {
-        userId: user.id,
-        customerId,
-      });
-
-      return new Response(JSON.stringify(buildResponseBody({
-        ...storedSnapshot,
-        customerId,
-      })), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    logStep("No active subscription found");
-
-    return new Response(JSON.stringify(buildResponseBody({
-      subscribed: false,
-      plan: null,
-      subscriptionId: null,
-      subscriptionEnd: null,
+    logStep("No active Stripe subscription found; stored metadata cannot grant access", {
+      userId: user.id,
       customerId,
-    })), {
+      previouslyMarkedActive: storedSnapshot.subscribed,
+    });
+
+    const snapshot = inactiveSubscriptionSnapshot(customerId);
+    await syncSnapshot(supabaseClient, user, snapshot);
+
+    return new Response(JSON.stringify(buildResponseBody(snapshot)), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
