@@ -54,6 +54,10 @@ class TrialSchemaTests(unittest.TestCase):
         # Production backfill is deliberately excluded: fixtures are lab-only.
         source = SCHEMA.read_text().split("-- PRODUCTION BACKFILL")[0]
         sql(source + ("\nCOMMIT;" if source.lstrip().startswith("BEGIN;") else ""))
+        policy_files = [p for p in sorted((ROOT / "supabase/migrations").glob("*.sql"))
+                        if "Service manages trial reservations" in p.read_text()]
+        for policy_file in policy_files:
+            sql(policy_file.read_text())
         sql("CREATE TRIGGER deletion AFTER DELETE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.delete_user_data();")
 
     @classmethod
@@ -150,6 +154,7 @@ class TrialSchemaTests(unittest.TestCase):
         self.assertEqual(sql("SELECT has_table_privilege('anon','public.subscriptions','SELECT');"), "f")
         self.assertEqual(sql("SELECT has_function_privilege('authenticated','public.reserve_trial(uuid,text)','EXECUTE');"), "f")
         self.assertEqual(sql("SELECT has_table_privilege('authenticated','public.trial_reservations','SELECT');"), "f")
+        self.assertEqual(sql("SELECT count(*) FROM pg_policies WHERE tablename IN ('trial_reservations','stripe_events') AND roles=ARRAY['service_role']::name[];"), "2")
 
     def test_deletion_preserves_consumed_history_and_unrelated_data(self):
         self.reserve()
@@ -161,6 +166,14 @@ class TrialSchemaTests(unittest.TestCase):
         self.assertEqual(sql("SELECT count(*) FROM public.admin_access;"), "1")
         sql(f"DELETE FROM auth.users WHERE id='{OTHER}';")
         self.assertEqual(sql("SELECT count(*) FROM public.trial_reservations WHERE status='reserved';"), "0")
+
+    def test_zz_inactive_rollback_restores_original_deletion(self):
+        sql(f"INSERT INTO auth.users VALUES ('{USER}'); INSERT INTO public.transactions VALUES ('{USER}'); INSERT INTO public.admin_access VALUES ('grant@example.test');")
+        sql((ROOT / "supabase/tests/trial_schema_rollback.sql").read_text())
+        self.assertEqual(sql("SELECT count(*) FROM pg_tables WHERE schemaname='public' AND tablename IN ('subscriptions','trial_reservations','stripe_events');"), "0")
+        self.assertEqual(sql("SELECT count(*) FROM public.admin_access;"), "1")
+        sql(f"DELETE FROM auth.users WHERE id='{USER}';")
+        self.assertEqual(sql("SELECT count(*) FROM public.transactions;"), "0")
 
 
 if __name__ == "__main__":

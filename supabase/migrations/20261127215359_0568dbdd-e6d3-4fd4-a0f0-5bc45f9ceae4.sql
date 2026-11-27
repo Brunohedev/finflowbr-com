@@ -1,0 +1,2 @@
+CREATE POLICY "Service manages trial reservations" ON public.trial_reservations FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Service manages stripe events" ON public.stripe_events FOR ALL TO service_role USING (true) WITH CHECK (true);

@@ -16,7 +16,7 @@
 - [x] Present Trial Lab service costs/availability, independent isolation procedure, production exclusion evidence, manual-entitlement preservation and failure-test matrix; guests remain paid, no email verification or implementation; free Supabase slot requires user confirmation
 - [x] Trial preparation stage 0: revalidate four Live subscriptions, grant inventory and source contracts; document failed readiness gate in docs/trial-readiness-audit.md
 - [x] Confirm original-production migration destination, preservation and rollback — user explicitly confirmed on 27 November 2026; only the additive migration is in scope for this request
-- [ ] Trial preparation stage 1 — validate and execute additive migration only on original Supabase symkogknbjhdesgmvtvc; preserve four bindings and all existing access/data; no endpoint deployment
+- [x] Trial preparation stage 1 — additive migration completed only on original Supabase symkogknbjhdesgmvtvc; four bindings/21 grants preserved, finance fingerprints unchanged; 14 isolated PostgreSQL tests including rollback and 54 regressions passed; no endpoint deployment; report in docs/trial-production-stage1.md
 - [ ] Trial preparation stage 2 — authorized after stage 1; compatible access correction and disabled versioned billing endpoints
 - [ ] Trial preparation stage 3 — authorized after preceding gates; gated frontend only, no publication
 - [ ] Trial activation/publication/webhook/iOS — waiting on separate explicit authorizations; outside this preparation
