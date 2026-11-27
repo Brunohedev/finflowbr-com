@@ -84,6 +84,31 @@ describe("gated billing frontend flows", () => {
     expect((await screen.findByLabelText("route")).textContent).toBe("/app");
   });
 
+  it("allows direct subscription without trial via skip_trial when authenticated", async () => {
+    mocks.isAuthenticated = true;
+    mocks.invoke.mockImplementation(async (name: string) => {
+      if (name === "billing-capabilities") {
+        return { data: { checkout_v2: true, checkout_confirmation: true, account_deletion_with_cancellation: true, trial_seconds: 259200 }, error: null };
+      }
+      return { data: { url: null, code: "already_subscribed", trial: false }, error: null };
+    });
+    render(
+      <MemoryRouter initialEntries={["/planos"]}>
+        <Routes>
+          <Route path="/planos" element={<Pricing />} />
+          <Route path="/app" element={<LocationEcho />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const directButtons = await screen.findAllByRole("button", { name: "Assinar agora" });
+    fireEvent.click(directButtons[0]);
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith("create-checkout-v2", {
+        body: expect.objectContaining({ plan: "mensal", skip_trial: true, request_id: expect.any(String) }),
+      })
+    );
+  });
+
   it("confirms 72h trial start on /sucesso via checkout-confirmation", async () => {
     mocks.isAuthenticated = true;
     mocks.invoke.mockImplementation(async (name: string) => {

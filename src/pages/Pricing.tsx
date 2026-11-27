@@ -101,18 +101,23 @@ const Pricing = () => {
     );
   }
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async (planId: string, skipTrial = false) => {
     if (capabilitiesLoading) return;
     if (capabilities.checkoutV2 && !isAuthenticated) {
       navigate("/login?mode=register&next=/planos");
       return;
     }
 
-    setLoading(planId);
+    const loadingKey = `${planId}:${skipTrial ? "direct" : "trial"}`;
+    setLoading(loadingKey);
     try {
       const { data, error } = capabilities.checkoutV2
         ? await supabase.functions.invoke("create-checkout-v2", {
-            body: { plan: planId, request_id: crypto.randomUUID() },
+            body: {
+              plan: planId,
+              request_id: crypto.randomUUID(),
+              ...(skipTrial ? { skip_trial: true } : {}),
+            },
           })
         : await supabase.functions.invoke("create-checkout", {
             body: { plan: planId },
@@ -250,20 +255,43 @@ const Pricing = () => {
                   >
                     Plano atual
                   </Button>
+                ) : capabilities.checkoutV2 && !capabilitiesLoading ? (
+                  <div className="space-y-2">
+                    <Button
+                      className="w-full"
+                      variant={plan.popular ? "default" : "outline"}
+                      onClick={() => handleSubscribe(plan.id, false)}
+                      disabled={loading !== null}
+                    >
+                      {loading === `${plan.id}:trial` ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                      {loading === `${plan.id}:trial`
+                        ? "Redirecionando..."
+                        : isAuthenticated
+                        ? t("Começar 3 dias grátis")
+                        : t("Criar conta e testar grátis")}
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant={plan.popular ? "outline" : "secondary"}
+                      onClick={() => handleSubscribe(plan.id, true)}
+                      disabled={loading !== null}
+                    >
+                      {loading === `${plan.id}:direct` ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                      {loading === `${plan.id}:direct` ? "Redirecionando..." : t("Assinar agora")}
+                    </Button>
+                  </div>
                 ) : (
                   <Button
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={capabilitiesLoading || loading === plan.id}
+                    onClick={() => handleSubscribe(plan.id, false)}
+                    disabled={capabilitiesLoading || loading !== null}
                   >
-                    {capabilitiesLoading || loading === plan.id ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                    {loading === plan.id
+                    {capabilitiesLoading || loading === `${plan.id}:trial` ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                    {loading === `${plan.id}:trial`
                       ? "Redirecionando..."
                       : capabilitiesLoading
                       ? t("Carregando...")
-                      : capabilities.checkoutV2
-                      ? (isAuthenticated ? t("Começar 3 dias grátis") : t("Criar conta e testar grátis"))
                       : "Assinar"}
                   </Button>
                 )}

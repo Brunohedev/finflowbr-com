@@ -7,6 +7,7 @@ import { PLAN_CATALOG, TRIAL_DAYS, grantsAccess } from "../_shared/subscriptionS
 const Body = z.object({
   plan: z.enum(["mensal", "semestral", "anual"]),
   request_id: z.string().uuid().optional(),
+  skip_trial: z.boolean().optional(),
 });
 const IN_FLIGHT_MS = 2 * 60 * 1000;
 const ALLOWED_ORIGINS = new Set([
@@ -44,68 +45,77 @@ async function handleCheckout(req: Request): Promise<Response> {
 
   const stripe = getStripe();
   const plan = parsed.data.plan;
+  const skipTrial = parsed.data.skip_trial === true;
   const customerId = await findOrCreateCustomer(stripe, admin, { id: user.id, email: user.email });
-  const { data: reservation, error: reserveError } = await admin.rpc("reserve_trial", {
-    _user_id: user.id,
-    _email: user.email,
-  });
-  if (reserveError) throw reserveError;
 
-  const decision = reservation?.decision;
-  if (!["granted", "own_pending", "used"].includes(decision)) throw new Error("Invalid reservation decision");
+  let trial = false;
+  let reservationId: string | null = null;
+  let generation: number | null = null;
+  let ownsReservation = false;
 
-  let trial = decision !== "used";
-  let reservationId: string | null = trial ? reservation.reservation_id : null;
-  let generation: number | null = trial ? reservation.generation : null;
-  let ownsReservation = decision === "granted";
+  if (!skipTrial) {
+    const { data: reservation, error: reserveError } = await admin.rpc("reserve_trial", {
+      _user_id: user.id,
+      _email: user.email,
+    });
+    if (reserveError) throw reserveError;
 
-  if (decision === "own_pending") {
-    const { data: row, error: rowError } = await admin.from("trial_reservations")
-      .select("id,generation,checkout_session_id,updated_at")
-      .eq("id", reservationId).eq("generation", generation).eq("status", "reserved").single();
-    if (rowError) throw rowError;
+    const decision = reservation?.decision;
+    if (!["granted", "own_pending", "used"].includes(decision)) throw new Error("Invalid reservation decision");
 
-    if (row.checkout_session_id) {
-      const previous = await stripe.checkout.sessions.retrieve(row.checkout_session_id);
-      if (previous.status === "complete") {
-        ownsReservation = false;
-        const subscriptionId = typeof previous.subscription === "string" ? previous.subscription : previous.subscription?.id;
-        if (subscriptionId) await syncSubscription(stripe, admin, subscriptionId);
-        return json({ url: null, code: "checkout_already_completed", trial: false, session_id: previous.id });
-      }
-      if (previous.status === "open" && previous.url) {
-        ownsReservation = false;
-        return json({ url: previous.url, trial: true, session_id: previous.id, reused: true });
-      }
-      if (previous.status === "open") {
-        // An ambiguous expiry keeps the reservation untouched and fails closed.
-        ownsReservation = false;
-        await stripe.checkout.sessions.expire(previous.id);
-      }
+    trial = decision !== "used";
+    reservationId = trial ? reservation.reservation_id : null;
+    generation = trial ? reservation.generation : null;
+    ownsReservation = decision === "granted";
 
-      const { data: claimed, error: claimError } = await admin.from("trial_reservations")
-        .update({ checkout_session_id: null, checkout_expires_at: null })
-        .eq("id", row.id).eq("generation", row.generation).eq("status", "reserved")
-        .eq("checkout_session_id", row.checkout_session_id).select("id");
-      if (claimError) throw claimError;
-      if (!claimed || claimed.length === 0) {
-        ownsReservation = false;
-        return json({ url: null, code: "checkout_in_progress", trial: true });
+    if (decision === "own_pending") {
+      const { data: row, error: rowError } = await admin.from("trial_reservations")
+        .select("id,generation,checkout_session_id,updated_at")
+        .eq("id", reservationId).eq("generation", generation).eq("status", "reserved").single();
+      if (rowError) throw rowError;
+
+      if (row.checkout_session_id) {
+        const previous = await stripe.checkout.sessions.retrieve(row.checkout_session_id);
+        if (previous.status === "complete") {
+          ownsReservation = false;
+          const subscriptionId = typeof previous.subscription === "string" ? previous.subscription : previous.subscription?.id;
+          if (subscriptionId) await syncSubscription(stripe, admin, subscriptionId);
+          return json({ url: null, code: "checkout_already_completed", trial: false, session_id: previous.id });
+        }
+        if (previous.status === "open" && previous.url) {
+          ownsReservation = false;
+          return json({ url: previous.url, trial: true, session_id: previous.id, reused: true });
+        }
+        if (previous.status === "open") {
+          // An ambiguous expiry keeps the reservation untouched and fails closed.
+          ownsReservation = false;
+          await stripe.checkout.sessions.expire(previous.id);
+        }
+
+        const { data: claimed, error: claimError } = await admin.from("trial_reservations")
+          .update({ checkout_session_id: null, checkout_expires_at: null })
+          .eq("id", row.id).eq("generation", row.generation).eq("status", "reserved")
+          .eq("checkout_session_id", row.checkout_session_id).select("id");
+        if (claimError) throw claimError;
+        if (!claimed || claimed.length === 0) {
+          ownsReservation = false;
+          return json({ url: null, code: "checkout_in_progress", trial: true });
+        }
+        ownsReservation = true;
+      } else {
+        if (Date.now() - new Date(row.updated_at).getTime() < IN_FLIGHT_MS) {
+          return json({ url: null, code: "checkout_in_progress", trial: true });
+        }
+        const { data: claimed, error: claimError } = await admin.from("trial_reservations")
+          .update({ stripe_customer_id: customerId })
+          .eq("id", row.id).eq("generation", row.generation).eq("status", "reserved")
+          .eq("updated_at", row.updated_at).is("checkout_session_id", null).select("id");
+        if (claimError) throw claimError;
+        if (!claimed || claimed.length === 0) {
+          return json({ url: null, code: "checkout_in_progress", trial: true });
+        }
+        ownsReservation = true;
       }
-      ownsReservation = true;
-    } else {
-      if (Date.now() - new Date(row.updated_at).getTime() < IN_FLIGHT_MS) {
-        return json({ url: null, code: "checkout_in_progress", trial: true });
-      }
-      const { data: claimed, error: claimError } = await admin.from("trial_reservations")
-        .update({ stripe_customer_id: customerId })
-        .eq("id", row.id).eq("generation", row.generation).eq("status", "reserved")
-        .eq("updated_at", row.updated_at).is("checkout_session_id", null).select("id");
-      if (claimError) throw claimError;
-      if (!claimed || claimed.length === 0) {
-        return json({ url: null, code: "checkout_in_progress", trial: true });
-      }
-      ownsReservation = true;
     }
   }
 
