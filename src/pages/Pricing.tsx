@@ -170,7 +170,7 @@ const Pricing = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">Escolha seu plano</h1>
           <p className="text-muted-foreground">
             {capabilities.checkoutV2
-              ? t("Comece com 3 dias grátis (72 horas) no plano escolhido. Cartão obrigatório no cadastro; cancele antes do fim do teste para não ser cobrado.")
+              ? t("Comece com 3 dias grátis no plano escolhido!")
               : "Tenha controle total das suas finanças pessoais"}
           </p>
         </div>
@@ -302,7 +302,7 @@ const Pricing = () => {
 
         {capabilities.checkoutV2 && (
           <p className="text-center text-xs text-muted-foreground mt-4">
-            {t("O teste grátis de 72 horas é válido uma única vez por conta ou e-mail. Contas que já assinaram seguem diretamente para a cobrança do plano.")}
+            {t("")}
           </p>
         )}
 
