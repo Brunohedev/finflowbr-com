@@ -15,7 +15,8 @@
 - [x] Prepare detailed 3-day trial technical plan with isolated staging, access rules, atomic eligibility, ordered webhook reconciliation and real checkout confirmation; implementation waits for explicit approval
 - [x] Present Trial Lab service costs/availability, independent isolation procedure, production exclusion evidence, manual-entitlement preservation and failure-test matrix; guests remain paid, no email verification or implementation; free Supabase slot requires user confirmation
 - [x] Trial preparation stage 0: revalidate four Live subscriptions, grant inventory and source contracts; document failed readiness gate in docs/trial-readiness-audit.md
-- [ ] Trial preparation stage 1 — authorized after user confirmed all Trial Lab tests passed; additive production billing migration in progress
+- [ ] Confirm original-production migration destination, preservation and rollback — waiting on explicit user confirmation; canceled migration never executed
+- [ ] Trial preparation stage 1 — paused before execution; additive migration must target only original Supabase symkogknbjhdesgmvtvc
 - [ ] Trial preparation stage 2 — authorized after stage 1; compatible access correction and disabled versioned billing endpoints
 - [ ] Trial preparation stage 3 — authorized after preceding gates; gated frontend only, no publication
 - [ ] Trial activation/publication/webhook/iOS — waiting on separate explicit authorizations; outside this preparation
