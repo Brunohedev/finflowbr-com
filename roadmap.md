@@ -12,3 +12,4 @@
 - [x] Make account deletion authentication-only and fail-safe: revoke owned Plaid Items, clean non-cascading data, preserve paid guards; 37 tests passed and deployed
 - [ ] Verify complete account deletion and bank revocation on a disposable account in TestFlight — requires an authenticated external-Supabase test session and physical iPhone
 - [x] Audit and present a 3-day Stripe trial implementation plan only; identified access fallbacks, entitlement bypass, guest/concurrency limitations and automatic-production-deployment blocker; no application or service changes
+- [x] Prepare detailed 3-day trial technical plan with isolated staging, access rules, atomic eligibility, ordered webhook reconciliation and real checkout confirmation; implementation waits for explicit approval
