@@ -203,6 +203,123 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_events: {
+        Row: {
+          attempts: number
+          checkout_session_id: string | null
+          created_at: string
+          event_created: string
+          event_id: string
+          fencing_token: number
+          last_error_code: string | null
+          lease_owner: string | null
+          lease_until: string | null
+          next_attempt_at: string
+          processed_at: string | null
+          received_at: string
+          reservation_generation: number | null
+          reservation_id: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          checkout_session_id?: string | null
+          created_at?: string
+          event_created: string
+          event_id: string
+          fencing_token?: number
+          last_error_code?: string | null
+          lease_owner?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string
+          processed_at?: string | null
+          received_at?: string
+          reservation_generation?: number | null
+          reservation_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          checkout_session_id?: string | null
+          created_at?: string
+          event_created?: string
+          event_id?: string
+          fencing_token?: number
+          last_error_code?: string | null
+          lease_owner?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string
+          processed_at?: string | null
+          received_at?: string
+          reservation_generation?: number | null
+          reservation_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at: string | null
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string | null
+          price_id: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          sync_generation: number
+          synced_at: string
+          trial_end: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string | null
+          price_id?: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          sync_generation?: number
+          synced_at?: string
+          trial_end?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string | null
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          sync_generation?: number
+          synced_at?: string
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sync_locks: {
         Row: {
           locked_at: string
@@ -251,6 +368,57 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_reservations: {
+        Row: {
+          checkout_expires_at: string | null
+          checkout_session_id: string | null
+          consumed_at: string | null
+          created_at: string
+          email_normalized: string
+          generation: number
+          id: string
+          released_at: string | null
+          reserved_at: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          checkout_expires_at?: string | null
+          checkout_session_id?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          email_normalized: string
+          generation?: number
+          id?: string
+          released_at?: string | null
+          reserved_at?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          checkout_expires_at?: string | null
+          checkout_session_id?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          email_normalized?: string
+          generation?: number
+          id?: string
+          released_at?: string | null
+          reserved_at?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_entitlements: {
         Row: {
           access_type: string
@@ -280,7 +448,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_stripe_event: {
+        Args: {
+          _customer_id?: string
+          _event_created: string
+          _event_id: string
+          _lease_seconds?: number
+          _owner: string
+          _reservation_generation?: number
+          _reservation_id?: string
+          _session_id?: string
+          _subscription_id?: string
+          _type: string
+        }
+        Returns: number
+      }
+      complete_stripe_event: {
+        Args: { _event_id: string; _owner: string; _token: number }
+        Returns: boolean
+      }
+      release_stripe_event: {
+        Args: {
+          _error_code?: string
+          _event_id: string
+          _owner: string
+          _retry_seconds?: number
+          _token: number
+        }
+        Returns: boolean
+      }
+      reserve_trial: {
+        Args: { _email: string; _user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
