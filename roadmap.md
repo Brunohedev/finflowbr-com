@@ -11,4 +11,4 @@
 - [ ] Verify header taps and spoken expense end-to-end in new TestFlight build — requires physical iPhone/Xcode build and authenticated app session
 - [x] Make account deletion authentication-only and fail-safe: revoke owned Plaid Items, clean non-cascading data, preserve paid guards; 37 tests passed and deployed
 - [ ] Verify complete account deletion and bank revocation on a disposable account in TestFlight — requires an authenticated external-Supabase test session and physical iPhone
-- [ ] Audit and present a 3-day Stripe trial implementation plan only; no application, Stripe, Supabase, SQL, deployment or iOS build changes
+- [x] Audit and present a 3-day Stripe trial implementation plan only; identified access fallbacks, entitlement bypass, guest/concurrency limitations and automatic-production-deployment blocker; no application or service changes
